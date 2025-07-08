@@ -3,4 +3,9 @@
 
 // Exposes all public engine features for the user
 
+#include "core/henApplication.h"
+#include "core/henVersion.h"
+
+#include "tools/henConsole.h"
+
 #endif // !_HENENGINE_H_

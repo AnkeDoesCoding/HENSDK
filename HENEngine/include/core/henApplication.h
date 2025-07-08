@@ -7,7 +7,7 @@ namespace hen
     {
     public:
         Application();
-        virtual ~Application() = default;
+        ~Application();
 
         virtual void Initialise();
         virtual void Shutdown();
