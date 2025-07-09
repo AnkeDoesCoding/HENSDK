@@ -37,7 +37,10 @@ namespace hen
 
     void Application::Run()
     {
-        
+        if(Initialised)
+        {
+            
+        }
     }
 
     void Application::FixedUpdate()
