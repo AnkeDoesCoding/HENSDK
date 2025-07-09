@@ -15,7 +15,7 @@ SDL_AppResult SDL_AppInit(void** appState, int argC, char* argV[])
         return SDL_APP_FAILURE;
     }
 
-    Window = SDL_CreateWindow("Egg Editor", 1280, 720, SDL_WINDOW_RESIZABLE);
+    Window = EggEditor.CreateWindow("Egg Editor", 1280, 720);
 
     EggEditor.Initialise();
 
