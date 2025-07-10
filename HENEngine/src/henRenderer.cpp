@@ -36,4 +36,15 @@ namespace hen::renderer
     {
         g_Window = window;
     }
+
+    void ResizeWindow()
+    {
+        if(Initialised)
+        {
+            int newWidth, newHeight;
+        SDL_GetWindowSize(g_Window, &newWidth, &newHeight);
+
+        glViewport(0, 0, newWidth, newHeight);
+        }
+    }
 }

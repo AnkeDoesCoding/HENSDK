@@ -9,6 +9,7 @@ namespace hen::renderer
     void Run();
 
     void SetWindow(SDL_Window* window);
+    void ResizeWindow();
 
     extern SDL_Window* g_Window;
     extern bool Initialised;

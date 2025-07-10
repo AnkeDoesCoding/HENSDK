@@ -62,6 +62,11 @@ namespace hen
         m_Window = window;
 
         renderer::SetWindow(window);
+
+        if (renderer::Initialised)
+        {
+            renderer::ResizeWindow();
+        }
     }
 
     SDL_Window* Application::CreateWindow(const char* windowName, int w, int h)
@@ -73,7 +78,7 @@ namespace hen
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
 
-        newWindow = SDL_CreateWindow(windowName, w, h, SDL_WINDOW_OPENGL);
+        newWindow = SDL_CreateWindow(windowName, w, h, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
         SetWindow(newWindow);
 

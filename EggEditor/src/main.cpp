@@ -32,6 +32,7 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
     if (event->type == SDL_EVENT_WINDOW_RESIZED) 
     {
         // resize shit goes here
+        EggEditor.SetWindow(Window);
     }
 
     return SDL_APP_CONTINUE;
