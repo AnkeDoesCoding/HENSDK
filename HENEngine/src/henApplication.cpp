@@ -59,7 +59,6 @@ namespace hen
 
     void Application::SetWindow(SDL_Window *window)
     {
-        m_Window = window;
 
         renderer::SetWindow(window);
 

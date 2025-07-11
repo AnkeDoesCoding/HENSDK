@@ -27,7 +27,7 @@ namespace hen
             break;
         }
 
-        std::cout << "" + levelText + message << "\n";
+        std::cout << "" + levelText + message << std::endl;
 #endif // !DEBUG
     }
 
@@ -54,7 +54,7 @@ namespace hen
             break;
         }
 
-        std::cout << "" + levelText + message << "\n";
+        std::cout << "" + levelText + message << std::endl;
 #endif // !DEBUG
     }
 }

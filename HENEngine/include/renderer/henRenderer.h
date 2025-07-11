@@ -13,6 +13,8 @@ namespace hen::renderer
 
     extern SDL_Window* g_Window;
     extern bool Initialised;
+
+    
 }
 
 #endif // !_HENRENDER_H_

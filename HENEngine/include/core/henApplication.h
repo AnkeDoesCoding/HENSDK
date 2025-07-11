@@ -25,10 +25,6 @@ namespace hen
     public:
         
         bool Initialised = false;
-
-
-    private:
-        SDL_Window* m_Window;
     };
 }
 
