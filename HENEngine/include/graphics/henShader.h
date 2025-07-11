@@ -10,9 +10,10 @@ namespace hen::graphics
     {
     public:
 
-        Shader(const char* vsShaderPath, const char* fsShaderPath);
+        Shader(const char* vsPath, const char* fsPath);
 
         void Activate();
+        void Run();
 
         void SetVal(const std::string& name, bool val) const;
         void SetVal(const std::string& name, int val) const;
@@ -21,8 +22,11 @@ namespace hen::graphics
 
         unsigned int ID;
     private:
+
+        const char* m_VSPath;
+        const char* m_FSPath;
     
-        void checkCompileErrors(unsigned int shader, std::string type);
+        void CheckForCompileErrors(unsigned int shader, std::string type);
     };
 }
 

@@ -6,16 +6,21 @@
 
 #include <fstream>
 #include <sstream>
-#include <iostream>
 
 namespace hen::graphics
 {
-    Shader::Shader(const char* vsShaderPath, const char* fsShaderPath)
+    Shader::Shader(const char* vsPath, const char* fsPath)
+    {
+        m_VSPath = vsPath;
+        m_FSPath = fsPath;
+    }
+
+    void Shader::Activate()
     {
         std::string vsSource, fsSource;
         std::ifstream vsFile, fsFile;
 
-        unsigned int compiledVS, compiledFS;
+        unsigned int vertexShader, fragShader;
         int success;
         char infoLog[512];
 
@@ -24,8 +29,8 @@ namespace hen::graphics
 
         try
         {
-            vsFile.open(vsShaderPath);
-            fsFile.open(fsShaderPath);
+            vsFile.open(m_VSPath);
+            fsFile.open(m_FSPath);
 
             std::stringstream vsStream, fsStream;
 
@@ -41,54 +46,53 @@ namespace hen::graphics
         }
         catch(std::ifstream::failure& e)
         {
-            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ", console::Level::Error);
+            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " , console::Level::Error);
         }
 
         const char* vsCode = vsSource.c_str();
         const char* fsCode = fsSource.c_str();
         
-        compiledVS = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(compiledVS, 1, &vsCode, nullptr);
-        glCompileShader(compiledVS);
-        checkCompileErrors(compiledVS, "VERTEX");
-        glGetShaderiv(compiledVS, GL_COMPILE_STATUS, &success);
+        vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertexShader, 1, &vsCode, nullptr);
+        glCompileShader(vertexShader);
+        CheckForCompileErrors(vertexShader, "VERTEX");
+        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 
         if (!success)
         {
-            glGetShaderInfoLog(compiledVS, 512, nullptr, infoLog);
-            console::Post("[hen::Shader] VERTEX SHADER COMPILATION FAILED : " + std::string(infoLog), console::Level::Error);
+            glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+            console::Post("[hen::Shader] VERTEX SHADER COMPILATION FAILED: " + std::string(infoLog), console::Level::Error);
         }
 
-        compiledFS = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(compiledFS, 1, &fsCode, nullptr);
-        glCompileShader(compiledFS);
-        checkCompileErrors(compiledFS, "FRAGMENT");
-        glGetShaderiv(compiledFS, GL_COMPILE_STATUS, &success);
+        fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragShader, 1, &fsCode, nullptr);
+        glCompileShader(fragShader);
+        CheckForCompileErrors(fragShader, "FRAGMENT");
+        glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
 
         if (!success)
         {
-            glGetShaderInfoLog(compiledFS, 512, nullptr, infoLog);
-            console::Post("[hen::Shader] FRAGMENT SHADER COMPILATION FAILED : " + std::string(infoLog), console::Level::Error);
+            glGetShaderInfoLog(fragShader, 512, nullptr, infoLog);
+            console::Post("[hen::Shader] FRAGMENT SHADER COMPILATION FAILED: " + std::string(infoLog), console::Level::Error);
         }
 
         ID = glCreateProgram();
-        glAttachShader(ID, compiledVS);
-        glAttachShader(ID, compiledFS);
+        glAttachShader(ID, vertexShader);
+        glAttachShader(ID, fragShader);
         glLinkProgram(ID);
         glGetProgramiv(ID, GL_LINK_STATUS, &success);
 
         if(!success)
         {
             glGetProgramInfoLog(ID, 512, nullptr, infoLog);
-            console::Post("[hen::Shader] SHADER LINKING FAILED : " + std::string(infoLog), console::Level::Error);
+            console::Post("[hen::Shader] SHADER LINKING FAILED: \n" + std::string(infoLog), console::Level::Error);
         }
 
-        glDeleteShader(compiledVS);
-        glDeleteShader(compiledFS);
-        
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragShader);
     }
 
-    void Shader::Activate()
+    void Shader::Run()
     {
         glUseProgram(ID);
     }
@@ -106,7 +110,7 @@ namespace hen::graphics
         glUniform1i(glGetUniformLocation(ID, name.c_str()), val);
     }    
 
-    void Shader::checkCompileErrors(unsigned int shader, std::string type)
+    void Shader::CheckForCompileErrors(unsigned int shader, std::string type)
     {
         int success;
         char infoLog[1024];
@@ -116,7 +120,7 @@ namespace hen::graphics
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::Level::Error);
             }
         }
         else
@@ -125,7 +129,7 @@ namespace hen::graphics
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::Level::Error);
             }
         }
     }

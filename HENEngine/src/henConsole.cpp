@@ -15,13 +15,13 @@ namespace hen
             levelText = "";
             break;
         case Level::Warning:
-            levelText = "[WARNING] ";
+            levelText = "WARNING: ";
             break;
         case Level::Error:
-            levelText = "[ERROR] ";
+            levelText = "ERROR: ";
             break;
         case Level::ExtremeError:
-            levelText = "[EXTREME ERROR]";
+            levelText = "EXTREME ERROR:";
             break;
         default:
             break;
@@ -42,13 +42,13 @@ namespace hen
             levelText = "";
             break;
         case Level::Warning:
-            levelText = "[WARNING] ";
+            levelText = "WARNING: ";
             break;
         case Level::Error:
-            levelText = "[ERROR] ";
+            levelText = "ERROR: ";
             break;
         case Level::ExtremeError:
-            levelText = "[EXTREME ERROR]";
+            levelText = "EXTREME ERROR: ";
             break;
         default:
             break;

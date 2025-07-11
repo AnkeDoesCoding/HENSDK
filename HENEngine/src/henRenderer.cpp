@@ -15,7 +15,7 @@ float vertices[] = {
 unsigned int VBO;
 unsigned int VAO;
 
-hen::graphics::Shader TriangleShader;
+hen::graphics::Shader TriangleShader("../../HENEngine/res/shaders/GLSL/TriangleVS.glsl", "../../HENEngine/res/shaders/GLSL/TriangleFS.glsl");
 
 namespace hen::renderer
 {   
@@ -52,7 +52,7 @@ namespace hen::renderer
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
         glEnableVertexAttribArray(1);
         
-        TriangleShader = graphics::Shader("../../HENEngine/res/shaders/GLSL/TriangleVS.glsl", "../../HENEngine/res/shaders/GLSL/TriangleFS.glsl");
+        TriangleShader.Activate();
 
         Initialised = true;
     }
@@ -62,7 +62,7 @@ namespace hen::renderer
         glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        TriangleShader.Activate();
+        TriangleShader.Run();
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
