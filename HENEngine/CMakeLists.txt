@@ -3,10 +3,9 @@ cmake_minimum_required(VERSION 4.0.2)
 project ("HENEngine")
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
-file(GLOB_RECURSE THIRDPARTY_FILES CONFIGURE_DEPENDS "thirdparty/*.cpp" "thirdparty/*.c")
+file(GLOB_RECURSE VENDOR_FILES CONFIGURE_DEPENDS "vendor/*.cpp" "vendor/*.c")
 
-
-add_library(${PROJECT_NAME} STATIC "HENEngine.h" ${SRC_FILES} ${THIRDPARTY_FILES})
+add_library(${PROJECT_NAME} STATIC "HENEngine.h" ${SRC_FILES} ${VENDOR_FILES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3)
 

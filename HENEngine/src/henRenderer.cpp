@@ -3,6 +3,7 @@
 #include "vendor/glad/include/glad/glad.h"
 
 #include "tools/henConsole.h"
+#include "graphics/henShader.h"
 
 float vertices[] = {
     // positions         // colors
@@ -14,27 +15,7 @@ float vertices[] = {
 unsigned int VBO;
 unsigned int VAO;
 
-unsigned int VertexShader;
-unsigned int FragShader;
-unsigned int ShaderProgram;
-
-const char *VertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec3 aColor;\n"
-    "out vec3 ourColor;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos, 1.0);\n"
-    "   ourColor = aColor;\n"
-    "}\0";
-
-const char *FragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "in vec3 ourColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(ourColor, 1.0f);\n"
-    "}\n\0";
+hen::graphics::Shader TriangleShader;
 
 namespace hen::renderer
 {   
@@ -48,7 +29,7 @@ namespace hen::renderer
         if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
         {
             Initialised = false;
-            console::Post("[hen::renderer] Failed to initialised", console::Level::ExtremeError);
+            console::Post("[hen::renderer] FAILED TO INITAILISE", console::Level::ExtremeError);
         }
 
         console::Post("[hen::renderer] Initialised");
@@ -56,27 +37,6 @@ namespace hen::renderer
         glGenBuffers(1, &VBO);  
         glBindBuffer(GL_ARRAY_BUFFER, VBO);  
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        VertexShader = glCreateShader(GL_VERTEX_SHADER);
-        
-        glShaderSource(VertexShader, 1, &VertexShaderSource, NULL);
-        glCompileShader(VertexShader);
-
-        FragShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-        glShaderSource(FragShader, 1, &FragmentShaderSource, NULL);
-        glCompileShader(FragShader);
-
-        ShaderProgram = glCreateProgram();
-
-        glAttachShader(ShaderProgram, VertexShader);
-        glAttachShader(ShaderProgram, FragShader);
-        glLinkProgram(ShaderProgram);
-
-        glUseProgram(ShaderProgram);
-
-        glDeleteShader(VertexShader);
-        glDeleteShader(FragShader);  
 
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
@@ -92,6 +52,7 @@ namespace hen::renderer
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
         glEnableVertexAttribArray(1);
         
+        TriangleShader = graphics::Shader("../../HENEngine/res/shaders/GLSL/TriangleVS.glsl", "../../HENEngine/res/shaders/GLSL/TriangleFS.glsl");
 
         Initialised = true;
     }
@@ -101,7 +62,7 @@ namespace hen::renderer
         glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(ShaderProgram);
+        TriangleShader.Activate();
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
