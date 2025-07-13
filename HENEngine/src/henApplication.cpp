@@ -1,8 +1,9 @@
 #include "core/henApplication.h"
 
+#include "henCommonInclude.h"
+
 #include "tools/henConsole.h"
 #include "core/henVersion.h"
-
 #include "renderer/henRenderer.h"
 
 namespace hen
@@ -44,6 +45,13 @@ namespace hen
         if(Initialised)
         {
             renderer::Run();
+
+            float deltaTime = float(Timer.RecordElapsedSeconds());
+            const float targetDT = 1.0f / 60; // 60 hz
+            deltaTime = Clamp(deltaTime, 0.0f, 0.5f); // clamp to prevent instability
+
+            Update(deltaTime);
+            FixedUpdate();
         }
     }
 
@@ -52,7 +60,7 @@ namespace hen
         
     }
 
-    void Application::Update(double dT)
+    void Application::Update(float dT)
     {
         
     }

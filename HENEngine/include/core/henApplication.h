@@ -3,6 +3,8 @@
 
 #include "SDL3/SDL.h"
 
+#include "helpers/henTimer.h"
+
 namespace hen
 {
     class Application
@@ -17,7 +19,7 @@ namespace hen
         void Run();
 
         virtual void FixedUpdate();
-        virtual void Update(double dT);
+        virtual void Update(float dT);
 
         void SetWindow(SDL_Window* window);
         SDL_Window* CreateWindow(const char* windowName, int w, int h); // Creates SDL_Window which is configured to use OpenGL
@@ -25,6 +27,8 @@ namespace hen
     public:
         
         bool Initialised = false;
+
+        helper::Timer Timer;
     };
 }
 
