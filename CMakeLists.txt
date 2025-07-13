@@ -41,13 +41,13 @@ add_subdirectory("EggEditor")
 if(${SHIPPING_BUILD})
     message("-- [HEN SDK] Shipping Build: ON")
 
-    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCES_PATH="./res/engine/")
-    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCES_PATH="./res/engine/")
+    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCE_PATH="./res/engine/")
+    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCE_PATH="./res/engine/")
 
 else()
     message("-- [HEN SDK] Shipping Build: OFF")
 
-    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
-    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
+    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
+    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
 
 endif()

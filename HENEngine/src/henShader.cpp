@@ -100,11 +100,13 @@ namespace hen::graphics
     void Shader::SetVal(const std::string& name, bool val) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)val); 
-    }        
+    }  
+
     void Shader::SetVal(const std::string& name, int val) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), val);
-    }    
+    } 
+       
     void Shader::SetVal(const std::string& name, float val) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), val);
