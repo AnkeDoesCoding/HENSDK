@@ -15,7 +15,7 @@ float vertices[] = {
 unsigned int VBO;
 unsigned int VAO;
 
-hen::graphics::Shader TriangleShader("../../HENEngine/res/shaders/GLSL/TriangleVS.glsl", "../../HENEngine/res/shaders/GLSL/TriangleFS.glsl");
+hen::graphics::Shader TriangleShader(ENGINE_RESOURCES_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCES_PATH "shaders/GLSL/TriangleFS.glsl");
 
 namespace hen::renderer
 {   

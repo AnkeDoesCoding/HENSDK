@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 4.0.2)
 
 project ("HEN SDK" CXX)
 
+#make sure to delete the build folder and reconfigure after changing this 
+set(SHIPPING_BUILD OFF CACHE BOOL "Turn this on for shipping" FORCE)
+
 include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -34,3 +37,17 @@ add_compile_definitions("DEBUG=$<CONFIG:Debug>")
 
 add_subdirectory("HENEngine")
 add_subdirectory("EggEditor")
+
+if(${SHIPPING_BUILD})
+    message("-- [HEN SDK] Shipping Build: ON")
+
+    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCES_PATH="./res/engine/")
+    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCES_PATH="./res/engine/")
+
+else()
+    message("-- [HEN SDK] Shipping Build: OFF")
+
+    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
+    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
+
+endif()
