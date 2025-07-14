@@ -7,11 +7,25 @@
 
 HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so it is recommended that you don't use this for a full-feature game.
 
-## Getting started
+## Building
 
-The easiest way to get started is to install [VSCode](https://code.visualstudio.com/). After that you will need a C++ compiler for your platform:
+### Supported Platforms
+
+Sadly, only Windows is supported currently :( However Linux support is planned but no Mac support because fuck Mac
+
+### Prerequisiteries
+
+It is recommended that you have [VSCode](https://code.visualstudio.com/).
+You will need a compiler for your platform:
+
 | Platform | Compiler | Instructions |
 | ------------- | ------------- | ------------- |
-| Windows | msvc | [Build tools for Visual Studio](https://visualstudio.microsoft.com/downloads/?q=build+tools#build-tools-for-visual-studio-2022) | 
+| Windows | MSVC | [Build tools for Visual Studio](https://visualstudio.microsoft.com/downloads/?q=build+tools#build-tools-for-visual-studio-2022) | 
 
-After that you should be able to clone the repository and open it up in VSCode. From VSCode, you can select the configure preset, configure and build.
+You need [CMake](https://github.com/Kitware/CMake)
+You need [Git](https://git-scm.com/downloads)
+
+### Configuring and Compiling
+
+Once you have everything that is needed, you should be able to clone the repository and open it up in VSCode. 
+From VSCode, you can select the configuration preset, configure and compile the SDK.
