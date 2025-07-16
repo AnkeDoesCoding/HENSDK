@@ -25,7 +25,7 @@ namespace hen
         console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION);
 
         RHC = std::make_unique<RHC_OpenGL>(Window);
-        GetContext() = RHC.get();
+        renderer::GetRHC() = RHC.get();
 
         renderer::Initialise();
 

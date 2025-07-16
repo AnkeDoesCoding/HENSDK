@@ -12,6 +12,11 @@ namespace hen::renderer
 
     extern bool Initialised;
     
+    inline RenderHardwareContext*& GetRHC()
+	{
+		static RenderHardwareContext* context = nullptr;
+		return context;
+	}
 }
 
 #endif // !_HENRENDER_H_

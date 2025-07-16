@@ -18,12 +18,7 @@ namespace hen
         virtual void ResizeWindow() = 0;
     };
 
-    inline RenderHardwareContext*& GetContext()
-	{
-		static RenderHardwareContext* context = nullptr;
-
-		return context;
-	}
+   
 }
 
 #endif // !_HENRENDERHARDWARECONTEXT_H_

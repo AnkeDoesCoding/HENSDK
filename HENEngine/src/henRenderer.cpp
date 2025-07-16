@@ -38,7 +38,7 @@ namespace hen::renderer
     void Initialise()
     {
 
-        RHC = GetContext();    
+        RHC = GetRHC();    
         
         RHC->Initialise();
 
