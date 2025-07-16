@@ -3,17 +3,14 @@
 
 #include "SDL3/SDL.h"
 
+#include "renderer/henRenderHardwareContext.h"
+
 namespace hen::renderer
 {
     void Initialise();
     void Run();
 
-    void SetWindow(SDL_Window* window);
-    void ResizeWindow();
-
-    extern SDL_Window* g_Window;
     extern bool Initialised;
-
     
 }
 

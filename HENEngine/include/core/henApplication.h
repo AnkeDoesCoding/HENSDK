@@ -4,6 +4,7 @@
 #include "SDL3/SDL.h"
 
 #include "helpers/henTimer.h"
+#include "renderer/henRenderHardwareContext.h"
 
 namespace hen
 {
@@ -22,13 +23,16 @@ namespace hen
         virtual void Update(float dT);
 
         void SetWindow(SDL_Window* window);
-        SDL_Window* CreateWindow(const char* windowName, int w, int h); // Creates SDL_Window which is configured to use OpenGL
 
     public:
         
         bool Initialised = false;
 
         helper::Timer Timer;
+
+        SDL_Window* Window;
+
+        std::unique_ptr<hen::RenderHardwareContext> RHC;
     };
 }
 

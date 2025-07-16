@@ -1,0 +1,58 @@
+#include "henRHC_OpenGL.h"
+
+#include "vendor/glad/include/glad/glad.h"
+
+#include "tools/henConsole.h"
+
+#include <cassert>
+
+namespace hen
+{
+    RHC_OpenGL::RHC_OpenGL(SDL_Window* window)
+    {
+        m_Window = window;
+    }
+
+    RHC_OpenGL::~RHC_OpenGL()
+    {
+        
+    }
+
+    void RHC_OpenGL::Initialise() 
+    {
+        SDL_GLContext context = SDL_GL_CreateContext(m_Window);
+        SDL_GL_MakeCurrent(m_Window, context);
+
+        if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
+        {
+            Initialised = false;
+            console::Post("[hen::RHC_OpenGL] FAILED TO INITAILISE", console::Level::ExtremeError);
+        }
+
+        console::Post("[hen::RHC_OpenGL] Initialised");
+
+        Initialised = true;
+    }
+
+    void RHC_OpenGL::ClearSwapChain()
+    {
+        glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    void RHC_OpenGL::SwapSwapChain()
+    {
+        SDL_GL_SwapWindow(m_Window);
+    }
+
+    void RHC_OpenGL::ResizeWindow()
+    {
+        int newWidth, newHeight;
+        SDL_GetWindowSize(m_Window, &newWidth, &newHeight);
+
+        console::Post(std::to_string(newWidth) + " : " + std::to_string(newHeight));
+
+        glViewport(0, 0, newWidth, newHeight);
+    }
+
+}

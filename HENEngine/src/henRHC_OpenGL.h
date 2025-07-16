@@ -1,0 +1,33 @@
+#ifndef _HENRHC_OPENGL_H_
+#define _HENRHC_OPENGL_H_
+
+#include "renderer/henRenderHardwareContext.h"
+
+namespace hen
+{
+    class RHC_OpenGL : public hen::RenderHardwareContext
+    {
+    public:
+
+        RHC_OpenGL(SDL_Window* window);
+        ~RHC_OpenGL() override;
+
+        void Initialise() override;
+        void ClearSwapChain() override;
+        void SwapSwapChain() override;
+
+        void ResizeWindow() override;
+        
+    public:
+
+        bool Initialised =  false;
+
+    private:
+
+        SDL_Window* m_Window;
+    };
+
+    
+}
+
+#endif // !_HENRHC_OPENGL_H_

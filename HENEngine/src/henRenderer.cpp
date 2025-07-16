@@ -7,6 +7,8 @@
 #include "tools/henConsole.h"
 #include "graphics/henShader.h"
 
+hen::RenderHardwareContext* RHC;
+
 float vertices[] = {
     // positions          // colors           // texture coords
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
@@ -31,19 +33,14 @@ hen::graphics::Shader TriangleShader(ENGINE_RESOURCE_PATH "shaders/GLSL/Triangle
 
 namespace hen::renderer
 {   
-    SDL_Window* g_Window;
     bool Initialised = false;
-    
-    
+
     void Initialise()
     {
-        SDL_GLContext context = SDL_GL_CreateContext(g_Window);
 
-        if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-        {
-            Initialised = false;
-            console::Post("[hen::renderer] FAILED TO INITAILISE", console::Level::ExtremeError);
-        }
+        RHC = GetContext();    
+        
+        RHC->Initialise();
 
         console::Post("[hen::renderer] Initialised");
 
@@ -103,10 +100,9 @@ namespace hen::renderer
     }
 
     void Run()
-    {   
-        glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
+    {
+        RHC->ClearSwapChain();
+        
         TriangleShader.Run();
 
         glActiveTexture(GL_TEXTURE0);
@@ -114,22 +110,6 @@ namespace hen::renderer
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        SDL_GL_SwapWindow(g_Window);
-    }
-
-    void SetWindow(SDL_Window* window)
-    {
-        g_Window = window;
-    }
-
-    void ResizeWindow()
-    {
-        int newWidth, newHeight;
-        SDL_GetWindowSize(g_Window, &newWidth, &newHeight);
-
-        console::Post(std::to_string(newWidth) + " : " + std::to_string(newHeight));
-
-        glViewport(0, 0, newWidth, newHeight);
-
+        RHC->SwapSwapChain();
     }
 }

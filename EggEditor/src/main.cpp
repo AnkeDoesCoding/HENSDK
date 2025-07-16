@@ -15,7 +15,15 @@ SDL_AppResult SDL_AppInit(void** appState, int argC, char* argV[])
         return SDL_APP_FAILURE;
     }
 
-    Window = EggEditor.CreateWindow("Egg Editor", 1280, 720);
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+
+    Window = SDL_CreateWindow("Egg Editor", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+
+    EggEditor.SetWindow(Window);
 
     EggEditor.Initialise();
 

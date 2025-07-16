@@ -6,6 +6,8 @@
 #include "core/henVersion.h"
 #include "renderer/henRenderer.h"
 
+#include "henRHC_OpenGL.h"
+
 namespace hen
 {
     Application::Application()
@@ -20,14 +22,10 @@ namespace hen
 
     void Application::Initialise()
     {
-        if (Initialised)
-        {
-            console::Post("[hen::Application] Already initialised", console::Level::Warning);
+        console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION);
 
-            return;
-        }
-
-        console::Post("[hen::Application] Successfully initialised with HEN Engine version : " + version::VERSION);
+        RHC = std::make_unique<RHC_OpenGL>(Window);
+        GetContext() = RHC.get();
 
         renderer::Initialise();
 
@@ -67,28 +65,11 @@ namespace hen
 
     void Application::SetWindow(SDL_Window *window)
     {
+        Window = window;
 
-        renderer::SetWindow(window);
-
-        if (renderer::Initialised)
+        if(RHC != nullptr)
         {
-            renderer::ResizeWindow();
+            RHC->ResizeWindow();
         }
-    }
-
-    SDL_Window* Application::CreateWindow(const char* windowName, int w, int h)
-    {
-        SDL_Window* newWindow;
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
-
-        newWindow = SDL_CreateWindow(windowName, w, h, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-
-        SetWindow(newWindow);
-
-        return newWindow;
     }
 }
