@@ -1,6 +1,6 @@
 #include "henRHC_OpenGL.h"
 
-#include "vendor/glad/include/glad/glad.h"
+#include "vendor/glad/include/glad.h"
 
 #include "tools/henConsole.h"
 

@@ -1,6 +1,6 @@
 #include "renderer/henRenderer.h"
 
-#include "vendor/glad/include/glad/glad.h"
+#include "vendor/glad/include/glad.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb/include/stb_image.h"
 
