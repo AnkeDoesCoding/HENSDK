@@ -43,6 +43,13 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
         EggEditor.SetWindow(Window);
     }
 
+    hen::input::ProcessEvent(*event);
+
+    if(hen::input::BUTTON::KEYBOARD_BUTTON_TAB)
+    {
+        hen::console::Post("YHAHH");
+    }
+
     return SDL_APP_CONTINUE;
 }
 
