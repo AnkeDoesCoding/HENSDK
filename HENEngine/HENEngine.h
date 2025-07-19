@@ -6,6 +6,14 @@
 #include "core/henApplication.h"
 #include "core/henVersion.h"
 
+#include "graphics/henGraphics.h"
+#include "graphics/henShader.h"
+
+#include "math/henMath.h"
+
+#include "renderer/henRenderer.h"
+#include "renderer/henRenderHardwareContext.h"
+
 #include "tools/henConsole.h"
 
 #endif // !_HENENGINE_H_

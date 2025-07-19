@@ -1,6 +1,10 @@
 #ifndef _HENMATH_H_
 #define _HENMATH_H_
 
+#ifdef PLATFORM_LINUX
+    #define _XM_NO_XMVECTOR_OVERLOADS_
+#endif
+
 #include "vendor/directxmath/include/DirectXMath.h"
 #include "vendor/directxmath/include/DirectXPackedVector.h"
 
