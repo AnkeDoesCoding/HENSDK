@@ -1,5 +1,7 @@
 #include "input/henInput.h"
 
+#include <map>
+
 namespace hen::input
 {
     KeyboardState Keyboard;
@@ -7,96 +9,21 @@ namespace hen::input
 
     std::vector<SDL_Event> Events;
 
-    int ConvertScanCode(const SDL_Scancode& key, const SDL_Keycode& keyCode);
+    struct Input 
+	{
+		BUTTON button = NONE;
 
-    void ProcessEvent(const SDL_Event& event)
-    {
-        Events.push_back(event);
-    }
+		bool operator<(const Input other) {
+			return (button != other.button);
+		}
+		struct LessComparer {
+			bool operator()(Input const& a, Input const& b) const {
+				return (a.button < b.button);
+			}
+		};
+	};
 
-    void Update()
-    {
-        // Dont accumulate this stuff
-        Mouse.DeltaWheel = 0;
-        Mouse.DeltaPos = glm::vec2(0.0f, 0.0f);
-
-        int converted;
-        float delta;
-
-        for(auto& event : Events)
-        {
-            switch (event.type)
-            {
-                case SDL_EVENT_KEY_DOWN:
-                    converted = ConvertScanCode(event.key.scancode, event.key.key);
-                    if (converted >= 0)
-                    {
-                        Keyboard.Buttons[converted] = true;
-                    }
-                    break;
-                case SDL_EVENT_KEY_UP:
-                    converted = ConvertScanCode(event.key.scancode, event.key.key);
-                    if (converted >= 0 )
-                    {
-                        Keyboard.Buttons[converted] = false;
-                    }
-                    break;
-                case SDL_EVENT_TEXT_EDITING:
-                    break;       
-                case SDL_EVENT_TEXT_INPUT:    
-                    break;
-                case SDL_EVENT_KEYMAP_CHANGED:
-                    break;
-                case SDL_EVENT_MOUSE_MOTION:
-                    Mouse.Pos.x = event.motion.x;
-                    Mouse.Pos.y = event.motion.y;
-                    Mouse.DeltaPos.x += event.motion.xrel;
-                    Mouse.DeltaPos.y += event.motion.yrel;
-                    break;
-                case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                    switch (event.button.button)
-                    {
-                    case SDL_BUTTON_LEFT:
-                        Mouse.LMB = true;
-                        break;
-                    case SDL_BUTTON_RIGHT:
-                        Mouse.RMB = true;
-                        break;
-                    case SDL_BUTTON_MIDDLE:
-                        Mouse.MMB = true;
-                        break;
-                    }
-                    break;
-                case SDL_EVENT_MOUSE_BUTTON_UP:        
-                    switch(event.button.button)
-                    {
-                        case SDL_BUTTON_LEFT:
-                            Mouse.LMB = false;
-                            break;
-                        case SDL_BUTTON_RIGHT:
-                            Mouse.RMB = false;
-                            break;
-                        case SDL_BUTTON_MIDDLE:
-                            Mouse.MMB = false;
-                            break;
-                    }
-                    break;
-                case SDL_EVENT_MOUSE_WHEEL:
-                    delta = static_cast<float>(event.wheel.y);
-                    if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-                    {
-                        delta *= -1;
-                    }
-                    Mouse.DeltaWheel += delta;
-                    break;
-                // TODO: ADD CONTROLLER SHIT
-                default:
-                    break;
-            }
-        }
-
-        Events.clear();
-    }
+    std::map<Input, int, Input::LessComparer> Inputs;
 
     int ConvertScanCode(const SDL_Scancode& key, const SDL_Keycode& keyCode)
     {
@@ -190,10 +117,183 @@ namespace hen::input
         return -1;
     }
 
+        void Update()
+    {
+        // Dont accumulate this stuff
+        Mouse.DeltaWheel = 0;
+        Mouse.DeltaPos = glm::vec2(0.0f, 0.0f);
+        for(auto& event : Events)
+        {
+            switch (event.type)
+            {
+                case SDL_EVENT_KEY_DOWN:
+                {
+                    int converted = ConvertScanCode(event.key.scancode, event.key.key);
+                    if (converted >= 0)
+                    {
+                        Keyboard.Buttons[converted] = true;
+                    }
+                    break;
+                }
+                case SDL_EVENT_KEY_UP:
+                {
+                    int converted = ConvertScanCode(event.key.scancode, event.key.key);
+                    if (converted >= 0 )
+                    {
+                        Keyboard.Buttons[converted] = false;
+                    }
+                    break;
+                }
+                case SDL_EVENT_TEXT_EDITING:     
+                case SDL_EVENT_TEXT_INPUT:    
+                case SDL_EVENT_KEYMAP_CHANGED:
+                    break;
+                case SDL_EVENT_MOUSE_MOTION:
+                    Mouse.Pos.x = event.motion.x;
+                    Mouse.Pos.y = event.motion.y;
+                    Mouse.DeltaPos.x += event.motion.xrel;
+                    Mouse.DeltaPos.y += event.motion.yrel;
+                    break;
+                case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                    switch (event.button.button)
+                    {
+                    case SDL_BUTTON_LEFT:
+                        Mouse.LMB = true;
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        Mouse.RMB = true;
+                        break;
+                    case SDL_BUTTON_MIDDLE:
+                        Mouse.MMB = true;
+                        break;
+                    }
+                    break;
+                case SDL_EVENT_MOUSE_BUTTON_UP:        
+                    switch(event.button.button)
+                    {
+                        case SDL_BUTTON_LEFT:
+                            Mouse.LMB = false;
+                            break;
+                        case SDL_BUTTON_RIGHT:
+                            Mouse.RMB = false;
+                            break;
+                        case SDL_BUTTON_MIDDLE:
+                            Mouse.MMB = false;
+                            break;
+                    }
+                    break;
+                case SDL_EVENT_MOUSE_WHEEL:
+                {
+                    float delta = static_cast<float>(event.wheel.y);
+                    if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                    {
+                        delta *= -1;
+                    }
+                    Mouse.DeltaWheel += delta;
+                    break;
+                }   
+                // TODO: ADD CONTROLLER SHIT
+                default:
+                    break;
+            }
+        }
+
+        Events.clear();
+    }
+
     void GetKeyboardState(KeyboardState* state) {
         *state = Keyboard;
     }
     void GetMouseState(MouseState* state) {
         *state = Mouse;
     }
+
+    void ProcessEvent(const SDL_Event& event)
+    {
+        Events.push_back(event);
+    }
+
+    bool Down(BUTTON button)
+    {
+        uint16_t keycode = (uint16_t)button;
+
+		switch (button)
+		{
+		case MOUSE_BUTTON_LEFT:
+			if (Mouse.LMB) 
+				return true;
+			return false;
+		case MOUSE_BUTTON_RIGHT:
+			if (Mouse.RMB) 
+				return true;
+			return false;
+		case MOUSE_BUTTON_MIDDLE:
+			if (Mouse.MMB) 
+				return true;
+			return false;
+        default: 
+            break;
+        }
+
+        return Keyboard.Buttons[keycode] == 1;
+    }
+
+    bool Press(BUTTON button)
+    {
+        if (!Down(button))
+			return false;
+
+		Input input;
+		input.button = button;
+		auto iter = Inputs.find(input);
+		if (iter == Inputs.end())
+		{
+			Inputs.insert(std::make_pair(input, 0));
+			return true;
+		}
+		if (iter->second == 0)
+		{
+			return true;
+		}
+		return false;
+    }   
+
+    bool Release(BUTTON button)
+    {
+        Input input;
+		input.button = button;
+		auto iter = Inputs.find(input);
+		if (iter == Inputs.end())
+		{
+			if (Down(button))
+				Inputs.insert(std::make_pair(input, 0));
+			return false;
+		}
+		if (iter->second == -1)
+		{
+			return true;
+		}
+		return false;
+    }
+
+    bool Hold(BUTTON button, uint32_t frames, bool continuous)
+    {
+        if (!Down(button))
+			return false;
+
+		Input input;
+		input.button = button;
+		auto iter = Inputs.find(input);
+		if (iter == Inputs.end())
+		{
+			Inputs.insert(std::make_pair(input, 0));
+			return false;
+		}
+		else if ((!continuous && iter->second == (int)frames) || (continuous && iter->second >= (int)frames))
+		{
+			return true;
+		}
+		return false;
+    }   
+
 }

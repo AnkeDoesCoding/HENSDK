@@ -74,7 +74,7 @@ namespace hen::input
 
     struct KeyboardState
 	{
-		bool Buttons[BUTTON_ENUM_SIZE] = {}; // no continuous presses
+		bool Buttons[BUTTON_ENUM_SIZE] = {};
 	};
 
     struct MouseState
@@ -93,6 +93,11 @@ namespace hen::input
     void GetMouseState(MouseState* state);
 
     void ProcessEvent(const SDL_Event& event);
+
+	bool Down(BUTTON button);
+	bool Press(BUTTON button);
+	bool Release(BUTTON button); // TODO: MAKE THIS WORK
+	bool Hold(BUTTON button, uint32_t frames = 30, bool continuous = false); // TODO: MAKE THIS WORK
 
 }
 

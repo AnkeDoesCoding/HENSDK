@@ -43,13 +43,14 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
         EggEditor.SetWindow(Window);
     }
 
-    hen::input::ProcessEvent(*event);
-
-    if(hen::input::BUTTON::KEYBOARD_BUTTON_TAB)
+    if(hen::input::Press(hen::input::BUTTON::KEYBOARD_BUTTON_ESCAPE))
     {
-        hen::console::Post("YHAHH");
+        EggEditor.Shutdown();
+        SDL_Quit();
+        return SDL_APP_SUCCESS; 
     }
 
+    hen::input::ProcessEvent(*event);
     return SDL_APP_CONTINUE;
 }
 
