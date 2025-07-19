@@ -2,8 +2,6 @@
 
 # HEN SDK
 
-[![Windows Build](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml)
-
 <br>
 <br>
 
@@ -13,19 +11,24 @@ HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so i
 
 ### Supported Platforms
 
-Sadly, only Windows is supported currently :( However Linux support is planned but no Mac support because fuck Mac
+HEN SDK supports Windows and Linux (only Ubuntu has been tested so far).
 
 ### Prerequisiteries
 
 It is recommended that you have [VSCode](https://code.visualstudio.com/). <br>
 You will need a compiler for your platform:
 
-| Platform | Compiler | Instructions |
+| Platform | Compiler | Link |
 | ------------- | ------------- | ------------- |
-| Windows | MSVC | [Build tools for Visual Studio](https://visualstudio.microsoft.com/downloads/?q=build+tools#build-tools-for-visual-studio-2022) | 
+| Windows | MSVC | [Visual Studio](https://visualstudio.microsoft.com/downloads/?q=build+tools#build-tools-for-visual-studio-2022) | 
+| Linux | Clang | [Clang](https://releases.llvm.org/download.html) | 
 
-You need [CMake](https://github.com/Kitware/CMake) <br>
-You need [Git](https://git-scm.com/downloads)
+<br>
+
+You will also need the following:
+* [CMake](https://github.com/Kitware/CMake) <br>
+* [Git](https://git-scm.com/downloads)
+* `libgl-dev` (if your on Linux)
 
 ### Configuring and Compiling
 

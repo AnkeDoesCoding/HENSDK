@@ -1,7 +1,6 @@
 {
     "version": 3,
-    "configurePresets": 
-    [
+    "configurePresets": [
         {
             "name": "windowsBase",
             "hidden": true,
@@ -13,7 +12,12 @@
                 "CMAKE_C_COMPILER": "cl.exe",
                 "CMAKE_CXX_COMPILER": "cl.exe"
             },
-            "condition":
+            "architecture": 
+            {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "condition": 
             {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -21,28 +25,58 @@
             }
         },
         {
-            "name": "x64Debug",
-            "displayName": "Debug",
+            "name": "windowsDebug",
+            "displayName": "Windows Debug",
             "inherits": "windowsBase",
-            "architecture": 
-            {
-                "value": "x64",
-                "strategy": "external"
-            },
             "cacheVariables": 
             {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "x64Release",
-            "displayName": "Release",
+            "name": "windowsRelease",
+            "displayName": "Windows Release",
             "inherits": "windowsBase",
+            "cacheVariables": 
+            {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "linuxBase",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build",
+            "installDir": "${sourceDir}/install",
+            "cacheVariables": 
+            {
+                "CMAKE_C_COMPILER": "/usr/bin/clang",
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++"
+            },
             "architecture": 
             {
                 "value": "x64",
                 "strategy": "external"
             },
+            "condition": 
+            {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name" : "linuxDebug",
+            "displayName": "Linux Debug",
+            "inherits": "linuxBase",
+            "cacheVariables": 
+            {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name" : "linuxRelease",
+            "displayName": "Linux Release",
+            "inherits": "linuxBase",
             "cacheVariables": 
             {
                 "CMAKE_BUILD_TYPE": "Release"
