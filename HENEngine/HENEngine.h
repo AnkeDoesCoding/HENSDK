@@ -9,8 +9,6 @@
 #include "graphics/henGraphics.h"
 #include "graphics/henShader.h"
 
-#include "math/henMath.h"
-
 #include "renderer/henRenderer.h"
 #include "renderer/henRenderHardwareContext.h"
 

@@ -3,6 +3,7 @@
 
 #include "SDL3/SDL.h"
 
+#include "vendor/glad/include/glad.h"
 #include "renderer/henRenderHardwareContext.h"
 
 namespace hen::renderer
