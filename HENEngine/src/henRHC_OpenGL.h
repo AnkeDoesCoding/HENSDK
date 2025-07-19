@@ -16,6 +16,7 @@ namespace hen
         void ClearSwapChain() override;
         void SwapSwapChain() override;
 
+        SDL_Window* GetWindow() override;
         void ResizeWindow() override;
         
     public:

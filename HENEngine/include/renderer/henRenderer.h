@@ -10,6 +10,7 @@ namespace hen::renderer
 {
     void Initialise();
     void Run();
+    void Update(float deltaTime);
 
     extern bool Initialised;
     
@@ -18,6 +19,7 @@ namespace hen::renderer
 		static RenderHardwareContext* context = nullptr;
 		return context;
 	}
+
 }
 
 #endif // !_HENRENDER_H_

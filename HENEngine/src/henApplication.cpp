@@ -44,12 +44,15 @@ namespace hen
         {
             renderer::Run();
 
-            float deltaTime = float(Timer.RecordElapsedSeconds());
-            const float targetDT = 1.0f / 60; // 60 hz
-            deltaTime = Clamp(deltaTime, 0.0f, 0.5f); // clamp to prevent instability
+            Uint64 lastTick, currentTick = 0;
+            lastTick = currentTick;
+            currentTick = SDL_GetTicks();
+
+            float deltaTime = (currentTick - lastTick) / 1000.0f;
 
             Update(deltaTime);
             FixedUpdate();
+
         }
     }
 
@@ -60,7 +63,7 @@ namespace hen
 
     void Application::Update(float dT)
     {
-        
+        renderer::Update(dT);
     }
 
     void Application::SetWindow(SDL_Window *window)
@@ -72,4 +75,4 @@ namespace hen
             RHC->ResizeWindow();
         }
     }
-}
+} 

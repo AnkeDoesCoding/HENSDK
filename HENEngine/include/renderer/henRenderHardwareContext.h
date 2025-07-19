@@ -15,6 +15,7 @@ namespace hen
         virtual void ClearSwapChain() = 0;
         virtual void SwapSwapChain() = 0;
 
+        virtual SDL_Window* GetWindow() = 0;
         virtual void ResizeWindow() = 0;
     };
 

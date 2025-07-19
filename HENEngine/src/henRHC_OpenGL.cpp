@@ -15,7 +15,6 @@ namespace hen
 
     RHC_OpenGL::~RHC_OpenGL()
     {
-        
     }
 
     void RHC_OpenGL::Initialise() 
@@ -31,18 +30,25 @@ namespace hen
 
         console::Post("[hen::RHC_OpenGL] Initialised");
 
+        glEnable(GL_DEPTH_TEST);  
+
         Initialised = true;
     }
 
     void RHC_OpenGL::ClearSwapChain()
     {
         glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void RHC_OpenGL::SwapSwapChain()
     {
         SDL_GL_SwapWindow(m_Window);
+    }
+
+    SDL_Window* RHC_OpenGL::GetWindow()
+    {
+        return m_Window;
     }
 
     void RHC_OpenGL::ResizeWindow()
