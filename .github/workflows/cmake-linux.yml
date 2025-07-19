@@ -20,7 +20,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
+    - name: Install X11 and Wayland development libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-dev libxext-dev libxrandr-dev libxrender-dev libxfixes-dev libxi-dev libxinerama-dev libxcursor-dev libwayland-dev libxkbcommon-dev wayland-protocols
+
+
     - uses: jwlawson/actions-setup-cmake@v2
       with:
         cmake-version: 'latest'
