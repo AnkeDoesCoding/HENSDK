@@ -2,8 +2,6 @@
 
 # HEN SDK
 
-[![Windows Build](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml)
-
 <br>
 <br>
 
