@@ -2,10 +2,15 @@
 
 # HEN SDK
 
+[![Windows Build](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml) 
 <br>
+[![Linux Build](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-linux.yml)
+
 <br>
 
 HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so it is recommended that you don't use this for a full-feature game.
+
+
 
 ## Building
 
