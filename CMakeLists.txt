@@ -35,19 +35,24 @@ FetchContent_MakeAvailable(sdl3)
 add_compile_definitions("RELEASE=$<CONFIG:Release>")
 add_compile_definitions("DEBUG=$<CONFIG:Debug>")
 
-add_subdirectory("HENEngine")
-add_subdirectory("EggEditor")
+if(WIN32)
+    add_compile_definitions(PLATFORM_WINDOWS)
+elseif(UNIX AND NOT APPLE)
+    add_compile_definitions(PLATFORM_LINUX)
+endif()
 
 if(${SHIPPING_BUILD})
     message("-- [HEN SDK] Shipping Build: ON")
 
-    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCE_PATH="./res/engine/")
-    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCE_PATH="./res/engine/")
+    add_compile_definitions(ENGINE_RESOURCE_PATH="./res/engine/")
 
 else()
     message("-- [HEN SDK] Shipping Build: OFF")
 
-    target_compile_definitions("HENEngine" PUBLIC ENGINE_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
-    target_compile_definitions("EggEditor" PUBLIC ENGINE_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
+    add_compile_definitions(ENGINE_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
 
 endif()
+
+add_subdirectory("HENEngine")
+add_subdirectory("EggEditor")
+
