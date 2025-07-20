@@ -5,6 +5,7 @@
 #include "tools/henConsole.h"
 #include "core/henVersion.h"
 #include "renderer/henRenderer.h"
+#include "input/henInput.h"
 
 #include "henRHC_OpenGL.h"
 
@@ -53,6 +54,7 @@ namespace hen
             Update(deltaTime);
             FixedUpdate();
 
+            input::Update();
         }
     }
 
