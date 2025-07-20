@@ -94,10 +94,8 @@ namespace hen::input
 
     void ProcessEvent(const SDL_Event& event);
 
-	bool Down(BUTTON button);
-	bool Press(BUTTON button);
-	bool Release(BUTTON button); // TODO: MAKE THIS WORK
-	bool Hold(BUTTON button, uint32_t frames = 30, bool continuous = false); // TODO: MAKE THIS WORK
+	bool Down(BUTTON button, int playerIndex = 0);
+	bool Press(BUTTON button, int playerIndex = 0);
 
 }
 

@@ -1,5 +1,7 @@
 #include "input/henInput.h"
 
+#include "tools/henConsole.h"
+
 #include <map>
 
 namespace hen::input
@@ -12,13 +14,14 @@ namespace hen::input
     struct Input 
 	{
 		BUTTON button = NONE;
+		int playerIndex = 0;
 
 		bool operator<(const Input other) {
-			return (button != other.button);
+			return (button != other.button || playerIndex != other.playerIndex);
 		}
 		struct LessComparer {
 			bool operator()(Input const& a, Input const& b) const {
-				return (a.button < b.button);
+				return (a.button < b.button || a.playerIndex < b.playerIndex);
 			}
 		};
 	};
@@ -213,7 +216,7 @@ namespace hen::input
         Events.push_back(event);
     }
 
-    bool Down(BUTTON button)
+    bool Down(BUTTON button, int playerIndex)
     {
         uint16_t keycode = (uint16_t)button;
 
@@ -238,13 +241,14 @@ namespace hen::input
         return Keyboard.Buttons[keycode] == 1;
     }
 
-    bool Press(BUTTON button)
+    bool Press(BUTTON button, int playerIndex)
     {
-        if (!Down(button))
+        if (!Down(button, playerIndex))
 			return false;
 
 		Input input;
 		input.button = button;
+        input.playerIndex = playerIndex;
 		auto iter = Inputs.find(input);
 		if (iter == Inputs.end())
 		{
@@ -252,44 +256,6 @@ namespace hen::input
 			return true;
 		}
 		if (iter->second == 0)
-		{
-			return true;
-		}
-		return false;
-    }   
-
-    bool Release(BUTTON button)
-    {
-        Input input;
-		input.button = button;
-		auto iter = Inputs.find(input);
-		if (iter == Inputs.end())
-		{
-			if (Down(button))
-				Inputs.insert(std::make_pair(input, 0));
-			return false;
-		}
-		if (iter->second == -1)
-		{
-			return true;
-		}
-		return false;
-    }
-
-    bool Hold(BUTTON button, uint32_t frames, bool continuous)
-    {
-        if (!Down(button))
-			return false;
-
-		Input input;
-		input.button = button;
-		auto iter = Inputs.find(input);
-		if (iter == Inputs.end())
-		{
-			Inputs.insert(std::make_pair(input, 0));
-			return false;
-		}
-		else if ((!continuous && iter->second == (int)frames) || (continuous && iter->second >= (int)frames))
 		{
 			return true;
 		}
