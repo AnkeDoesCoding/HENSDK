@@ -9,10 +9,15 @@
 #include "graphics/henGraphics.h"
 #include "graphics/henShader.h"
 
+#include "helpers/henTimer.h"
+
 #include "input/henInput.h"
 
 #include "renderer/henRenderer.h"
 #include "renderer/henRenderHardwareContext.h"
+
+#include "scene/henScene.h"
+#include "scene/henSceneActors.h"
 
 #include "tools/henConsole.h"
 

@@ -2,6 +2,7 @@
 
 #include "vendor/glad/include/glad.h"
 
+#include "helpers/henTimer.h"
 #include "tools/henConsole.h"
 
 #include <cassert>
@@ -19,6 +20,8 @@ namespace hen
 
     void RHC_OpenGL::Initialise() 
     {
+        helper::Timer timer;
+
         SDL_GLContext context = SDL_GL_CreateContext(m_Window);
         SDL_GL_MakeCurrent(m_Window, context);
 
@@ -28,11 +31,11 @@ namespace hen
             console::Post("[hen::RHC_OpenGL] FAILED TO INITAILISE", console::Level::ExtremeError);
         }
 
-        console::Post("[hen::RHC_OpenGL] Initialised");
-
         glEnable(GL_DEPTH_TEST);  
 
         Initialised = true;
+
+        console::Post("[hen::RHC_OpenGL] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
     void RHC_OpenGL::ClearSwapChain()

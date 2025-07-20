@@ -1,16 +1,15 @@
 #include "core/henApplication.h"
 
 #include "henCommonInclude.h"
-
-#include "tools/henConsole.h"
-#include "core/henVersion.h"
-#include "renderer/henRenderer.h"
-#include "input/henInput.h"
-
 #include "henRHC_OpenGL.h"
 
-Uint64 LastTick, CurrentTick = 0;
+#include "core/henVersion.h"
+#include "helpers/henTimer.h"
+#include "input/henInput.h"
+#include "renderer/henRenderer.h"
+#include "tools/henConsole.h"
 
+Uint64 LastTick, CurrentTick = 0;
 
 namespace hen
 {
@@ -26,7 +25,7 @@ namespace hen
 
     void Application::Initialise()
     {
-        console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION);
+        helper::Timer timer;
 
         RHC = std::make_unique<RHC_OpenGL>(Window);
         renderer::GetRHC() = RHC.get();
@@ -35,13 +34,14 @@ namespace hen
 
         input::Initialise(RHC->GetWindow());
 
+        console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+
         Initialised = true;
     }
 
     void Application::Shutdown()
     {
         console::Post("[hen::Application] Shutting down...");
-
     }
 
     void Application::Run()

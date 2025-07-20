@@ -7,8 +7,11 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/glm/gtc/type_ptr.hpp"
 
-#include "tools/henConsole.h"
 #include "graphics/henShader.h"
+#include "helpers/henTimer.h"
+#include "input/henInput.h"
+#include "scene/henScene.h"
+#include "tools/henConsole.h"
 
 hen::RenderHardwareContext* RHC;
 
@@ -82,18 +85,22 @@ glm::mat4 model         = glm::mat4(1.0f);
 glm::mat4 view          = glm::mat4(1.0f);
 glm::mat4 projection    = glm::mat4(1.0f);
 
+
 namespace hen::renderer
 {   
     bool Initialised = false;
 
+    hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
+
+
+
     void Initialise()
     {
+        helper::Timer timer;
 
         RHC = GetRHC();    
         
         RHC->Initialise();
-
-        console::Post("[hen::renderer] Initialised");
 
         TriangleShader.Activate();
 
@@ -138,6 +145,8 @@ namespace hen::renderer
         stbi_image_free(ImageData);
    
         Initialised = true;
+
+        console::Post("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
     void Run()
@@ -149,7 +158,7 @@ namespace hen::renderer
         int windowWidth, windowHeight;
         SDL_GetWindowSize(RHC->GetWindow(), &windowWidth, &windowHeight);
 
-        projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(TriangleShader.ID, "model");
         unsigned int viewLoc  = glGetUniformLocation(TriangleShader.ID, "view");
@@ -166,26 +175,53 @@ namespace hen::renderer
         {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i; 
+            float angle = 12.0f * i; 
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             TriangleShader.SetMat4("model", model);
         
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        
-
         RHC->SwapSwapChain();
     }
 
     void Update(float deltaTime)
     {
+        int windowWidth, windowHeight;
+        SDL_GetWindowSize(RHC->GetWindow(), &windowWidth, &windowHeight);
+
         model         = glm::mat4(1.0f);
-        view          = glm::mat4(1.0f);
-        projection    = glm::mat4(1.0f);
+        view          = RenderCam.GetViewMatrix();
+        projection    = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
         model = glm::rotate(model, deltaTime * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)); 
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+        float vel = RenderCam.Speed * deltaTime;
+
+        if(input::Down(input::BUTTON('W')))
+        {
+            RenderCam.Position += RenderCam.Front * vel;
+            RenderCam.SetDirty();
+        }
+        if(input::Down(input::BUTTON('S')))
+        {
+            RenderCam.Position -= RenderCam.Front * vel;
+            RenderCam.SetDirty();
+            
+        }
+        if(input::Down(input::BUTTON('A')))
+        {
+            RenderCam.Position -= RenderCam.Right * vel;
+            RenderCam.SetDirty();
+            
+        }
+        if(input::Down(input::BUTTON('D')))
+        {
+            RenderCam.Position += RenderCam.Right * vel;
+            RenderCam.SetDirty();
+            
+        }
 
     }
 }
