@@ -16,7 +16,7 @@ HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so i
 
 ### Supported Platforms
 
-HEN SDK supports Windows and Linux (only Ubuntu has been tested so far).
+HEN SDK supports Windows and Ubuntu Linux.
 
 ### Prerequisiteries
 
