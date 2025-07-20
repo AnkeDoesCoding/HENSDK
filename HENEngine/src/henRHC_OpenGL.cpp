@@ -6,6 +6,8 @@
 #include "tools/henConsole.h"
 
 #include <cassert>
+#include <cmath>
+
 
 namespace hen
 {

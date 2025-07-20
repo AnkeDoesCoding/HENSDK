@@ -6,7 +6,7 @@ namespace hen::scene::actors
     {
         Position = pos;
         Yaw = yaw;
-        Pitch = Pitch;
+        Pitch = pitch;
         Up = glm::vec3(0.0f, 1.0f, 0.0f);
 
         SetDirty();
