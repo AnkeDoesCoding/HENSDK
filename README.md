@@ -10,8 +10,6 @@
 
 HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so it is recommended that you don't use this for a full-feature game.
 
-
-
 ## Building
 
 ### Supported Platforms
