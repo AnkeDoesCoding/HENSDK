@@ -6,6 +6,8 @@
 
 namespace hen::input
 {
+    SDL_Window* Window;
+
     KeyboardState Keyboard;
     MouseState Mouse;
 
@@ -112,7 +114,6 @@ namespace hen::input
         }
 
         // Keycode Conversion
-
         if(keyCode >= 91 && keyCode <= 126){
             return keyCode;
         }
@@ -120,11 +121,23 @@ namespace hen::input
         return -1;
     }
 
-        void Update()
+    void Initialise(SDL_Window* window)
     {
+        Window = window;
+        console::Post("[hen::input] Initialised");
+    }
+
+    void Update()
+    {
+        GetKeyboardState(&Keyboard);
+        GetMouseState(&Mouse);
+
         // Dont accumulate this stuff
         Mouse.DeltaWheel = 0;
         Mouse.DeltaPos = glm::vec2(0.0f, 0.0f);
+
+        SDL_GetMouseState(&Mouse.Pos.x, &Mouse.Pos.y);
+        
         for(auto& event : Events)
         {
             switch (event.type)
@@ -203,20 +216,49 @@ namespace hen::input
 
         Events.clear();
     }
-
-    void GetKeyboardState(KeyboardState* state) {
-        *state = Keyboard;
-    }
-    void GetMouseState(MouseState* state) {
-        *state = Mouse;
-    }
-
+    
     void ProcessEvent(const SDL_Event& event)
     {
         Events.push_back(event);
     }
 
-    bool Down(BUTTON button, int playerIndex)
+    void ClearDelta()
+    {   
+        Mouse.DeltaWheel = 0.0f;
+        Mouse.DeltaPos = glm::vec2(0.0f, 0.0f);
+    }
+
+    void GetKeyboardState(KeyboardState* state) 
+    {
+        *state = Keyboard;
+    }
+
+    void GetMouseState(MouseState* state) 
+    {
+        *state = Mouse;
+    }
+
+    glm::vec2 GetPointerPos()
+    {
+        return glm::vec2(Mouse.Pos.x, Mouse.Pos.y);
+    }
+
+    void SetPointerPos(float newX, float newY)
+    {
+        SDL_WarpMouseInWindow(Window, newX, newY);
+    }
+
+    void HidePointer()
+    {
+        SDL_HideCursor();
+    }
+
+    void ShowPointer()
+    {
+        SDL_ShowCursor();
+    }
+
+    bool Down(BUTTON button)
     {
         uint16_t keycode = (uint16_t)button;
 
@@ -241,14 +283,13 @@ namespace hen::input
         return Keyboard.Buttons[keycode] == 1;
     }
 
-    bool Press(BUTTON button, int playerIndex)
+    bool Press(BUTTON button)
     {
-        if (!Down(button, playerIndex))
+        if (!Down(button))
 			return false;
 
 		Input input;
 		input.button = button;
-        input.playerIndex = playerIndex;
 		auto iter = Inputs.find(input);
 		if (iter == Inputs.end())
 		{

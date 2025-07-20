@@ -11,18 +11,24 @@ namespace hen::input
     {
         NONE = 0,
 
-        DIGIT_RANGE_START = 48, // 0
+        DIGIT_RANGE_START = 48, // digit 1
 
-		CHARACTER_RANGE_START = 65, // A
+		CHARACTER_RANGE_START = 65, // letter A
 
-        MOUSE_BUTTON_LEFT,
+		GAMEPAD_RANGE_START = 256, // TODO: IMPLEMENT CONTROLLERS
+		GAMEPAD_RANGE_END = 512,
+
+		MOUSE_BUTTON_LEFT,
 		MOUSE_BUTTON_RIGHT,
 		MOUSE_BUTTON_MIDDLE,
 
-        KEYBOARD_BUTTON_UP,
+		MOUSE_SCROLL_AS_BUTTON_UP,
+		MOUSE_SCROLL_AS_BUTTON_DOWN,
+
+		KEYBOARD_BUTTON_UP,
 		KEYBOARD_BUTTON_DOWN,
 		KEYBOARD_BUTTON_LEFT,
-		KEYBOARD_BUTTON_RIGHT,
+		KEYBOARD_BUTTON_RIGHT,	
 		KEYBOARD_BUTTON_SPACE,
 		KEYBOARD_BUTTON_RSHIFT,
 		KEYBOARD_BUTTON_LSHIFT,
@@ -69,8 +75,25 @@ namespace hen::input
 		KEYBOARD_BUTTON_ALT,
 		KEYBOARD_BUTTON_ALTGR,
 
+
         BUTTON_ENUM_SIZE
     };
+
+	enum CURSOR
+	{
+		CURSOR_DEFAULT,
+		CURSOR_TEXTINPUT,
+		CURSOR_RESIZEALL,
+		CURSOR_RESIZE_NS,
+		CURSOR_RESIZE_EW,
+		CURSOR_RESIZE_NESW,
+		CURSOR_RESIZE_NWSE,
+		CURSOR_HAND,
+		CURSOR_NOTALLOWED,
+		CURSOR_CROSS,
+
+		CURSOR_COUNT
+	};
 
     struct KeyboardState
 	{
@@ -81,21 +104,28 @@ namespace hen::input
 	{
 		glm::vec2 Pos = glm::vec2(0.0f, 0.0f);
 		glm::vec2 DeltaPos = glm::vec2(0.0f, 0.0f);
-		float DeltaWheel = 0;
+		float DeltaWheel = 0.0f;
 		float Pressure = 1.0f;
 		bool LMB = false;
 		bool MMB = false;
 		bool RMB = false;
 	};
 
+	void Initialise(SDL_Window* window);
     void Update();
+    void ProcessEvent(const SDL_Event& event);
+	void ClearDelta();
+
     void GetKeyboardState(KeyboardState* state);
     void GetMouseState(MouseState* state);
 
-    void ProcessEvent(const SDL_Event& event);
+	glm::vec2 GetPointerPos();
+	void SetPointerPos(float newX, float newY);
+	void HidePointer();
+	void ShowPointer();
 
-	bool Down(BUTTON button, int playerIndex = 0);
-	bool Press(BUTTON button, int playerIndex = 0);
+	bool Down(BUTTON button);
+	bool Press(BUTTON button);
 
 }
 

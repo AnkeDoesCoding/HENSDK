@@ -9,6 +9,9 @@
 
 #include "henRHC_OpenGL.h"
 
+Uint64 LastTick, CurrentTick = 0;
+
+
 namespace hen
 {
     Application::Application()
@@ -30,6 +33,8 @@ namespace hen
 
         renderer::Initialise();
 
+        input::Initialise(RHC->GetWindow());
+
         Initialised = true;
     }
 
@@ -45,11 +50,10 @@ namespace hen
         {
             renderer::Run();
 
-            Uint64 lastTick, currentTick = 0;
-            lastTick = currentTick;
-            currentTick = SDL_GetTicks();
+            LastTick = CurrentTick;
+            CurrentTick = SDL_GetTicks();
 
-            float deltaTime = (currentTick - lastTick) / 1000.0f;
+            float deltaTime = (CurrentTick - LastTick) / 1000.0f;
 
             Update(deltaTime);
             FixedUpdate();
@@ -65,6 +69,7 @@ namespace hen
 
     void Application::Update(float dT)
     {
+
         renderer::Update(dT);
     }
 
