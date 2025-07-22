@@ -19,11 +19,15 @@ namespace hen::input
 		BUTTON button = NONE;
 		int playerIndex = 0;
 
-		bool operator<(const Input other) {
+		bool operator<(const Input other) 
+        {
 			return (button != other.button || playerIndex != other.playerIndex);
 		}
-		struct LessComparer {
-			bool operator()(Input const& a, Input const& b) const {
+
+		struct LessComparer 
+        {
+			bool operator()(Input const& a, Input const& b) const 
+            {
 				return (a.button < b.button || a.playerIndex < b.playerIndex);
 			}
 		};
@@ -33,18 +37,26 @@ namespace hen::input
 
     int ConvertScanCode(const SDL_Scancode& key, const SDL_Keycode& keyCode)
     {
-        if(key >= 4 && key <= 29){ // A to Z
+        if(key >= 4 && key <= 29) // A to Z
+        { 
             return (key - 4) + CHARACTER_RANGE_START;
         }
-        if(key >= 30 && key <= 39){ // 0 to 9
+
+        if(key >= 30 && key <= 39) // 0 to 9
+        { 
             return (key - 30) + DIGIT_RANGE_START;
         }
-        if(key >= 58 && key <= 69){ // F1 to F12
+
+        if(key >= 58 && key <= 69) // F1 to F12
+        { 
             return (key - 58) + KEYBOARD_BUTTON_F1;
         }
-        if(key >= 79 && key <= 82){ // Keyboard directional buttons
+
+        if(key >= 79 && key <= 82) // Keyboard directional buttons
+        { 
             return (82 - key) + KEYBOARD_BUTTON_UP;
         }
+        
         switch(key){ // Individual scancode key conversion
             case SDL_SCANCODE_SPACE:
                 return KEYBOARD_BUTTON_SPACE;
@@ -152,8 +164,8 @@ namespace hen::input
                     {
                         Keyboard.Buttons[converted] = true;
                     }
-                    break;
                 }
+                    break;
                 case SDL_EVENT_KEY_UP:
                 {
                     int converted = ConvertScanCode(event.key.scancode, event.key.key);
@@ -161,8 +173,8 @@ namespace hen::input
                     {
                         Keyboard.Buttons[converted] = false;
                     }
-                    break;
                 }
+                    break;
                 case SDL_EVENT_TEXT_EDITING:     
                 case SDL_EVENT_TEXT_INPUT:    
                 case SDL_EVENT_KEYMAP_CHANGED:
@@ -299,20 +311,25 @@ namespace hen::input
     bool Press(BUTTON button)
     {
         if (!Down(button))
+        {
 			return false;
+        }
 
 		Input input;
 		input.button = button;
 		auto iter = Inputs.find(input);
+
 		if (iter == Inputs.end())
 		{
 			Inputs.insert(std::make_pair(input, 0));
 			return true;
 		}
+
 		if (iter->second == 0)
 		{
 			return true;
 		}
+
 		return false;
     }   
 

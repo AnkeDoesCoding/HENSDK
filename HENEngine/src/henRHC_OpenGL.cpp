@@ -8,7 +8,6 @@
 #include <cassert>
 #include <cmath>
 
-
 namespace hen
 {
     RHC_OpenGL::RHC_OpenGL(SDL_Window* window)

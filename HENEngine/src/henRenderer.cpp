@@ -15,9 +15,20 @@
 #include "scene/henScene.h"
 #include "tools/henConsole.h"
 
-std::unique_ptr<hen::RenderHardwareContext> RHC;
 
-float vertices[] = {
+
+float MouseSensitivity = 3.0f;
+
+hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
+
+
+ namespace hen::renderer
+{   
+
+    std::unique_ptr<hen::RenderHardwareContext> RHC;
+
+    float vertices[] = 
+    {
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
          0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -39,12 +50,12 @@ float vertices[] = {
         -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
         -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
         -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
          0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
@@ -64,37 +75,40 @@ float vertices[] = {
     glm::vec3 cubePositions[] = 
     {
         glm::vec3( 0.0f,  0.0f,  0.0f), 
-        glm::vec3( 2.0f,  5.0f, -15.0f), 
-        glm::vec3(-1.5f, -2.2f, -2.5f),  
-        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.0f,  5.0f, -7.0f), 
+        glm::vec3(-1.5f, -2.2f, -3.5f),  
+        glm::vec3(-3.8f, -2.0f, -5.3f),  
         glm::vec3( 2.4f, -0.4f, -3.5f),  
         glm::vec3(-1.7f,  3.0f, -7.5f),  
         glm::vec3( 1.3f, -2.0f, -2.5f),  
         glm::vec3( 1.5f,  2.0f, -2.5f), 
         glm::vec3( 1.5f,  0.2f, -1.5f), 
-        glm::vec3(-1.3f,  1.0f, -1.5f)  
+        glm::vec3(-1.3f,  1.0f, -1.5f),
+        glm::vec3( 2.5f,  2.2f,  0.0f), 
+        glm::vec3( 3.2f,  3.0f, -8.0f), 
+        glm::vec3(-2.7f, -3.2f, -9.5f),  
+        glm::vec3( 5.8f, -3.0f,  9.3f),  
+        glm::vec3(-4.9f, -3.4f,  3.5f),  
+        glm::vec3(-5.7f,  1.0f, -6.5f),  
+        glm::vec3( 1.8f, -1.0f, -5.0f),  
+        glm::vec3(-1.3f,  5.0f, -7.2f), 
+        glm::vec3( 0.5f,  5.0f, -2.0f), 
+        glm::vec3(-2.3f,  0.0f, -3.0f)
     };
 
-unsigned int VBO;
-unsigned int VAO;
-unsigned int Texture;
+    unsigned int VBO;
+    unsigned int VAO;
+    unsigned int Texture;
 
-int ImageWidth, ImageHeight, Channels;
+    int ImageWidth, ImageHeight, Channels;
 
-hen::graphics::Shader TriangleShader(ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleFS.glsl");
+    hen::graphics::Shader TriangleShader(ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleFS.glsl");
 
-glm::mat4 model         = glm::mat4(1.0f); 
-glm::mat4 view          = glm::mat4(1.0f);
-glm::mat4 projection    = glm::mat4(1.0f);
+    glm::mat4 model         = glm::mat4(1.0f); 
+    glm::mat4 view          = glm::mat4(1.0f);
+    glm::mat4 projection    = glm::mat4(1.0f);
 
-float MouseSensitivity = 3.0f;
-
-namespace hen::renderer
-{   
     bool Initialised = false;
-
-    hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
-
 
 
     void Initialise(SDL_Window* window)
@@ -175,7 +189,7 @@ namespace hen::renderer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture);
         glBindVertexArray(VAO);
-        for(unsigned int i = 0; i < 10; i++)
+        for(unsigned int i = 0; i < 20; i++)
         {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
