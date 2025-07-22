@@ -8,7 +8,7 @@
 
 namespace hen::renderer
 {
-    void Initialise();
+    void Initialise(SDL_Window* window);
     void Run();
     void Update(float deltaTime);
 

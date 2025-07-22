@@ -23,9 +23,7 @@ SDL_AppResult SDL_AppInit(void** appState, int argC, char* argV[])
 
     Window = SDL_CreateWindow("Egg Editor", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
-    EggEditor.SetWindow(Window);
-
-    EggEditor.Initialise();
+    EggEditor.Initialise(Window);
 
     return SDL_APP_CONTINUE;
 }
@@ -40,7 +38,7 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
     if (event->type == SDL_EVENT_WINDOW_RESIZED) 
     {
         // resize shit goes here
-        EggEditor.SetWindow(Window);
+        EggEditor.ResizeWindow();
     }
 
     if(hen::input::Press(hen::input::BUTTON::KEYBOARD_BUTTON_ESCAPE))

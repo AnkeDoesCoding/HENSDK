@@ -14,7 +14,7 @@ namespace hen
         Application();
         ~Application();
 
-        virtual void Initialise();
+        virtual void Initialise(SDL_Window* window);
         virtual void Shutdown();
         
         void Run();
@@ -22,17 +22,13 @@ namespace hen
         virtual void FixedUpdate();
         virtual void Update(float dT);
 
-        void SetWindow(SDL_Window* window);
+        void ResizeWindow();
 
     public:
         
         bool Initialised = false;
 
         helper::Timer Timer;
-
-        SDL_Window* Window;
-
-        std::unique_ptr<hen::RenderHardwareContext> RHC;
     };
 }
 

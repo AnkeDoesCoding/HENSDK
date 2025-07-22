@@ -116,13 +116,15 @@ namespace hen::input
     void ProcessEvent(const SDL_Event& event);
 	void ClearDelta();
 
-    void GetKeyboardState(KeyboardState* state);
-    void GetMouseState(MouseState* state);
+    const KeyboardState& GetKeyboardState();
+    const MouseState& GetMouseState();
 
 	glm::vec2 GetPointerPos();
 	void SetPointerPos(float newX, float newY);
 	void HidePointer();
 	void ShowPointer();
+	void LockMouse();
+	void UnLockMouse();
 
 	bool Down(BUTTON button);
 	bool Press(BUTTON button);

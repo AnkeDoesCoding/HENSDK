@@ -7,13 +7,15 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/glm/gtc/type_ptr.hpp"
 
+#include "henRHC_OpenGL.h"
+
 #include "graphics/henShader.h"
 #include "helpers/henTimer.h"
 #include "input/henInput.h"
 #include "scene/henScene.h"
 #include "tools/henConsole.h"
 
-hen::RenderHardwareContext* RHC;
+std::unique_ptr<hen::RenderHardwareContext> RHC;
 
 float vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -85,6 +87,7 @@ glm::mat4 model         = glm::mat4(1.0f);
 glm::mat4 view          = glm::mat4(1.0f);
 glm::mat4 projection    = glm::mat4(1.0f);
 
+float MouseSensitivity = 3.0f;
 
 namespace hen::renderer
 {   
@@ -94,11 +97,12 @@ namespace hen::renderer
 
 
 
-    void Initialise()
+    void Initialise(SDL_Window* window)
     {
         helper::Timer timer;
 
-        RHC = GetRHC();    
+        RHC = std::make_unique<RHC_OpenGL>(window);
+        GetRHC() = RHC.get();    
         
         RHC->Initialise();
 
@@ -158,7 +162,7 @@ namespace hen::renderer
         int windowWidth, windowHeight;
         SDL_GetWindowSize(RHC->GetWindow(), &windowWidth, &windowHeight);
 
-        projection = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(TriangleShader.ID, "model");
         unsigned int viewLoc  = glGetUniformLocation(TriangleShader.ID, "view");
@@ -187,12 +191,12 @@ namespace hen::renderer
 
     void Update(float deltaTime)
     {
+
         int windowWidth, windowHeight;
         SDL_GetWindowSize(RHC->GetWindow(), &windowWidth, &windowHeight);
 
         model         = glm::mat4(1.0f);
         view          = RenderCam.GetViewMatrix();
-        projection    = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
         model = glm::rotate(model, deltaTime * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)); 
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
@@ -202,26 +206,46 @@ namespace hen::renderer
         if(input::Down(input::BUTTON('W')))
         {
             RenderCam.Position += RenderCam.Front * vel;
-            RenderCam.SetDirty();
         }
         if(input::Down(input::BUTTON('S')))
         {
-            RenderCam.Position -= RenderCam.Front * vel;
-            RenderCam.SetDirty();
-            
+            RenderCam.Position -= RenderCam.Front * vel;            
         }
         if(input::Down(input::BUTTON('A')))
         {
-            RenderCam.Position -= RenderCam.Right * vel;
-            RenderCam.SetDirty();
-            
+            RenderCam.Position -= RenderCam.Right * vel;            
         }
         if(input::Down(input::BUTTON('D')))
         {
-            RenderCam.Position += RenderCam.Right * vel;
-            RenderCam.SetDirty();
-            
+            RenderCam.Position += RenderCam.Right * vel;            
         }
 
+        float xDiff, yDiff;
+
+        glm::vec2 originalMouse = glm::vec2(0.0f, 0.0f);
+        glm::vec2 currentMouse = input::GetPointerPos();
+
+        #if 0
+            xDiff = currentMouse.x - originalMouse.x;
+            yDiff = currentMouse.y - originalMouse.y;
+        #else
+            xDiff = input::GetMouseState().DeltaPos.x;
+            yDiff = input::GetMouseState().DeltaPos.y;
+        #endif
+
+        xDiff = xDiff * (1.0f / 60.0f);
+	    yDiff = yDiff * (1.0f / 60.0f);
+
+        RenderCam.Yaw += xDiff * MouseSensitivity;
+        RenderCam.Pitch -= yDiff * MouseSensitivity;
+
+        RenderCam.Speed += input::GetMouseState().DeltaWheel * 2;
+
+        if(RenderCam.Speed <= 0.0f)
+        {
+            RenderCam.Speed = 1.0f;
+        }
+
+        RenderCam.SetDirty();
     }
 }

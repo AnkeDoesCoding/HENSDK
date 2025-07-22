@@ -1,8 +1,5 @@
 #include "core/henApplication.h"
 
-#include "henCommonInclude.h"
-#include "henRHC_OpenGL.h"
-
 #include "core/henVersion.h"
 #include "helpers/henTimer.h"
 #include "input/henInput.h"
@@ -23,18 +20,17 @@ namespace hen
 
     }
 
-    void Application::Initialise()
+    void Application::Initialise(SDL_Window* window)
     {
         helper::Timer timer;
 
-        RHC = std::make_unique<RHC_OpenGL>(Window);
-        renderer::GetRHC() = RHC.get();
+        renderer::Initialise(window);
 
-        renderer::Initialise();
-
-        input::Initialise(RHC->GetWindow());
+        input::Initialise(renderer::GetRHC()->GetWindow());
 
         console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+
+        input::LockMouse();
 
         Initialised = true;
     }
@@ -73,13 +69,11 @@ namespace hen
         renderer::Update(dT);
     }
 
-    void Application::SetWindow(SDL_Window *window)
+    void Application::ResizeWindow()
     {
-        Window = window;
-
-        if(RHC != nullptr)
+        if(renderer::GetRHC() != nullptr)
         {
-            RHC->ResizeWindow();
+            renderer::GetRHC()->ResizeWindow();
         }
     }
 } 

@@ -132,8 +132,8 @@ namespace hen::input
 
     void Update()
     {
-        GetKeyboardState(&Keyboard);
-        GetMouseState(&Mouse);
+        Keyboard = GetKeyboardState();
+        Mouse = GetMouseState();
 
         // Dont accumulate this stuff
         Mouse.DeltaWheel = 0;
@@ -231,14 +231,14 @@ namespace hen::input
         Mouse.DeltaPos = glm::vec2(0.0f, 0.0f);
     }
 
-    void GetKeyboardState(KeyboardState* state) 
+    const KeyboardState& GetKeyboardState() 
     {
-        *state = Keyboard;
+        return Keyboard;
     }
 
-    void GetMouseState(MouseState* state) 
+    const MouseState& GetMouseState() 
     {
-        *state = Mouse;
+        return Mouse;
     }
 
     glm::vec2 GetPointerPos()
@@ -259,6 +259,16 @@ namespace hen::input
     void ShowPointer()
     {
         SDL_ShowCursor();
+    }
+
+    void LockMouse()
+    {
+        SDL_SetWindowRelativeMouseMode(Window, true);
+    }
+
+    void UnLockMouse()
+    {
+        SDL_SetWindowRelativeMouseMode(Window, false);
     }
 
     bool Down(BUTTON button)
