@@ -56,7 +56,7 @@ RenderHardwareContext *RHC; // Wrong!
 RenderHardwareContext * RHC; // Wrong!
 ```
 
-here are always spaces between operators:
+There are always spaces between operators:
 
 ```cpp
 int x = y + z; // Correct
@@ -88,7 +88,7 @@ namespace hen::platform
 
 ## Namespaces
 
-The global HEN Engine namespace is `hen`, avoid putting things in the global namespace instead put things in domain specific namespaces:
+The global HEN Engine namespace is `hen`, avoid putting things in the global namespace, instead put things in domain specific namespaces:
 
 ```
 hen::renderer
@@ -97,7 +97,11 @@ hen::scene
 etc...
 ```
 
-**AVOID** `using namespace` directives
+**AVOID** `using namespace` directives:
+
+```cpp
+using namespace hen; // Dont do this!
+```
 
 It it preferred to use C++17 namespace syntax over the old syntax, so do this:
 
@@ -139,6 +143,12 @@ namespace hen
 
 ### Variables
 
+The following variable prefixes MUST be used:
+
+* m_ for class/struct private members
+* s_ for class/struct static members
+* g_ any compile unit global variables
+
 Variables that dont go out of scope must use Pascal Case:
 
 ```cpp
@@ -155,12 +165,6 @@ void DoSomething()
     int aLocalInteger;
 }
 ```
-
-The following variable prefixes MUST be used:
-
-* m_ for class/struct private members
-* s_ for class/struct static members
-* g_ any compile unit global variables
 
 ### Structure/Types
 
@@ -213,17 +217,14 @@ enum BUTTON
 
     DIGIT_RANGE_START = 48,
 
-	CHARACTER_RANGE_START = 65,
+    CHARACTER_RANGE_START = 65,
 
     ...
 
     KEYBOARD_BUTTON_UP,
-	KEYBOARD_BUTTON_DOWN,
-	KEYBOARD_BUTTON_LEFT,
-	KEYBOARD_BUTTON_RIGHT,	
-	KEYBOARD_BUTTON_SPACE,
-	KEYBOARD_BUTTON_RSHIFT,
-	KEYBOARD_BUTTON_LSHIFT,
+    KEYBOARD_BUTTON_DOWN,
+    KEYBOARD_BUTTON_LEFT,
+    KEYBOARD_BUTTON_RIGHT,
 
     ...
 };
