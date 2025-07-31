@@ -29,7 +29,7 @@ namespace hen
         if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
         {
             Initialised = false;
-            console::Post("[hen::RHC_OpenGL] FAILED TO INITAILISE", console::Level::ExtremeError);
+            console::Post("[hen::RHC_OpenGL] FAILED TO INITAILISE", console::LOGLEVEL::ERROR);
         }
 
         glEnable(GL_DEPTH_TEST);  

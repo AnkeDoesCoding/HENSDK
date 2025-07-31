@@ -17,7 +17,7 @@
 #include "renderer/henRenderHardwareContext.h"
 
 #include "scene/henScene.h"
-#include "scene/henSceneActors.h"
+#include "scene/henScene_Actors.h"
 
 #include "tools/henConsole.h"
 

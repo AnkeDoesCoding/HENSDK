@@ -155,7 +155,7 @@ hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
         }
         else
         {
-            console::Post("couldnt load texture", console::Level::Warning);
+            console::Post("couldnt load texture", console::LOGLEVEL::WARNING);
         }        
 
         TriangleShader.SetVal("ourTexture", 0);

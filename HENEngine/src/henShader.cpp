@@ -46,7 +46,7 @@ namespace hen::graphics
         }
         catch(std::ifstream::failure& e)
         {
-            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " , console::Level::Error);
+            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " , console::LOGLEVEL::ERROR);
         }
 
         const char* vsCode = vsSource.c_str();
@@ -61,7 +61,7 @@ namespace hen::graphics
         if (!success)
         {
             glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-            console::Post("[hen::Shader] VERTEX SHADER COMPILATION FAILED: " + std::string(infoLog), console::Level::Error);
+            console::Post("[hen::Shader] VERTEX SHADER COMPILATION FAILED: " + std::string(infoLog), console::LOGLEVEL::ERROR);
         }
 
         fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -73,7 +73,7 @@ namespace hen::graphics
         if (!success)
         {
             glGetShaderInfoLog(fragShader, 512, nullptr, infoLog);
-            console::Post("[hen::Shader] FRAGMENT SHADER COMPILATION FAILED: " + std::string(infoLog), console::Level::Error);
+            console::Post("[hen::Shader] FRAGMENT SHADER COMPILATION FAILED: " + std::string(infoLog), console::LOGLEVEL::ERROR);
         }
 
         ID = glCreateProgram();
@@ -85,7 +85,7 @@ namespace hen::graphics
         if(!success)
         {
             glGetProgramInfoLog(ID, 512, nullptr, infoLog);
-            console::Post("[hen::Shader] SHADER LINKING FAILED: \n" + std::string(infoLog), console::Level::Error);
+            console::Post("[hen::Shader] SHADER LINKING FAILED: \n" + std::string(infoLog), console::LOGLEVEL::ERROR);
         }
 
         glDeleteShader(vertexShader);
@@ -152,7 +152,7 @@ namespace hen::graphics
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::Level::Error);
+                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
             }
         }
         else
@@ -161,7 +161,7 @@ namespace hen::graphics
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::Level::Error);
+                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
             }
         }
     }
