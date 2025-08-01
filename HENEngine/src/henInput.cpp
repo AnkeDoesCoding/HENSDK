@@ -16,21 +16,21 @@ namespace hen::input
 
     struct Input 
 	{
-		BUTTON button = NONE;
-		int playerIndex = 0;
+		BUTTON button = BUTTON::NONE;
 
 		bool operator<(const Input other) 
         {
-			return (button != other.button || playerIndex != other.playerIndex);
+			return (button != other.button);
 		}
 
 		struct LessComparer 
         {
 			bool operator()(Input const& a, Input const& b) const 
             {
-				return (a.button < b.button || a.playerIndex < b.playerIndex);
+				return (a.button < b.button);
 			}
 		};
+
 	};
 
     std::map<Input, int, Input::LessComparer> Inputs;
@@ -57,7 +57,8 @@ namespace hen::input
             return (82 - key) + KEYBOARD_BUTTON_UP;
         }
         
-        switch(key){ // Individual scancode key conversion
+        switch(key) // Individual scancode key conversion
+        { 
             case SDL_SCANCODE_SPACE:
                 return KEYBOARD_BUTTON_SPACE;
             case SDL_SCANCODE_LSHIFT:
@@ -133,7 +134,7 @@ namespace hen::input
 
         return -1;
     }
-
+    
     void Initialise(SDL_Window* window)
     {
         Timer timer;
@@ -175,6 +176,10 @@ namespace hen::input
                     if (converted >= 0 )
                     {
                         Keyboard.Buttons[converted] = false;
+
+                        Input input;
+                        input.button = static_cast<BUTTON>(converted);
+                        Inputs.erase(input);
                     }
                 }
                     break;
@@ -325,11 +330,6 @@ namespace hen::input
 		if (iter == Inputs.end())
 		{
 			Inputs.insert(std::make_pair(input, 0));
-			return true;
-		}
-
-		if (iter->second == 0)
-		{
 			return true;
 		}
 

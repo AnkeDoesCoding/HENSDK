@@ -5,7 +5,7 @@
 #include <cassert>
 
 #ifdef DEBUG
-    #define HEN_CONSOLE_ASSERT(cond, msg) ((cond) ? (void)0 : (hen::console::Post(msg, hen::console::LOGLEVEL::ERROR), assert((cond) && msg)))
+    #define HEN_CONSOLE_ASSERT(cond, msg) ((cond) ? (void)0 : (hen::console::Post(msg, hen::console::LOGLEVEL::ERROR), assert((cond) && msg))) // Posts message to console and (if debug configuration) throws an assertion
 #else
     #define HEN_CONSOLE_ASSERT(cond, msg) (hen::console::Post(msg, hen::console::LOGLEVEL::ERRROR))
 #endif // !DEBUG

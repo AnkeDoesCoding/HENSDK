@@ -67,7 +67,6 @@ namespace hen
 
     void Application::Update(float dT)
     {
-
         renderer::Update(dT);
     }
 
