@@ -43,8 +43,6 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
 
     if(hen::input::Press(hen::input::BUTTON::KEYBOARD_BUTTON_ESCAPE))
     {
-        EggEditor.Shutdown();
-        SDL_Quit();
         return SDL_APP_SUCCESS; 
     }
 

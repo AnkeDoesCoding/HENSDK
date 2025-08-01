@@ -32,6 +32,9 @@ namespace hen
 
         console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
 
+        console::Post("this is a warning", console::LOGLEVEL::WARNING);
+        console::Post("this is an error", console::LOGLEVEL::ERROR);
+
         input::LockMouse();
         
         Initialised = true;
