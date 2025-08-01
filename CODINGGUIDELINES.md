@@ -20,11 +20,8 @@ If a system has a lot of files for it, use an underscore to create categories:
 henRHC_OpenGL.cpp
 henRHC_OpenGL.h
 ...
-henRHC_Vulkan.cpp
-henRHC_Vulkan.h
-...
-henRHC_DX12.cpp
-henRHC_DX12.h
+henScene_Actors.cpp
+henScene_Actors.h
 ```
 
 ## Braces and spacing
@@ -33,7 +30,7 @@ henRHC_DX12.h
 
 HEN SDK uses Allman style braces.
 
-You must use braces for all conditional statementsk, **DO NOT** omit braces:
+You must use braces for all conditional statements, **DO NOT** omit braces:
 
 ```cpp
 if(x)
@@ -66,7 +63,7 @@ int x = y+z; // Wrong
 
 ### Preprocessor Directives
 
-All preprocessor directives need to be indented to match the surrounding code:
+All preprocessor directives must be indented to match the surrounding code:
 
 ```cpp
 namespace hen::platform
@@ -77,7 +74,7 @@ namespace hen::platform
 
         #if PLATFORM_WINDOWS
             platformStr = "Windows";
-        #elif defined(PLATFORM_LINUX)
+        #elif PLATFORM_LINUX
             platformStr = "Linux";
         #endif
 
@@ -233,3 +230,7 @@ enum BUTTON
 ### Macros
 
 Macros must be decalared in ALL CAPS with Snake Case 
+
+```cpp
+#define HEN_DEBUG_BREAK() ((void)0)
+```

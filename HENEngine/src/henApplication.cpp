@@ -34,7 +34,7 @@ namespace hen
 
         input::LockMouse();
 
-        HEN_ASSERT(false, "fuck");
+
 
         Initialised = true;
     }
