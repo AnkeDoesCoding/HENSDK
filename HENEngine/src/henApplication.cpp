@@ -24,6 +24,8 @@ namespace hen
     {
         Timer timer;
 
+        console::Initialise(); // this motherfucker is important as fuck
+
         HEN_ASSERT(window != nullptr, "[hen::Application] Window is nullptr");
 
         renderer::Initialise(window);
@@ -34,14 +36,15 @@ namespace hen
 
         input::LockMouse();
 
-
-
         Initialised = true;
+
+        HEN_ASSERT(Initialised, "[hen::Application] Failed to initialise");
     }
 
     void Application::Shutdown()
     {
         console::Post("[hen::Application] Shutting down...");
+        console::Shutdown();
     }
 
     void Application::Run()

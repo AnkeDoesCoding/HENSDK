@@ -2,6 +2,7 @@
 #define _HENCONSOLE_H_
 
 #include <string>
+#include <filesystem>
 #include <cassert>
 
 #if DEBUG
@@ -14,7 +15,7 @@
     #define HEN_DEBUG_BREAK() ((void)0)
 #endif // !DEBUG
 
-#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Post(msg, hen::console::LOGLEVEL::ERROR), assert(cond))) // Posts message to console and if debug configuration, calls assert
+#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Post(std::string(msg) + " FILE: " + __FILE__ + " LINE: " + std::to_string(__LINE__), hen::console::LOGLEVEL::ASSERTION), hen::console::Shutdown(), assert(cond)))
 
 namespace hen::console
 {
@@ -22,14 +23,19 @@ namespace hen::console
     {
         INFO,
         WARNING,
-        ERROR
+        ERROR,
+        ASSERTION
     };
+
+    void Initialise();
+    void Shutdown();
 
     void Toggle();
     void SetLocked(bool lock);
 
-    void Post(const char* message, LOGLEVEL level = LOGLEVEL::INFO);
     void Post(const std::string& message, LOGLEVEL level = LOGLEVEL::INFO);
+
+    extern bool Initialised;
 }
 
 #endif // !_HENCONSOLE_H_
