@@ -9,7 +9,7 @@
 #include "graphics/henGraphics.h"
 #include "graphics/henShader.h"
 
-#include "helpers/henTimer.h"
+#include "core/henTimer.h"
 
 #include "input/henInput.h"
 

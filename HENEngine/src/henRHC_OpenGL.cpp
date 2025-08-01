@@ -2,7 +2,7 @@
 
 #include "vendor/glad/include/glad.h"
 
-#include "helpers/henTimer.h"
+#include "core/henTimer.h"
 #include "tools/henConsole.h"
 
 #include <cassert>
@@ -21,16 +21,14 @@ namespace hen
 
     void RHC_OpenGL::Initialise() 
     {
-        helper::Timer timer;
+        Timer timer;
 
         SDL_GLContext context = SDL_GL_CreateContext(m_Window);
         SDL_GL_MakeCurrent(m_Window, context);
 
-        if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-        {
-            Initialised = false;
-            console::Post("[hen::RHC_OpenGL] FAILED TO INITAILISE", console::LOGLEVEL::ERROR);
-        }
+        int loadGL = gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+
+        HEN_CONSOLE_ASSERT(loadGL, "[hen::RHC_OpenGL] Failed to load OpenGL context");
 
         glEnable(GL_DEPTH_TEST);  
 

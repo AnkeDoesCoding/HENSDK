@@ -1,6 +1,6 @@
 #include "input/henInput.h"
 
-#include "helpers/henTimer.h"
+#include "core/henTimer.h"
 #include "tools/henConsole.h"
 
 #include <map>
@@ -136,7 +136,10 @@ namespace hen::input
 
     void Initialise(SDL_Window* window)
     {
-        helper::Timer timer;
+        Timer timer;
+
+        HEN_CONSOLE_ASSERT(window != nullptr, "[hen::input] Window is nullptr");
+
         Window = window;
 
         console::Post("[hen::input] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");

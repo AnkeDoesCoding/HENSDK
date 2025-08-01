@@ -1,7 +1,7 @@
 #include "core/henApplication.h"
 
 #include "core/henVersion.h"
-#include "helpers/henTimer.h"
+#include "core/henTimer.h"
 #include "input/henInput.h"
 #include "renderer/henRenderer.h"
 #include "tools/henConsole.h"
@@ -22,7 +22,9 @@ namespace hen
 
     void Application::Initialise(SDL_Window* window)
     {
-        helper::Timer timer;
+        Timer timer;
+
+        HEN_CONSOLE_ASSERT(window != nullptr, "[hen::Application] Window is nullptr");
 
         renderer::Initialise(window);
 
@@ -31,7 +33,7 @@ namespace hen
         console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
 
         input::LockMouse();
-
+        
         Initialised = true;
     }
 

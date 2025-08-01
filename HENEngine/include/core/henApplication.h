@@ -3,7 +3,7 @@
 
 #include "SDL3/SDL.h"
 
-#include "helpers/henTimer.h"
+#include "core/henTimer.h"
 #include "renderer/henRenderHardwareContext.h"
 
 namespace hen
@@ -27,8 +27,6 @@ namespace hen
     public:
         
         bool Initialised = false;
-
-        helper::Timer Timer;
     };
 }
 

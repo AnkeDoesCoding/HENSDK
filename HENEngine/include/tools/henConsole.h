@@ -2,6 +2,13 @@
 #define _HENCONSOLE_H_
 
 #include <string>
+#include <cassert>
+
+#ifdef DEBUG
+    #define HEN_CONSOLE_ASSERT(cond, msg) ((cond) ? (void)0 : (hen::console::Post(msg, hen::console::LOGLEVEL::ERROR), assert((cond) && msg)))
+#else
+    #define HEN_CONSOLE_ASSERT(cond, msg) (hen::console::Post(msg, hen::console::LOGLEVEL::ERRROR))
+#endif // !DEBUG
 
 namespace hen::console
 {

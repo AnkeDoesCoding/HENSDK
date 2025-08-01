@@ -3,7 +3,7 @@
 
 #include <chrono>
 
-namespace hen::helper
+namespace hen
 {
 	struct Timer
 	{
