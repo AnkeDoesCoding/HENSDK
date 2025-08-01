@@ -229,7 +229,7 @@ enum BUTTON
 
 ### Macros
 
-Macros must be decalared in ALL CAPS with Snake Case 
+Macros must be declared in ALL CAPS with Snake Case 
 
 ```cpp
 #define HEN_DEBUG_BREAK() ((void)0)
