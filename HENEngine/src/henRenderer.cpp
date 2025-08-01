@@ -115,7 +115,7 @@ hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
     {
         Timer timer;
 
-        HEN_CONSOLE_ASSERT(window != nullptr, "Window is nullptr");
+        HEN_ASSERT(window != nullptr, "Window is nullptr");
 
         RHC = std::make_unique<RHC_OpenGL>(window);
         GetRHC() = RHC.get();    

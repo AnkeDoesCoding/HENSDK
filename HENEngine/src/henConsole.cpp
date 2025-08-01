@@ -8,7 +8,7 @@ namespace hen
     {
         #if DEBUG
             std::string levelText;
-            const char* textColour = nullptr;
+            std::string textColour;
 
             switch (level)
             {
@@ -28,7 +28,7 @@ namespace hen
                 break;
             }
         
-            std::cout << textColour + levelText + message + "\033[0m" << std::endl;
+            std::cout << textColour << levelText << message << "\033[0m\n" << std::flush;
         #endif // !DEBUG
     }
 
@@ -36,7 +36,7 @@ namespace hen
     {
         #if DEBUG
             std::string levelText;
-            const char* textColour = nullptr;
+            std::string textColour;
         
             switch (level)
             {
@@ -56,7 +56,7 @@ namespace hen
                 break;
             }
         
-            std::cout << textColour + levelText + message + "\033[0m" << std::endl;
+            std::cout << textColour << levelText << message << "\033[0m\n" << std::flush;
         #endif // !DEBUG
     }
 }

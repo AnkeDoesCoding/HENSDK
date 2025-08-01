@@ -24,7 +24,7 @@ namespace hen
     {
         Timer timer;
 
-        HEN_CONSOLE_ASSERT(window != nullptr, "[hen::Application] Window is nullptr");
+        HEN_ASSERT(window != nullptr, "[hen::Application] Window is nullptr");
 
         renderer::Initialise(window);
 
@@ -32,11 +32,10 @@ namespace hen
 
         console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
 
-        console::Post("this is a warning", console::LOGLEVEL::WARNING);
-        console::Post("this is an error", console::LOGLEVEL::ERROR);
-
         input::LockMouse();
-        
+
+        HEN_ASSERT(false, "fuck");
+
         Initialised = true;
     }
 

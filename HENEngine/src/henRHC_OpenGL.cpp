@@ -28,7 +28,7 @@ namespace hen
 
         int loadGL = gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-        HEN_CONSOLE_ASSERT(loadGL, "[hen::RHC_OpenGL] Failed to load OpenGL context");
+        HEN_ASSERT(loadGL, "[hen::RHC_OpenGL] Failed to load OpenGL context");
 
         glEnable(GL_DEPTH_TEST);  
 
