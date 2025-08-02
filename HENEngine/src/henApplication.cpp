@@ -32,13 +32,13 @@ namespace hen
 
         input::Initialise(renderer::GetRHC()->GetWindow());
 
-        console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        if(input::Initialised && renderer::Initialised && console::Initialised)
+        {
+            Initialised = true;
+            console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        }
 
         input::LockMouse();
-
-        Initialised = true;
-
-        HEN_ASSERT(Initialised, "[hen::Application] Failed to initialise");
     }
 
     void Application::Shutdown()

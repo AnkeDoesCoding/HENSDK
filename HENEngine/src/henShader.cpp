@@ -46,7 +46,7 @@ namespace hen::graphics
         }
         catch(std::ifstream::failure& e)
         {
-            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " , console::LOGLEVEL::ERROR);
+            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " + std::string(infoLog) , console::LOGLEVEL::ERROR);
         }
 
         const char* vsCode = vsSource.c_str();

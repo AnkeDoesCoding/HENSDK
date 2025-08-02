@@ -7,6 +7,8 @@
 
 namespace hen::input
 {
+    bool Initialised = false;
+
     SDL_Window* Window;
 
     KeyboardState Keyboard;
@@ -142,6 +144,8 @@ namespace hen::input
         HEN_ASSERT(window != nullptr, "[hen::input] Window is nullptr");
 
         Window = window;
+
+        Initialised = true;
 
         console::Post("[hen::input] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }

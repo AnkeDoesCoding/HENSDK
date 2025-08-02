@@ -20,8 +20,8 @@ namespace hen::console
         if(!std::filesystem::is_directory(LogFileDir))
         {
             bool result = std::filesystem::create_directory(LogFileDir);
+            Initialised = result;
             HEN_ASSERT(result, "[hen::console] Couldn't create log dir");
-            Initialised = false;
         }
 
         LogFile = std::ofstream(LogFilePath, std::ios::out); // overwrite any existing file
@@ -39,10 +39,9 @@ namespace hen::console
         auto timeNow = std::time(nullptr);
         auto time = *std::localtime(&timeNow);
 
-        LogFile << "[hen::console] Log file created - " << std::put_time(&time, TIME_FORMAT) << "\n";
+        LogFile << "[hen::console] Log file opened - " << std::put_time(&time, TIME_FORMAT) << "\n";
 
         Initialised = true;
-        HEN_ASSERT(Initialised, "[hen::console] Failed to initialise");
     }
 
     void Shutdown()
@@ -77,9 +76,6 @@ namespace hen::console
             levelText = "ERROR: ";
             textColour = "\x1b[31m";
             break;
-        case LOGLEVEL::ASSERTION:
-            levelText = "ASSERTION FAILED: ";
-            textColour = "\x1b[31m";
         default:
             break;
         }

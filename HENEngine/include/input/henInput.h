@@ -7,6 +7,8 @@
 
 namespace hen::input
 {
+	extern bool Initialised;
+
     enum BUTTON
     {
         NONE = 0,
