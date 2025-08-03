@@ -1,5 +1,7 @@
 #include "renderer/henRenderer.h"
 
+// YES THIS RENDERER IS A FUCKING MESS BUT I AM GRADUALLY ABSTRACING SHIT UNTIL THIS BECOMES A PROPER RENDERER
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb/include/stb_image.h"
 
@@ -14,17 +16,16 @@
 #include "scene/henScene.h"
 #include "tools/henConsole.h"
 
-
-
 float MouseSensitivity = 3.0f;
 
 hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
 
-
 namespace hen::renderer
 {   
+    static std::unique_ptr<RHC> CurrentRHC;
 
-    std::unique_ptr<RHC> CurrentRHC;
+    bool Initialised = false;
+    RENDERER_API RendererAPI = RENDERER_API::OPENGL;
 
     float vertices[] = 
     {
@@ -95,19 +96,20 @@ namespace hen::renderer
         glm::vec3(-2.3f,  0.0f, -3.0f)
     };
 
-    unsigned int VBO;
+    std::unique_ptr<graphics::VertexBuffer> VB;
+
     unsigned int VAO;
     unsigned int Texture;
 
     int ImageWidth, ImageHeight, Channels;
 
-    hen::graphics::Shader TriangleShader(ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleFS.glsl");
+    graphics::Shader TriangleShader(ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleFS.glsl");
 
     glm::mat4 model         = glm::mat4(1.0f); 
     glm::mat4 view          = glm::mat4(1.0f);
     glm::mat4 projection    = glm::mat4(1.0f);
 
-    bool Initialised = false;
+    
 
 
     void Initialise(SDL_Window* window)
@@ -123,9 +125,7 @@ namespace hen::renderer
 
         TriangleShader.Activate();
 
-        glGenBuffers(1, &VBO);  
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);  
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        VB.reset(graphics::VertexBuffer::Create(sizeof(vertices), vertices));
 
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
