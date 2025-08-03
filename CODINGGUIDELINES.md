@@ -12,7 +12,7 @@ henApplication.cpp
 etc...
 ```
 
-Private headers and source files should be put into `src/` and public headers should be organised into `include/`.
+Source files should be organised into `src/` and public headers should be organised into `include/`.
 
 If a system has a lot of files for it, use an underscore to create categories:
 
@@ -47,10 +47,10 @@ if(x)
 Pointers are aligned with the type and not the variable name:
 
 ```cpp
-RenderHardwareContext* RHC; // Correct
+RHC* RHC; // Correct
 
-RenderHardwareContext *RHC; // Wrong!
-RenderHardwareContext * RHC; // Wrong!
+RHC *RHC; // Wrong!
+RHC * RHC; // Wrong!
 ```
 
 There are always spaces between operators:

@@ -5,20 +5,18 @@
 
 #include "core/henApplication.h"
 #include "core/henVersion.h"
+#include "core/henTimer.h"
 
 #include "graphics/henGraphics.h"
-#include "graphics/henShader.h"
-
-#include "core/henTimer.h"
 
 #include "input/henInput.h"
 
 #include "renderer/henRenderer.h"
-#include "renderer/henRenderHardwareContext.h"
+#include "renderer/henRHC.h"
 
 #include "scene/henScene.h"
 #include "scene/henScene_Actors.h"
 
 #include "tools/henConsole.h"
 
-#endif // !_HENENGINE_H_
+#endif // !_HENENGINE_H_s

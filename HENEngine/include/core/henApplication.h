@@ -4,7 +4,6 @@
 #include "SDL3/SDL.h"
 
 #include "core/henTimer.h"
-#include "renderer/henRenderHardwareContext.h"
 
 namespace hen
 {

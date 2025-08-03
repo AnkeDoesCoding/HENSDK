@@ -7,11 +7,10 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/glm/gtc/type_ptr.hpp"
 
-#include "henRHC_OpenGL.h"
-
-#include "graphics/henShader.h"
+#include "graphics/henGraphics.h"
 #include "core/henTimer.h"
 #include "input/henInput.h"
+#include "renderer/henRHC_OpenGL.h"
 #include "scene/henScene.h"
 #include "tools/henConsole.h"
 
@@ -22,10 +21,10 @@ float MouseSensitivity = 3.0f;
 hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
 
 
- namespace hen::renderer
+namespace hen::renderer
 {   
 
-    std::unique_ptr<hen::RenderHardwareContext> RHC;
+    std::unique_ptr<RHC> CurrentRHC;
 
     float vertices[] = 
     {
@@ -117,10 +116,10 @@ hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
 
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
-        RHC = std::make_unique<RHC_OpenGL>(window);
-        GetRHC() = RHC.get();    
+        CurrentRHC = std::make_unique<RHC_OpenGL>(window);
+        GetRHC() = CurrentRHC.get();    
         
-        RHC->Initialise();
+        CurrentRHC->Initialise();
 
         TriangleShader.Activate();
 
@@ -171,12 +170,12 @@ hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
 
     void Run()
     {
-        RHC->ClearSwapChain();
+        CurrentRHC->ClearSwapChain();
         
         TriangleShader.Run();
 
         int windowWidth, windowHeight;
-        SDL_GetWindowSize(RHC->GetWindow(), &windowWidth, &windowHeight);
+        SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
         projection = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
         // retrieve the matrix uniform locations
@@ -202,20 +201,20 @@ hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        RHC->SwapSwapChain();
+        CurrentRHC->SwapSwapChain();
     }
 
     void Update(float deltaTime)
     {
 
         int windowWidth, windowHeight;
-        SDL_GetWindowSize(RHC->GetWindow(), &windowWidth, &windowHeight);
+        SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-        model         = glm::mat4(1.0f);
-        view          = RenderCam.GetViewMatrix();
+        model = glm::mat4(1.0f);
+        view = RenderCam.GetViewMatrix();
 
         model = glm::rotate(model, deltaTime * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)); 
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
         float vel = RenderCam.Speed * deltaTime;
 

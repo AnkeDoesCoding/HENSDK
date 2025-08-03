@@ -1,15 +1,15 @@
-#ifndef _HENRENDERHARDWARECONTEXT_H_
-#define _HENRENDERHARDWARECONTEXT_H_
+#ifndef _HENRHC_H_
+#define _HENRHC_H_
 
 #include "SDL3/SDL.h"
 
 namespace hen
 {
-    class RenderHardwareContext
+    class RHC
     {
     public:
 
-        virtual ~RenderHardwareContext() = default;
+        virtual ~RHC() = default;
 
         virtual void Initialise() = 0;
         virtual void ClearSwapChain() = 0;
@@ -22,4 +22,4 @@ namespace hen
    
 }
 
-#endif // !_HENRENDERHARDWARECONTEXT_H_
+#endif // !_HENRHC_H_

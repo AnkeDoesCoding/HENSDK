@@ -1,5 +1,5 @@
-#ifndef _HENSHADER_H_
-#define _HENSHADER_H_
+#ifndef _HENGRAPHICS_SHADER_H_
+#define _HENGRAPHICS_SHADER_H_
 
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
@@ -40,4 +40,4 @@ namespace hen::graphics
     };
 }
 
-#endif // !_HENSHADER_H_
+#endif // !_HENGRAPHICS_SHADER_H_

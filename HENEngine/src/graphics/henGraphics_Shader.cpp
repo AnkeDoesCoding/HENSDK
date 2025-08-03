@@ -1,4 +1,4 @@
-#include "graphics/henShader.h"
+#include "graphics/henGraphics_Shader.h"
 
 #include "vendor/glad/include/glad.h"
 

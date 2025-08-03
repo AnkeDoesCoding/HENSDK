@@ -1,11 +1,11 @@
 #ifndef _HENRHC_OPENGL_H_
 #define _HENRHC_OPENGL_H_
 
-#include "renderer/henRenderHardwareContext.h"
+#include "renderer/henRHC.h"
 
 namespace hen
 {
-    class RHC_OpenGL : public hen::RenderHardwareContext
+    class RHC_OpenGL : public RHC
     {
     public:
 

@@ -4,7 +4,7 @@
 #include "SDL3/SDL.h"
 
 #include "vendor/glad/include/glad.h"
-#include "renderer/henRenderHardwareContext.h"
+#include "renderer/henRHC.h"
 
 namespace hen::renderer
 {
@@ -14,9 +14,9 @@ namespace hen::renderer
 
     extern bool Initialised;
     
-    inline RenderHardwareContext*& GetRHC()
+    inline RHC*& GetRHC()
 	{
-		static RenderHardwareContext* context = nullptr;
+		static RHC* context = nullptr;
 		return context;
 	}
 
