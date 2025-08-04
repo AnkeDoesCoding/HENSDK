@@ -12,10 +12,13 @@ namespace hen
         virtual ~RHC() = default;
 
         virtual void Initialise() = 0;
-        virtual void ClearSwapChain() = 0;
-        virtual void SwapSwapChain() = 0;
+        virtual void Clear() = 0;
+        virtual void Present() = 0;
 
-        virtual SDL_Window* GetWindow() = 0;
+        virtual void EnableDepth() = 0;
+        virtual void DisableDepth() = 0;
+
+        virtual SDL_Window* GetWindow() const = 0;
         virtual void ResizeWindow() = 0;
     };
 

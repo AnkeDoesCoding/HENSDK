@@ -13,10 +13,13 @@ namespace hen
         ~RHC_OpenGL() override;
 
         void Initialise() override;
-        void ClearSwapChain() override;
-        void SwapSwapChain() override;
+        void Clear() override;
+        void Present() override;
 
-        SDL_Window* GetWindow() override;
+        void EnableDepth() override;
+        void DisableDepth() override;
+
+        SDL_Window* GetWindow() const override;
         void ResizeWindow() override;
         
     public:

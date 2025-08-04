@@ -36,25 +36,33 @@ namespace hen
 
         HEN_ASSERT(loadGL, "[hen::RHC_OpenGL] Failed to load OpenGL context");
 
-        glEnable(GL_DEPTH_TEST);  
-
         Initialised = true;
 
         console::Post("[hen::RHC_OpenGL] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
-    void RHC_OpenGL::ClearSwapChain()
+    void RHC_OpenGL::Clear()
     {
         glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void RHC_OpenGL::SwapSwapChain()
+    void RHC_OpenGL::Present()
     {
         SDL_GL_SwapWindow(m_Window);
     }
 
-    SDL_Window* RHC_OpenGL::GetWindow()
+    void RHC_OpenGL::EnableDepth()
+    {
+        glEnable(GL_DEPTH_TEST);  
+    }
+
+    void RHC_OpenGL::DisableDepth()
+    {
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    SDL_Window* RHC_OpenGL::GetWindow() const
     {
         return m_Window;
     }

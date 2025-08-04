@@ -170,7 +170,9 @@ namespace hen::renderer
 
     void Run()
     {
-        CurrentRHC->ClearSwapChain();
+        CurrentRHC->EnableDepth();
+
+        CurrentRHC->Clear();
         
         CubeShader->Run();
 
@@ -197,7 +199,9 @@ namespace hen::renderer
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        CurrentRHC->SwapSwapChain();
+        CurrentRHC->Present();
+
+        CurrentRHC->DisableDepth();
     }
 
     void Update(float deltaTime)
