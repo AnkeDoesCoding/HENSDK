@@ -1,6 +1,12 @@
-#include "graphics/henGraphics_OpenGL.h"
+#include "henGraphics_OpenGL.h"
 
 #include "vendor/glad/include/glad.h"
+
+#include "tools/henConsole.h"
+
+#include <fstream>
+#include <sstream>
+
 
 namespace hen::graphics
 {
@@ -53,4 +59,166 @@ namespace hen::graphics
     {  
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }   
+
+    Shader_OpenGL::Shader_OpenGL(const char* vsPath, const char* fsPath)
+    {
+        m_VSPath = vsPath;
+        m_FSPath = fsPath;
+    }
+
+    void Shader_OpenGL::Activate()
+    {
+        std::string vsSource, fsSource;
+        std::ifstream vsFile, fsFile;
+
+        unsigned int vertexShader, fragShader;
+        int success;
+        char infoLog[512];
+
+        vsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        fsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        try
+        {
+            vsFile.open(m_VSPath);
+            fsFile.open(m_FSPath);
+
+            std::stringstream vsStream, fsStream;
+
+            vsStream << vsFile.rdbuf();
+            fsStream << fsFile.rdbuf();
+
+            vsFile.close();
+            fsFile.close();
+
+            vsSource = vsStream.str();
+            fsSource = fsStream.str();
+
+        }
+        catch(std::ifstream::failure& e)
+        {
+            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " + std::string(infoLog) , console::LOGLEVEL::ERROR);
+        }
+
+        const char* vsCode = vsSource.c_str();
+        const char* fsCode = fsSource.c_str();
+        
+        vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertexShader, 1, &vsCode, nullptr);
+        glCompileShader(vertexShader);
+        CheckForCompileErrors(vertexShader, "VERTEX");
+        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
+        if (!success)
+        {
+            glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+            console::Post("[hen::Shader] VERTEX SHADER COMPILATION FAILED: " + std::string(infoLog), console::LOGLEVEL::ERROR);
+        }
+
+        fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragShader, 1, &fsCode, nullptr);
+        glCompileShader(fragShader);
+        CheckForCompileErrors(fragShader, "FRAGMENT");
+        glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+
+        if (!success)
+        {
+            glGetShaderInfoLog(fragShader, 512, nullptr, infoLog);
+            console::Post("[hen::Shader] FRAGMENT SHADER COMPILATION FAILED: " + std::string(infoLog), console::LOGLEVEL::ERROR);
+        }
+
+        m_ID = glCreateProgram();
+        glAttachShader(m_ID, vertexShader);
+        glAttachShader(m_ID, fragShader);
+        glLinkProgram(m_ID);
+        glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
+
+        if(!success)
+        {
+            glGetProgramInfoLog(m_ID, 512, nullptr, infoLog);
+            console::Post("[hen::Shader] SHADER LINKING FAILED: \n" + std::string(infoLog), console::LOGLEVEL::ERROR);
+        }
+
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragShader);
+    }
+
+    void Shader_OpenGL::Run()
+    {
+        glUseProgram(m_ID);
+    }
+
+    unsigned int Shader_OpenGL::GetID()
+    {
+        return m_ID;
+    }
+
+    void Shader_OpenGL::SetVal(const std::string& name, bool val) const
+    {
+        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)val); 
+    }  
+
+    void Shader_OpenGL::SetVal(const std::string& name, int val) const
+    {
+        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), val);
+    } 
+       
+    void Shader_OpenGL::SetVal(const std::string& name, float val) const
+    {
+        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), val);
+    }    
+
+    void Shader_OpenGL::SetVec2(const std::string &name, const glm::vec2 &value) const
+    { 
+        glUniform2fv(glGetUniformLocation(m_ID, name.c_str()), 1, &value[0]); 
+    }
+
+    void Shader_OpenGL::SetVec3(const std::string &name, const glm::vec3 &value) const
+    { 
+        glUniform3fv(glGetUniformLocation(m_ID, name.c_str()), 1, &value[0]); 
+    }
+    
+    void Shader_OpenGL::SetVec4(const std::string &name, const glm::vec4 &value) const
+    { 
+        glUniform4fv(glGetUniformLocation(m_ID, name.c_str()), 1, &value[0]); 
+    }
+
+    void Shader_OpenGL::SetMat2(const std::string &name, const glm::mat2 &mat) const
+    {
+        glUniformMatrix2fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    }
+   
+    void Shader_OpenGL::SetMat3(const std::string &name, const glm::mat3 &mat) const
+    {
+        glUniformMatrix3fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    }
+
+    void Shader_OpenGL::SetMat4(const std::string &name, const glm::mat4 &mat) const
+    {
+        glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    }
+
+    void Shader_OpenGL::CheckForCompileErrors(unsigned int shader, std::string type)
+    {
+        int success;
+        char infoLog[1024];
+        if (type != "PROGRAM")
+        {
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
+            }
+        }
+        else
+        {
+            glGetProgramiv(shader, GL_LINK_STATUS, &success);
+            if (!success)
+            {
+                glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+                console::Post("[hen::Shader] SHADER COMPILATION OF TYPE (" + type + ") FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
+            }
+        }
+    }
 }

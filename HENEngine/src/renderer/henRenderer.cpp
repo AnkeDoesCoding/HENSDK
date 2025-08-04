@@ -12,7 +12,7 @@
 #include "graphics/henGraphics.h"
 #include "core/henTimer.h"
 #include "input/henInput.h"
-#include "renderer/henRHC_OpenGL.h"
+#include "src/renderer/henRHC_OpenGL.h"
 #include "scene/henScene.h"
 #include "tools/henConsole.h"
 
@@ -103,15 +103,13 @@ namespace hen::renderer
 
     int ImageWidth, ImageHeight, Channels;
 
-    graphics::Shader TriangleShader(ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleFS.glsl");
+    std::unique_ptr<graphics::Shader> CubeShader;
 
-    glm::mat4 model         = glm::mat4(1.0f); 
-    glm::mat4 view          = glm::mat4(1.0f);
-    glm::mat4 projection    = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f); 
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
 
     
-
-
     void Initialise(SDL_Window* window)
     {
         Timer timer;
@@ -123,7 +121,9 @@ namespace hen::renderer
         
         CurrentRHC->Initialise();
 
-        TriangleShader.Activate();
+        CubeShader.reset(graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleFS.glsl"));
+        
+        CubeShader->Activate();
 
         VB.reset(graphics::VertexBuffer::Create(sizeof(vertices), vertices));
 
@@ -159,7 +159,7 @@ namespace hen::renderer
             console::Post("couldnt load texture", console::LOGLEVEL::WARNING);
         }        
 
-        TriangleShader.SetVal("ourTexture", 0);
+        CubeShader->SetVal("ourTexture", 0);
 
         stbi_image_free(ImageData);
    
@@ -172,20 +172,16 @@ namespace hen::renderer
     {
         CurrentRHC->ClearSwapChain();
         
-        TriangleShader.Run();
+        CubeShader->Run();
 
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
         projection = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
-        // retrieve the matrix uniform locations
-        unsigned int modelLoc = glGetUniformLocation(TriangleShader.ID, "model");
-        unsigned int viewLoc  = glGetUniformLocation(TriangleShader.ID, "view");
-        // pass them to the shaders (3 different ways)
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
 
-        TriangleShader.SetMat4("projection", projection);
+        CubeShader->SetMat4("model", model);
+        CubeShader->SetMat4("view", view);
+        CubeShader->SetMat4("projection", projection);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture);
@@ -196,7 +192,7 @@ namespace hen::renderer
             model = glm::translate(model, cubePositions[i]);
             float angle = 12.0f * i; 
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            TriangleShader.SetMat4("model", model);
+            CubeShader->SetMat4("model", model);
         
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
