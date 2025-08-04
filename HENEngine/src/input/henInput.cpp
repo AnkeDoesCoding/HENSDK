@@ -150,6 +150,85 @@ namespace hen::input
         console::Post("[hen::input] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
+    void HandleSDLEvent(SDL_Event& event)
+    {
+        switch (event.type)
+        {
+            case SDL_EVENT_KEY_DOWN:
+            {
+                int converted = ConvertScanCode(event.key.scancode, event.key.key);
+                if (converted >= 0)
+                {
+                    Keyboard.Buttons[converted] = true;
+                }
+            }
+                break;
+            case SDL_EVENT_KEY_UP:
+            {
+                int converted = ConvertScanCode(event.key.scancode, event.key.key);
+                if (converted >= 0 )
+                {
+                    Keyboard.Buttons[converted] = false;
+                    Input input;
+                    input.button = static_cast<BUTTON>(converted);
+                    Inputs.erase(input);
+                }
+            }
+                break;
+            case SDL_EVENT_TEXT_EDITING:     
+            case SDL_EVENT_TEXT_INPUT:    
+            case SDL_EVENT_KEYMAP_CHANGED:
+                break;
+            case SDL_EVENT_MOUSE_MOTION:
+                Mouse.Pos.x = event.motion.x;
+                Mouse.Pos.y = event.motion.y;
+                Mouse.DeltaPos.x += event.motion.xrel;
+                Mouse.DeltaPos.y += event.motion.yrel;
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                switch (event.button.button)
+                {
+                case SDL_BUTTON_LEFT:
+                    Mouse.LMB = true;
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    Mouse.RMB = true;
+                    break;
+                case SDL_BUTTON_MIDDLE:
+                    Mouse.MMB = true;
+                    break;
+                }
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_UP:        
+                switch(event.button.button)
+                {
+                    case SDL_BUTTON_LEFT:
+                        Mouse.LMB = false;
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        Mouse.RMB = false;
+                        break;
+                    case SDL_BUTTON_MIDDLE:
+                        Mouse.MMB = false;
+                        break;
+                }
+                break;
+            case SDL_EVENT_MOUSE_WHEEL:
+            {
+                float delta = static_cast<float>(event.wheel.y);
+                if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                {
+                    delta *= -1;
+                }
+                Mouse.DeltaWheel += delta;
+                break;
+            }   
+            // TODO: ADD CONTROLLER SHIT
+            default:
+                break;
+        }
+    }
+
     void Update()
     {
         Keyboard = GetKeyboardState();
@@ -163,82 +242,7 @@ namespace hen::input
         
         for(auto& event : Events)
         {
-            switch (event.type)
-            {
-                case SDL_EVENT_KEY_DOWN:
-                {
-                    int converted = ConvertScanCode(event.key.scancode, event.key.key);
-                    if (converted >= 0)
-                    {
-                        Keyboard.Buttons[converted] = true;
-                    }
-                }
-                    break;
-                case SDL_EVENT_KEY_UP:
-                {
-                    int converted = ConvertScanCode(event.key.scancode, event.key.key);
-                    if (converted >= 0 )
-                    {
-                        Keyboard.Buttons[converted] = false;
-
-                        Input input;
-                        input.button = static_cast<BUTTON>(converted);
-                        Inputs.erase(input);
-                    }
-                }
-                    break;
-                case SDL_EVENT_TEXT_EDITING:     
-                case SDL_EVENT_TEXT_INPUT:    
-                case SDL_EVENT_KEYMAP_CHANGED:
-                    break;
-                case SDL_EVENT_MOUSE_MOTION:
-                    Mouse.Pos.x = event.motion.x;
-                    Mouse.Pos.y = event.motion.y;
-                    Mouse.DeltaPos.x += event.motion.xrel;
-                    Mouse.DeltaPos.y += event.motion.yrel;
-                    break;
-                case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                    switch (event.button.button)
-                    {
-                    case SDL_BUTTON_LEFT:
-                        Mouse.LMB = true;
-                        break;
-                    case SDL_BUTTON_RIGHT:
-                        Mouse.RMB = true;
-                        break;
-                    case SDL_BUTTON_MIDDLE:
-                        Mouse.MMB = true;
-                        break;
-                    }
-                    break;
-                case SDL_EVENT_MOUSE_BUTTON_UP:        
-                    switch(event.button.button)
-                    {
-                        case SDL_BUTTON_LEFT:
-                            Mouse.LMB = false;
-                            break;
-                        case SDL_BUTTON_RIGHT:
-                            Mouse.RMB = false;
-                            break;
-                        case SDL_BUTTON_MIDDLE:
-                            Mouse.MMB = false;
-                            break;
-                    }
-                    break;
-                case SDL_EVENT_MOUSE_WHEEL:
-                {
-                    float delta = static_cast<float>(event.wheel.y);
-                    if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-                    {
-                        delta *= -1;
-                    }
-                    Mouse.DeltaWheel += delta;
-                    break;
-                }   
-                // TODO: ADD CONTROLLER SHIT
-                default:
-                    break;
-            }
+            HandleSDLEvent(event);
         }
 
         Events.clear();
@@ -303,15 +307,21 @@ namespace hen::input
 		{
 		case MOUSE_BUTTON_LEFT:
 			if (Mouse.LMB) 
+            {
 				return true;
+            }
 			return false;
 		case MOUSE_BUTTON_RIGHT:
 			if (Mouse.RMB) 
+            {
 				return true;
+            }
 			return false;
 		case MOUSE_BUTTON_MIDDLE:
 			if (Mouse.MMB) 
+            {
 				return true;
+            }
 			return false;
         default: 
             break;

@@ -12,9 +12,6 @@ namespace hen::renderer
     void Run();
     void Update(float deltaTime);
 
-    extern bool Initialised;
-    extern BACKEND CurrentBackend;
-
     inline RHC*& GetRHC()
 	{
 		static RHC* context = nullptr;
@@ -26,6 +23,9 @@ namespace hen::renderer
         NONE = 0,
         OPENGL = 1
     };
+
+    extern bool Initialised;
+    extern BACKEND CurrentBackend;
 
 }
 
