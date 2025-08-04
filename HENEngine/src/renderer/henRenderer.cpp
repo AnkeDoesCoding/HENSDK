@@ -25,7 +25,7 @@ namespace hen::renderer
     static std::unique_ptr<RHC> CurrentRHC;
 
     bool Initialised = false;
-    RENDERER_API RendererAPI = RENDERER_API::OPENGL;
+    BACKEND CurrentBackend = BACKEND::OPENGL;
 
     float vertices[] = 
     {

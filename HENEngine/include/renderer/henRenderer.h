@@ -6,15 +6,6 @@
 #include "vendor/glad/include/glad.h"
 #include "renderer/henRHC.h"
 
-namespace hen
-{
-    enum class RENDERER_API
-    {
-        NONE = 0,
-        OPENGL = 1
-    };
-}
-
 namespace hen::renderer
 {
     void Initialise(SDL_Window* window);
@@ -22,7 +13,7 @@ namespace hen::renderer
     void Update(float deltaTime);
 
     extern bool Initialised;
-    extern RENDERER_API RendererAPI;
+    extern BACKEND CurrentBackend;
 
     inline RHC*& GetRHC()
 	{
@@ -30,7 +21,11 @@ namespace hen::renderer
 		return context;
 	}
 
-    
+    enum class BACKEND
+    {
+        NONE = 0,
+        OPENGL = 1
+    };
 
 }
 

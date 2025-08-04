@@ -8,12 +8,12 @@ namespace hen::graphics
 {
     VertexBuffer* VertexBuffer::Create(uint32_t size, float* vertices)
     {
-        switch(renderer::RendererAPI)
+        switch(renderer::CurrentBackend)
         {
-            case RENDERER_API::NONE:
-                console::Post("[hen::renderer] RENDERER_API::NONE doesn't exist", console::LOGLEVEL::ERROR);
+            case renderer::BACKEND::NONE:
+                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
-            case RENDERER_API::OPENGL:
+            case renderer::BACKEND::OPENGL:
                 return new VertexBuffer_OpenGL(size, vertices);
         }
 
@@ -22,12 +22,12 @@ namespace hen::graphics
 
     IndexBuffer* IndexBuffer::Create(uint32_t size, uint32_t* count)
     {
-        switch(renderer::RendererAPI)
+        switch(renderer::CurrentBackend)
         {
-            case RENDERER_API::NONE:
-                console::Post("[hen::renderer] RENDERER_API::NONE doesn't exist", console::LOGLEVEL::ERROR);
+            case renderer::BACKEND::NONE:
+                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
-            case RENDERER_API::OPENGL:
+            case renderer::BACKEND::OPENGL:
                 return new IndexBuffer_OpenGL(size, count);
         }
 
@@ -36,12 +36,12 @@ namespace hen::graphics
 
     Shader *Shader::Create(const char *vsPath, const char *fsPath)
     {
-        switch(renderer::RendererAPI)
+        switch(renderer::CurrentBackend)
         {
-            case RENDERER_API::NONE:
-                console::Post("[hen::renderer] RENDERER_API::NONE doesn't exist", console::LOGLEVEL::ERROR);
+            case renderer::BACKEND::NONE:
+                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
-            case RENDERER_API::OPENGL:
+            case renderer::BACKEND::OPENGL:
                 return new Shader_OpenGL(vsPath, fsPath);
         }
 

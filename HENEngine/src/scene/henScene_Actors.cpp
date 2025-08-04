@@ -3,12 +3,8 @@
 namespace hen::scene::actors
 {
     Camera::Camera(glm::vec3 pos, float yaw, float pitch)
+        : Position(pos), Yaw(yaw), Pitch(pitch), Up(glm::vec3(0.0f, 1.0f, 0.0f))
     {
-        Position = pos;
-        Yaw = yaw;
-        Pitch = pitch;
-        Up = glm::vec3(0.0f, 1.0f, 0.0f);
-
         SetDirty();
     }
 
