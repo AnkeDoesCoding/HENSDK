@@ -6,11 +6,14 @@
 #include "vendor/glad/include/glad.h"
 #include "renderer/henRHC.h"
 
+#include "scene/henScene.h"
+
 namespace hen::renderer
 {
     void Initialise(SDL_Window* window);
     void Run();
     void Update(float deltaTime);
+
 
     inline RHC*& GetRHC()
 	{
@@ -26,7 +29,7 @@ namespace hen::renderer
 
     extern bool Initialised;
     extern BACKEND CurrentBackend;
-
+    extern scene::actors::Camera Camera;
 }
 
 #endif // !_HENRENDER_H_

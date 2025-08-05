@@ -19,7 +19,7 @@ namespace hen
         void Run();
 
         virtual void FixedUpdate();
-        virtual void Update(float dT);
+        virtual void Update(float deltaTime);
 
         void ResizeWindow();
 

@@ -16,14 +16,11 @@
 #include "scene/henScene.h"
 #include "tools/henConsole.h"
 
-float MouseSensitivity = 3.0f;
-
-hen::scene::actors::Camera RenderCam(glm::vec3(0.0f,0.0f,0.0f));
-
 namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
 
+    scene::actors::Camera Camera(glm::vec3(0.0f,0.0f,0.0f));
     bool Initialised = false;
     BACKEND CurrentBackend = BACKEND::OPENGL;
 
@@ -108,7 +105,6 @@ namespace hen::renderer
     glm::mat4 model = glm::mat4(1.0f); 
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
-
     
     void Initialise(SDL_Window* window)
     {
@@ -116,10 +112,20 @@ namespace hen::renderer
 
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
-        CurrentRHC = std::make_unique<RHC_OpenGL>(window);
-        GetRHC() = CurrentRHC.get();    
-        
-        CurrentRHC->Initialise();
+        switch(CurrentBackend)
+        {
+            case BACKEND::NONE:
+                CurrentRHC = nullptr;
+                console::Post("[hen::Renderer] Couldn't create RHC", console::LOGLEVEL::ERROR);
+                break;
+            case BACKEND::OPENGL:
+                CurrentRHC = std::make_unique<RHC_OpenGL>(window);
+                GetRHC() = CurrentRHC.get();    
+                CurrentRHC->Initialise();
+                break;
+            default:
+                break;
+        }
 
         CubeShader.reset(graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/TriangleFS.glsl"));
         
@@ -171,7 +177,6 @@ namespace hen::renderer
     void Run()
     {
         CurrentRHC->EnableDepth();
-
         CurrentRHC->Clear();
         
         CubeShader->Run();
@@ -179,7 +184,7 @@ namespace hen::renderer
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-        projection = glm::perspective(glm::radians(RenderCam.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
+        projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
 
         CubeShader->SetMat4("model", model);
         CubeShader->SetMat4("view", view);
@@ -200,67 +205,17 @@ namespace hen::renderer
         }
 
         CurrentRHC->Present();
-
         CurrentRHC->DisableDepth();
     }
 
     void Update(float deltaTime)
     {
-
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-        model = glm::mat4(1.0f);
-        view = RenderCam.GetViewMatrix();
-
-        model = glm::rotate(model, deltaTime * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)); 
+        view = Camera.GetViewMatrix();
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
-        float vel = RenderCam.Speed * deltaTime;
-
-        if(input::Down(input::BUTTON('W')))
-        {
-            RenderCam.Position += RenderCam.Front * vel;
-        }
-        if(input::Down(input::BUTTON('S')))
-        {
-            RenderCam.Position -= RenderCam.Front * vel;            
-        }
-        if(input::Down(input::BUTTON('A')))
-        {
-            RenderCam.Position -= RenderCam.Right * vel;            
-        }
-        if(input::Down(input::BUTTON('D')))
-        {
-            RenderCam.Position += RenderCam.Right * vel;            
-        }
-
-        float xDiff, yDiff;
-
-        glm::vec2 originalMouse = glm::vec2(0.0f, 0.0f);
-        glm::vec2 currentMouse = input::GetPointerPos();
-
-        #if 0
-            xDiff = currentMouse.x - originalMouse.x;
-            yDiff = currentMouse.y - originalMouse.y;
-        #else
-            xDiff = input::GetMouseState().DeltaPos.x;
-            yDiff = input::GetMouseState().DeltaPos.y;
-        #endif
-
-        xDiff = xDiff * (1.0f / 60.0f);
-	    yDiff = yDiff * (1.0f / 60.0f);
-
-        RenderCam.Yaw += xDiff * MouseSensitivity;
-        RenderCam.Pitch -= yDiff * MouseSensitivity;
-
-        RenderCam.Speed += input::GetMouseState().DeltaWheel * 2;
-
-        if(RenderCam.Speed <= 0.0f)
-        {
-            RenderCam.Speed = 1.0f;
-        }
-
-        RenderCam.SetDirty();
+        Camera.SetDirty();
     }
 }

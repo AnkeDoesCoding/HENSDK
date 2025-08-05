@@ -70,9 +70,9 @@ namespace hen
         
     }
 
-    void Application::Update(float dT)
+    void Application::Update(float deltaTime)
     {
-        renderer::Update(dT);
+        renderer::Update(deltaTime);
     }
 
     void Application::ResizeWindow()

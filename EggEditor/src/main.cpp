@@ -3,10 +3,10 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_main.h"
 
-#include "HENEngine.h"
+#include "EggEditor.h"
 
 SDL_Window* Window;
-hen::Application EggEditor;
+Editor EggEditor;
 
 SDL_AppResult SDL_AppInit(void** appState, int argC, char* argV[])
 {
@@ -31,7 +31,6 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
 
     if (event->type == SDL_EVENT_WINDOW_RESIZED) 
     {
-        // resize shit goes here
         EggEditor.ResizeWindow();
     }
 
