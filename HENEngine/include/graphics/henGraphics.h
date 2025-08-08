@@ -5,6 +5,7 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 
 #include <string>
+#include <memory>
 
 namespace hen::graphics
 {
@@ -16,7 +17,7 @@ namespace hen::graphics
         virtual void Bind() const = 0;
         virtual void UnBind() const = 0;
 
-        static VertexBuffer* Create(uint32_t size, float* vertices);
+        static std::unique_ptr<VertexBuffer> Create(uint32_t size, float* vertices);
     };
 
     class IndexBuffer
@@ -29,7 +30,7 @@ namespace hen::graphics
 
         virtual uint32_t GetCount() const = 0;
 
-        static IndexBuffer* Create(uint32_t size, uint32_t* indices);
+        static std::unique_ptr<IndexBuffer> Create(uint32_t size, uint32_t* indices);
     };
 
     class Shader
@@ -53,7 +54,7 @@ namespace hen::graphics
         virtual void SetMat3(const std::string &name, const glm::mat3 &mat) const = 0;
         virtual void SetMat4(const std::string &name, const glm::mat4 &mat) const = 0;
 
-        static Shader* Create(const char* vsPath, const char* fsPath);
+        static std::unique_ptr<Shader> Create(const char* vsPath, const char* fsPath);
     };
 }
 

@@ -2,8 +2,6 @@
 
 // YES THIS RENDERER IS A FUCKING MESS BUT I AM GRADUALLY ABSTRACING SHIT UNTIL THIS BECOMES A PROPER RENDERER
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "vendor/stb/include/stb_image.h"
 
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
@@ -15,6 +13,7 @@
 #include "src/renderer/henRHC_OpenGL.h"
 #include "scene/henScene.h"
 #include "tools/henConsole.h"
+#include "tools/henHelpers.h"
 
 namespace hen::renderer
 {   
@@ -93,7 +92,7 @@ namespace hen::renderer
         glm::vec3(-2.3f,  0.0f, -3.0f)
     };
 
-    std::unique_ptr<graphics::VertexBuffer> VB;
+    std::unique_ptr <graphics::VertexBuffer> VB;
 
     unsigned int VAO;
     unsigned int Texture;
@@ -127,11 +126,9 @@ namespace hen::renderer
                 break;
         }
 
-        CubeShader.reset(graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl"));
-        
-        CubeShader->Activate();
+        CubeShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
 
-        VB.reset(graphics::VertexBuffer::Create(sizeof(vertices), vertices));
+        VB = graphics::VertexBuffer::Create(sizeof(vertices), vertices);
 
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
@@ -143,31 +140,9 @@ namespace hen::renderer
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
 
-        glGenTextures(1, &Texture);
-        glBindTexture(GL_TEXTURE_2D, Texture);
-
-         // set the texture wrapping parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        unsigned char* ImageData = stbi_load(ENGINE_RESOURCE_PATH "textures/container.jpg", &ImageWidth, &ImageHeight, &Channels, 0);
-
-        if(ImageData != nullptr)
-        {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth, ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, ImageData);
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-        else
-        {
-            console::Post("couldnt load texture", console::LOGLEVEL::WARNING);
-        }        
+        Texture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container.jpg");
 
         CubeShader->SetVal("Texture", 0);
-
-        stbi_image_free(ImageData);
    
         Initialised = true;
 
@@ -190,6 +165,7 @@ namespace hen::renderer
         CubeShader->SetVec3("LightPos", lightPos);
         CubeShader->SetVec3("ViewPos", Camera.Position);
 
+        view = Camera.GetViewMatrix();
         projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
 
         CubeShader->SetMat4("Model", model);
@@ -216,6 +192,8 @@ namespace hen::renderer
         CubeShader->SetMat4("Model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        Camera.SetDirty();
+
         CurrentRHC->Present();
         CurrentRHC->DisableDepth();
     }
@@ -224,9 +202,5 @@ namespace hen::renderer
     {
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
-
-        view = Camera.GetViewMatrix();
-
-        Camera.SetDirty();
     }
 }

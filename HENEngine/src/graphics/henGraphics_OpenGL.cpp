@@ -61,9 +61,9 @@ namespace hen::graphics
     }   
 
     Shader_OpenGL::Shader_OpenGL(const char* vsPath, const char* fsPath)
+        : m_VSPath(vsPath), m_FSPath(fsPath)
     {
-        m_VSPath = vsPath;
-        m_FSPath = fsPath;
+        Activate();
     }
 
     void Shader_OpenGL::Activate()

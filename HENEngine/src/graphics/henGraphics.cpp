@@ -4,9 +4,10 @@
 #include "tools/henConsole.h"
 #include "renderer/henRenderer.h"
 
+
 namespace hen::graphics
 {
-    VertexBuffer* VertexBuffer::Create(uint32_t size, float* vertices)
+    std::unique_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size, float* vertices)
     {
         switch(renderer::CurrentBackend)
         {
@@ -14,13 +15,13 @@ namespace hen::graphics
                 console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
             case renderer::BACKEND::OPENGL:
-                return new VertexBuffer_OpenGL(size, vertices);
+                return std::make_unique<VertexBuffer_OpenGL>(size, vertices);
         }
 
         return nullptr;
     }
 
-    IndexBuffer* IndexBuffer::Create(uint32_t size, uint32_t* count)
+    std::unique_ptr<IndexBuffer> IndexBuffer::Create(uint32_t size, uint32_t* count)
     {
         switch(renderer::CurrentBackend)
         {
@@ -28,13 +29,13 @@ namespace hen::graphics
                 console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
             case renderer::BACKEND::OPENGL:
-                return new IndexBuffer_OpenGL(size, count);
+                return std::make_unique<IndexBuffer_OpenGL>(size, count);
         }
 
         return nullptr;
     }
 
-    Shader *Shader::Create(const char *vsPath, const char *fsPath)
+    std::unique_ptr<Shader> Shader::Create(const char *vsPath, const char *fsPath)
     {
         switch(renderer::CurrentBackend)
         {
@@ -42,7 +43,7 @@ namespace hen::graphics
                 console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
             case renderer::BACKEND::OPENGL:
-                return new Shader_OpenGL(vsPath, fsPath);
+                return std::make_unique<Shader_OpenGL>(vsPath, fsPath);
         }
 
         return nullptr;
