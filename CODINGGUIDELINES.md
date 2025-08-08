@@ -7,7 +7,7 @@ Filenames should all be named using Pascal Case.
 Filenames should be descriptive and contain the namespace that the file is part of:
 
 ```
-henShader.cpp
+henGraphics.cpp
 henApplication.cpp
 etc...
 ```
@@ -68,7 +68,7 @@ All preprocessor directives must be indented to match the surrounding code:
 ```cpp
 namespace hen::platform
 {
-    void GetPlatformString(std::string* str)
+    void GetPlatformString(std::string& str)
     {
         std::string platformStr = "";
 
@@ -146,11 +146,13 @@ The following variable prefixes MUST be used:
 * s_ for class/struct static members
 * g_ any compile unit global variables
 
-Variables that dont go out of scope must use Pascal Case:
+Variables that dont go out of scope or are class/struct members must use Pascal Case:
 
 ```cpp
 int AnInteger;
 ```
+
+Variables that are created in '.cpp' files should be static unless they **NEED** to not be static.
 
 Variables that are function parameters or go out of scope must use Camel Case:
 
