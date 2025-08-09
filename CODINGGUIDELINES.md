@@ -136,6 +136,25 @@ namespace hen
 }
 ```
 
+Namespaces should be laid out as follows:
+
+```cpp
+
+namespace Foo
+{
+    // Enums
+
+    // Structs
+
+    // Classes
+
+    // Functions
+
+    // extern Variables
+}
+
+```
+
 ## Naming Conventions
 
 ### Variables
@@ -231,7 +250,7 @@ enum BUTTON
 
 ### Macros
 
-Macros must be declared in ALL CAPS with Snake Case 
+Macros must be declared in ALL CAPS with Snake Case at the top of the file after includes
 
 ```cpp
 #define HEN_DEBUG_BREAK() ((void)0)

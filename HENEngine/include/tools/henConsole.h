@@ -16,6 +16,7 @@
 #endif // !DEBUG
 
 #define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Post(std::string(msg) + " [ FILE: " + __FILE__ + " LINE: " + std::to_string(__LINE__) + " ]", hen::console::LOGLEVEL::ERROR), hen::console::Shutdown(), assert(cond)))
+
 namespace hen::console
 {
     enum class LOGLEVEL

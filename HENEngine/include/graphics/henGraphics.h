@@ -9,6 +9,7 @@
 
 namespace hen::graphics
 {
+
     enum SHADER_PRIMITIVES
     {
         FLOAT,
@@ -23,8 +24,6 @@ namespace hen::graphics
         MAT4,
         BOOL
     };
-
-    uint32_t PrimitiveSize(SHADER_PRIMITIVES primitive);
 
     struct BufferElement
     {
@@ -133,6 +132,9 @@ namespace hen::graphics
 
         static std::unique_ptr<Shader> Create(const char* vsPath, const char* fsPath);
     };
+
+    uint32_t PrimitiveSize(SHADER_PRIMITIVES primitive);
+
 }
 
 #endif // !_HENGRAPHICS_H_

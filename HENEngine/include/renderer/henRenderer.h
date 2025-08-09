@@ -14,7 +14,6 @@ namespace hen::renderer
     void Run();
     void Update(float deltaTime);
 
-
     inline RHC*& GetRHC()
 	{
 		static RHC* context = nullptr;
