@@ -145,7 +145,7 @@ namespace hen::graphics
        
     void Shader_OpenGL::SetVal(const std::string& name, float val) const
     {
-        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), val);
+        glUniform1f(glGetUniformLocation(m_ID, name.c_str()), val);
     }    
 
     void Shader_OpenGL::SetVec2(const std::string &name, const glm::vec2 &value) const
