@@ -127,7 +127,7 @@ namespace hen::renderer
         Texture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container.jpg");
 
         // CubeShader->SetVal("Texture", 0);
-   
+
         Initialised = true;
 
         console::Post("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");

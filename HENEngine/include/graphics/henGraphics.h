@@ -24,7 +24,47 @@ namespace hen::graphics
         BOOL
     };
 
-    uint32_t GetPrimitiveSize(SHADER_PRIMITIVES primitive);
+    uint32_t PrimitiveSize(SHADER_PRIMITIVES primitive);
+
+    struct BufferElement
+    {
+        std::string Name;
+        uint32_t Size;
+        size_t Offset;
+        SHADER_PRIMITIVES Type;
+        bool Normalised;
+
+        BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised = false);
+
+        uint32_t GetComponentCount() const;
+    };
+
+
+    class BufferLayout
+    {
+    public:
+        BufferLayout() = default;
+        BufferLayout(const std::initializer_list<BufferElement>& elements);
+
+        inline const std::vector<BufferElement>& GetElements() const
+        {
+            return m_Elements;
+        }
+
+        uint32_t GetStride() const
+        {
+            return m_Stride;
+        }
+
+        std::vector<BufferElement>::iterator begin();
+        std::vector<BufferElement>::iterator end();
+        std::vector<BufferElement>::const_iterator begin() const;
+        std::vector<BufferElement>::const_iterator end() const;
+
+    private:
+        std::vector<BufferElement> m_Elements;
+        uint32_t m_Stride;
+    };
 
     class VertexBuffer
     {
@@ -33,6 +73,9 @@ namespace hen::graphics
 
         virtual void Bind() const = 0;
         virtual void UnBind() const = 0;
+
+        virtual const BufferLayout& GetLayout() const = 0;
+        virtual void SetLayout(const BufferLayout& layout) = 0;
 
         static std::unique_ptr<VertexBuffer> Create(uint32_t size, float* vertices);
     };
@@ -50,6 +93,23 @@ namespace hen::graphics
         static std::unique_ptr<IndexBuffer> Create(uint32_t size, uint32_t* indices);
     };
 
+    class VertexArray
+	{
+	public:
+		virtual ~VertexArray() = default;
+
+		virtual void Bind() const = 0;
+		virtual void UnBind() const = 0;
+
+		virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) = 0;
+		virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) = 0;
+
+		virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const = 0;
+		virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const = 0;
+
+		static std::unique_ptr<VertexArray> Create();
+	};
+
     class Shader
     {
     public:
@@ -57,7 +117,7 @@ namespace hen::graphics
         virtual void Activate() = 0;
         virtual void Run() = 0;
 
-        virtual unsigned int GetID() = 0;
+        virtual unsigned int GetID() const = 0;
 
         virtual void SetVal(const std::string& name, bool val) const = 0;
         virtual void SetVal(const std::string& name, int val) const = 0;

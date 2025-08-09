@@ -10,6 +10,38 @@
 
 namespace hen::graphics
 {
+    static GLenum ShaderPrimitiveToOpenGLType(SHADER_PRIMITIVES type)
+	{
+		switch (type)
+		{
+			case SHADER_PRIMITIVES::FLOAT:    
+                return GL_FLOAT;
+			case SHADER_PRIMITIVES::FLOAT2:   
+                return GL_FLOAT;
+			case SHADER_PRIMITIVES::FLOAT3:   
+                return GL_FLOAT;
+			case SHADER_PRIMITIVES::FLOAT4:   
+                return GL_FLOAT;
+			case SHADER_PRIMITIVES::MAT3:     
+                return GL_FLOAT;
+			case SHADER_PRIMITIVES::MAT4:     
+                return GL_FLOAT;
+			case SHADER_PRIMITIVES::INT:      
+                return GL_INT;
+			case SHADER_PRIMITIVES::INT2:     
+                return GL_INT;
+			case SHADER_PRIMITIVES::INT3:     
+                return GL_INT;
+			case SHADER_PRIMITIVES::INT4:     
+                return GL_INT;
+			case SHADER_PRIMITIVES::BOOL:     
+                return GL_BOOL;
+		}
+
+        console::Post("[hen::graphics] Couldn't find corresponding OpenGL type", console::LOGLEVEL::ERROR);
+		return 0;
+	}
+
     VertexBuffer_OpenGL::VertexBuffer_OpenGL(uint32_t size, float* vertices)
     {
         glCreateBuffers(1, &m_ID);
@@ -31,6 +63,16 @@ namespace hen::graphics
     {  
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }   
+
+    const BufferLayout& VertexBuffer_OpenGL::GetLayout() const
+    {
+        return m_Layout;
+    }
+
+    void VertexBuffer_OpenGL::SetLayout(const BufferLayout& layout)
+    {
+        m_Layout = layout;
+    }
 
     IndexBuffer_OpenGL::IndexBuffer_OpenGL(uint32_t count, uint32_t* indices)
     {
@@ -59,6 +101,109 @@ namespace hen::graphics
     {  
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }   
+
+    VertexArray_OpenGL::VertexArray_OpenGL()
+    {
+        glCreateVertexArrays(1, &m_ID);
+    }
+
+    VertexArray_OpenGL::~VertexArray_OpenGL()
+    {   
+        glDeleteVertexArrays(1, &m_ID);
+    }
+
+    void VertexArray_OpenGL::Bind() const
+    {
+        glBindVertexArray(m_ID);
+    }
+
+    void VertexArray_OpenGL::UnBind() const
+    {
+        glBindVertexArray(0);
+    }
+
+    void VertexArray_OpenGL::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+    {
+        Bind();
+        HEN_ASSERT(vertexBuffer != nullptr, "[hen::graphics] Vertex buffer is nullptr");
+        vertexBuffer->Bind();
+
+		const auto& layout = vertexBuffer->GetLayout();
+		for (const auto& element : layout)
+		{
+			switch (element.Type)
+			{
+				case SHADER_PRIMITIVES::FLOAT:
+				case SHADER_PRIMITIVES::FLOAT2:
+				case SHADER_PRIMITIVES::FLOAT3:
+				case SHADER_PRIMITIVES::FLOAT4:
+					glEnableVertexAttribArray(m_VertexBufferIndex);
+					glVertexAttribPointer(m_VertexBufferIndex,
+						element.GetComponentCount(),
+						ShaderPrimitiveToOpenGLType(element.Type),
+						element.Normalised ? GL_TRUE : GL_FALSE,
+						layout.GetStride(),
+						(const void*)element.Offset);
+					m_VertexBufferIndex++;
+					break;
+				case SHADER_PRIMITIVES::INT:
+				case SHADER_PRIMITIVES::INT2:
+				case SHADER_PRIMITIVES::INT3:
+				case SHADER_PRIMITIVES::INT4:
+				case SHADER_PRIMITIVES::BOOL:
+					glEnableVertexAttribArray(m_VertexBufferIndex);
+					glVertexAttribIPointer(m_VertexBufferIndex,
+						element.GetComponentCount(),
+						ShaderPrimitiveToOpenGLType(element.Type),
+						layout.GetStride(),
+						(const void*)element.Offset);
+					m_VertexBufferIndex++;
+					break;
+				case SHADER_PRIMITIVES::MAT3:
+				case SHADER_PRIMITIVES::MAT4:
+                {
+					uint8_t count = element.GetComponentCount();
+					for (uint8_t i = 0; i < count; i++)
+					{
+						glEnableVertexAttribArray(m_VertexBufferIndex);
+						glVertexAttribPointer(m_VertexBufferIndex,
+							count,
+							ShaderPrimitiveToOpenGLType(element.Type),
+							element.Normalised ? GL_TRUE : GL_FALSE,
+							layout.GetStride(),
+							(const void*)(element.Offset + sizeof(float) * count * i));
+						glVertexAttribDivisor(m_VertexBufferIndex, 1);
+						m_VertexBufferIndex++;
+					}
+					break;
+                }
+				default:
+					hen::console::Post("[hen::graphics] Unknown shader primitive", console::LOGLEVEL::ERROR);
+                    break;
+			}
+		}
+
+		m_VertexBuffers.push_back(vertexBuffer);
+    }
+
+    void VertexArray_OpenGL::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+    {
+        Bind();
+        HEN_ASSERT(indexBuffer != nullptr, "[hen::graphics] Index buffer is nullptr");
+        indexBuffer->Bind();
+
+        m_IndexBuffer = indexBuffer;
+    }
+
+    const std::vector<std::shared_ptr<VertexBuffer>>& VertexArray_OpenGL::GetVertexBuffers() const
+    {
+        return m_VertexBuffers;
+    }
+
+    const std::shared_ptr<IndexBuffer>& VertexArray_OpenGL::GetIndexBuffer() const
+    {
+        return m_IndexBuffer;
+    }
 
     Shader_OpenGL::Shader_OpenGL(const char* vsPath, const char* fsPath)
         : m_VSPath(vsPath), m_FSPath(fsPath)
@@ -128,7 +273,7 @@ namespace hen::graphics
         glUseProgram(m_ID);
     }
 
-    unsigned int Shader_OpenGL::GetID()
+    unsigned int Shader_OpenGL::GetID() const
     {
         return m_ID;
     }

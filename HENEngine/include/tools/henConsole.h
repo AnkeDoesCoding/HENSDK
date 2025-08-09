@@ -7,9 +7,9 @@
 
 #if DEBUG
     #if PLATFORM_WINDOWS
-        #define HEN_DEBUG_BREAK() __debugbreak()
+        #define HEN_DEBUG_BREAK() __debugbreak();
     #elif PLATFORM_LINUX
-        #define HEN_DEBUG_BREAK() __builtin_debugtrap()
+        #define HEN_DEBUG_BREAK() __builtin_debugtrap();
     #endif // !PLATFORM_WINDOWS
 #else
     #define HEN_DEBUG_BREAK() ((void)0)
