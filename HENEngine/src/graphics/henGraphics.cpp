@@ -7,7 +7,7 @@
 
 namespace hen::graphics
 {
-    uint32_t GetShaderPrimitiveSize(SHADER_PRIMITIVES primitive)
+    uint32_t GetPrimitiveSize(SHADER_PRIMITIVES primitive)
     {
         switch (primitive)
         {
@@ -33,9 +33,9 @@ namespace hen::graphics
             return 64;
         case SHADER_PRIMITIVES::BOOL:
             return 4;
-        default:
-            break;
         }
+
+        return 0;
     }
 
     std::unique_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size, float* vertices)

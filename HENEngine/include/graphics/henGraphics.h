@@ -24,7 +24,7 @@ namespace hen::graphics
         BOOL
     };
 
-    static uint32_t GetShaderPrimitiveSize(SHADER_PRIMITIVES primitive);
+    uint32_t GetPrimitiveSize(SHADER_PRIMITIVES primitive);
 
     class VertexBuffer
     {
