@@ -19,6 +19,9 @@ namespace hen
         void EnableDepth() override;
         void DisableDepth() override;
 
+        void EnableBackFaceCulling() override;
+        void DisableBackFaceCulling() override;
+
         SDL_Window* GetWindow() const override;
         void ResizeWindow() override;
         

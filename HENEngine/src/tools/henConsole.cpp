@@ -10,10 +10,10 @@ namespace hen::console
 {
     bool Initialised = false;
 
-    std::string LogFileName = "console.txt";
-    std::filesystem::path LogFileDir = "./";
-    std::filesystem::path LogFilePath = LogFileDir / LogFileName;
-    std::ofstream LogFile{};
+    static std::string LogFileName = "console.txt";
+    static std::filesystem::path LogFileDir = "./";
+    static std::filesystem::path LogFilePath = LogFileDir / LogFileName;
+    static std::ofstream LogFile{};
 
     void Initialise()
     {
@@ -26,15 +26,6 @@ namespace hen::console
 
         LogFile = std::ofstream(LogFilePath, std::ios::out); // overwrite any existing file
         HEN_ASSERT(LogFile.is_open(), "[hen::console] Failed to open log file");
-
-        LogFile << R"(
-  _____ ____  _   _  _____  ____  _      ______       _________   _________ 
- / ____/ __ \| \ | |/ ____|/ __ \| |    |  ____|     |__   __\ \ / /__   __|
-| |   | |  | |  \| | (___ | |  | | |    | |__           | |   \ V /   | |   
-| |   | |  | | . ` |\___ \| |  | | |    |  __|          | |    > <    | |   
-| |___| |__| | |\  |____) | |__| | |____| |____   _     | |   / . \   | |   
- \_____\____/|_| \_|_____/ \____/|______|______| (_)    |_|  /_/ \_\  |_|   
-            )" << "\n";
 
         auto timeNow = std::time(nullptr);
         auto time = *std::localtime(&timeNow);

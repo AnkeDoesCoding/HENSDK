@@ -9,6 +9,23 @@
 
 namespace hen::graphics
 {
+    enum SHADER_PRIMITIVES
+    {
+        FLOAT,
+        FLOAT2,
+        FLOAT3,
+        FLOAT4,
+        INT,
+        INT2,
+        INT3,
+        INT4,
+        MAT3,
+        MAT4,
+        BOOL
+    };
+
+    static uint32_t GetShaderPrimitiveSize(SHADER_PRIMITIVES primitive);
+
     class VertexBuffer
     {
     public:

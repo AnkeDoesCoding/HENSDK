@@ -56,15 +56,15 @@ namespace hen::graphics
         void SetMat2(const std::string &name, const glm::mat2 &mat) const override;
         void SetMat3(const std::string &name, const glm::mat3 &mat) const override;
         void SetMat4(const std::string &name, const glm::mat4 &mat) const override;
-    public:
 
-        unsigned int m_ID;
     private:
 
         void CheckForCompileErrors(unsigned int shader, std::string type);
 
     private:
-    
+        
+        unsigned int m_ID;
+
         const char* m_VSPath;
         const char* m_FSPath;
     };

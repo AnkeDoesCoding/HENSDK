@@ -22,7 +22,7 @@ void main()
     vec3 viewDir = normalize(ViewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
 
-    vec3 spec = pow(max(dot(viewDir, reflectDir), 0.0), 32) * Specular * LightColor;
+    vec3 spec = pow(max(dot(viewDir, reflectDir), 0.0), 128) * Specular * LightColor;
 
     float ambientStrength = 0.6;
     vec3 ambient = ambientStrength * LightColor;

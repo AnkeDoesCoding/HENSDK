@@ -7,6 +7,37 @@
 
 namespace hen::graphics
 {
+    uint32_t GetShaderPrimitiveSize(SHADER_PRIMITIVES primitive)
+    {
+        switch (primitive)
+        {
+        case SHADER_PRIMITIVES::FLOAT:
+            return 4;
+        case SHADER_PRIMITIVES::FLOAT2:
+            return 8;
+        case SHADER_PRIMITIVES::FLOAT3:
+            return 12;
+        case SHADER_PRIMITIVES::FLOAT4:
+            return 16;
+        case SHADER_PRIMITIVES::INT:
+            return 4;
+        case SHADER_PRIMITIVES::INT2:
+            return 8;
+        case SHADER_PRIMITIVES::INT3:
+            return 12;
+        case SHADER_PRIMITIVES::INT4:
+            return 16;
+        case SHADER_PRIMITIVES::MAT3:
+            return 36;
+        case SHADER_PRIMITIVES::MAT4:
+            return 64;
+        case SHADER_PRIMITIVES::BOOL:
+            return 4;
+        default:
+            break;
+        }
+    }
+
     std::unique_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size, float* vertices)
     {
         switch(renderer::CurrentBackend)

@@ -68,42 +68,21 @@ namespace hen::renderer
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
-    glm::vec3 cubePositions[] = 
-    {
-        glm::vec3( 0.0f,  0.0f,  0.0f), 
-        glm::vec3( 2.0f,  5.0f, -7.0f), 
-        glm::vec3(-1.5f, -2.2f, -3.5f),  
-        glm::vec3(-3.8f, -2.0f, -5.3f),  
-        glm::vec3( 2.4f, -0.4f, -3.5f),  
-        glm::vec3(-1.7f,  3.0f, -7.5f),  
-        glm::vec3( 1.3f, -2.0f, -2.5f),  
-        glm::vec3( 1.5f,  2.0f, -2.5f), 
-        glm::vec3( 1.5f,  0.2f, -1.5f), 
-        glm::vec3(-1.3f,  1.0f, -1.5f),
-        glm::vec3( 2.5f,  2.2f, -0.5f), 
-        glm::vec3( 3.2f,  3.0f, -8.0f), 
-        glm::vec3(-2.7f, -3.2f, -9.5f),  
-        glm::vec3( 3.8f, -4.0f, -9.0f),  
-        glm::vec3(-4.9f, -3.4f, -1.0f),  
-        glm::vec3(-3.7f,  1.0f, -6.5f),  
-        glm::vec3( 1.8f, -1.0f, -5.0f),  
-        glm::vec3(-1.3f,  5.0f, -7.2f), 
-        glm::vec3( 0.5f,  5.0f, -2.0f), 
-        glm::vec3(-2.3f,  0.0f, -3.0f)
-    };
-
     std::unique_ptr <graphics::VertexBuffer> VB;
 
+    unsigned int LampVAO;
     unsigned int VAO;
     unsigned int Texture;
 
-    int ImageWidth, ImageHeight, Channels;
-
     std::unique_ptr<graphics::Shader> CubeShader;
+    std::unique_ptr<graphics::Shader> LampShader;
 
     glm::mat4 model = glm::mat4(1.0f); 
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
+    
+    glm::vec3 LightCol(1.0f, 1.0f, 1.0f);
+    glm::vec3 LightPos(0.0f, 1.0f, 1.0f);
     
     void Initialise(SDL_Window* window)
     {
@@ -115,7 +94,7 @@ namespace hen::renderer
         {
             case BACKEND::NONE:
                 CurrentRHC = nullptr;
-                console::Post("[hen::Renderer] Couldn't create RHC", console::LOGLEVEL::ERROR);
+                console::Post("[hen::Renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 break;
             case BACKEND::OPENGL:
                 CurrentRHC = std::make_unique<RHC_OpenGL>(window);
@@ -127,7 +106,8 @@ namespace hen::renderer
         }
 
         CubeShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
-
+        LampShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderFS.glsl");
+        
         VB = graphics::VertexBuffer::Create(sizeof(vertices), vertices);
 
         glGenVertexArrays(1, &VAO);
@@ -140,6 +120,12 @@ namespace hen::renderer
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
 
+        glGenVertexArrays(1, &LampVAO);
+        glBindVertexArray(LampVAO);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
         Texture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container.jpg");
 
         CubeShader->SetVal("Texture", 0);
@@ -151,23 +137,21 @@ namespace hen::renderer
 
     void Run()
     {
-        CurrentRHC->EnableDepth();
         CurrentRHC->Clear();
+
+        CurrentRHC->EnableDepth();
 
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
-        
-        CubeShader->Run();
-
-        glm::vec3 lightCol(1.0f, 1.0f, 1.0f);
-        glm::vec3 lightPos(0.0f, 0.0f, 2.0f);
-        CubeShader->SetVec3("LightColor", lightCol);
-        CubeShader->SetVec3("LightPos", lightPos);
-        CubeShader->SetVec3("ViewPos", Camera.Position);
 
         view = Camera.GetViewMatrix();
         projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
 
+        CubeShader->Run();
+ 
+        CubeShader->SetVec3("LightColor", LightCol);
+        CubeShader->SetVec3("LightPos", LightPos);
+        CubeShader->SetVec3("ViewPos", Camera.Position);
         CubeShader->SetMat4("Model", model);
         CubeShader->SetMat4("View", view);
         CubeShader->SetMat4("Projection", projection);
@@ -175,27 +159,31 @@ namespace hen::renderer
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture);
         glBindVertexArray(VAO);
-        // for(unsigned int i = 0; i < 20; i++)
-        // {
-        //     glm::mat4 model = glm::mat4(1.0f);
-        //     model = glm::translate(model, cubePositions[i]);
-        //     float angle = 12.0f * i; 
-        //     model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        //     CubeShader->SetMat4("model", model);
-        
-        //     glDrawArrays(GL_TRIANGLES, 0, 36);
-        // }
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, (float)SDL_GetTicks()/1000, glm::vec3(0.7f, 0.3f, 0.5f));
         CubeShader->SetMat4("Model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        LampShader->Run();
+
+        LampShader->SetMat4("Projection", projection);
+        LampShader->SetMat4("View", view);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, LightPos);
+        model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+        LampShader->SetMat4("Model", model);
+
+        glBindVertexArray(LampVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         Camera.SetDirty();
 
-        CurrentRHC->Present();
         CurrentRHC->DisableDepth();
+
+        //2D renderering goes here
+
+        CurrentRHC->Present();
     }
 
     void Update(float deltaTime)

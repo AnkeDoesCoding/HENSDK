@@ -62,6 +62,17 @@ namespace hen
         glDisable(GL_DEPTH_TEST);
     }
 
+    void RHC_OpenGL::EnableBackFaceCulling()
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+    }
+
+    void RHC_OpenGL::DisableBackFaceCulling()
+    {
+        glDisable(GL_CULL_FACE);
+    }
+
     SDL_Window* RHC_OpenGL::GetWindow() const
     {
         return m_Window;
