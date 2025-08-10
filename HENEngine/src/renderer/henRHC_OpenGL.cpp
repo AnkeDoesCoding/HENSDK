@@ -37,7 +37,7 @@ namespace hen
         if(arguments::HasArgument("debugcontext"))
         {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-            console::Post("[hen::RHC_OpenGL] OpenGL context will be created in debug mode");
+            console::Log("[hen::RHC_OpenGL] OpenGL context will be created in debug mode");
         }
 
         SDL_GLContext context = SDL_GL_CreateContext(m_Window);
@@ -49,7 +49,7 @@ namespace hen
 
         Initialised = true;
 
-        console::Post("[hen::RHC_OpenGL] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        console::Log("[hen::RHC_OpenGL] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
     void RHC_OpenGL::Clear()
@@ -94,7 +94,7 @@ namespace hen
         int newWidth, newHeight;
         SDL_GetWindowSize(m_Window, &newWidth, &newHeight);
 
-        console::Post(std::to_string(newWidth) + " : " + std::to_string(newHeight));
+        console::Log(std::to_string(newWidth) + " : " + std::to_string(newHeight));
 
         glViewport(0, 0, newWidth, newHeight);
     }

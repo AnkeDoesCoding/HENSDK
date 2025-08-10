@@ -30,8 +30,6 @@ namespace hen::console
         auto timeNow = std::time(nullptr);
         auto time = *std::localtime(&timeNow);
 
-        LogFile << "[hen::console] Log file opened - " << std::put_time(&time, TIME_FORMAT) << "\n";
-
         Initialised = true;
     }
 
@@ -40,15 +38,13 @@ namespace hen::console
         auto timeNow = std::time(nullptr);
         auto time = *std::localtime(&timeNow);
 
-        LogFile << "[hen::console] Closing log file - " << std::put_time(&time, TIME_FORMAT);
-
         if(LogFile.is_open())
         {
             LogFile.close();
         }
     }
 
-    void Post(const std::string &message, LOGLEVEL level) 
+    void Log(const std::string &message, LOGLEVEL level) 
     {
         std::string levelText;
         std::string textColour;

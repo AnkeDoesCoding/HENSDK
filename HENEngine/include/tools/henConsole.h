@@ -15,7 +15,7 @@
     #define HEN_DEBUG_BREAK() ((void)0)
 #endif // !DEBUG
 
-#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Post(std::string(msg) + " [ FILE: " + __FILE__ + " LINE: " + std::to_string(__LINE__) + " ]", hen::console::LOGLEVEL::ERROR), hen::console::Shutdown(), assert(cond)))
+#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg) + " [ FILE: " + __FILE__ + " LINE: " + std::to_string(__LINE__) + " ]", hen::console::LOGLEVEL::ERROR), hen::console::Shutdown(), assert(cond)))
 
 namespace hen::console
 {
@@ -32,7 +32,7 @@ namespace hen::console
     void Toggle();
     void SetLocked(bool lock);
 
-    void Post(const std::string& message, LOGLEVEL level = LOGLEVEL::INFO);
+    void Log(const std::string& message, LOGLEVEL level = LOGLEVEL::INFO);
 
     extern bool Initialised;
 }

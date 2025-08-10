@@ -35,7 +35,7 @@ namespace hen::graphics
             return 4;
         }
 
-        console::Post("[hen::graphics] Failed to get primitive size", console::LOGLEVEL::ERROR);
+        console::Log("[hen::graphics] Failed to get primitive size", console::LOGLEVEL::ERROR);
         return 0;
     }
 
@@ -88,7 +88,7 @@ namespace hen::graphics
                 return 1;
         }
 
-        console::Post("[hen::graphics] Couldn't get component count", console::LOGLEVEL::ERROR);
+        console::Log("[hen::graphics] Couldn't get component count", console::LOGLEVEL::ERROR);
         return 0;
     }
 
@@ -130,7 +130,7 @@ namespace hen::graphics
         switch(renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<VertexBuffer_OpenGL>(size, vertices);
@@ -144,7 +144,7 @@ namespace hen::graphics
         switch(renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<IndexBuffer_OpenGL>(size, count);
@@ -158,7 +158,7 @@ namespace hen::graphics
         switch(renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<VertexArray_OpenGL>();
@@ -172,7 +172,7 @@ namespace hen::graphics
         switch(renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<Shader_OpenGL>(vsPath, fsPath);

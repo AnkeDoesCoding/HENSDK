@@ -44,7 +44,7 @@ namespace hen::helpers
         }
         else
         {
-            console::Post("Failed to load texture", console::LOGLEVEL::ERROR);
+            console::Log("Failed to load texture", console::LOGLEVEL::ERROR);
             stbi_image_free(data);
         }
 

@@ -38,7 +38,7 @@ namespace hen::graphics
                 return GL_BOOL;
 		}
 
-        console::Post("[hen::graphics] Couldn't find corresponding OpenGL type", console::LOGLEVEL::ERROR);
+        console::Log("[hen::graphics] Couldn't find corresponding OpenGL type", console::LOGLEVEL::ERROR);
 		return 0;
 	}
 
@@ -215,7 +215,7 @@ namespace hen::graphics
         }
         catch(std::ifstream::failure& e)
         {
-            console::Post("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " + std::string(infoLog) , console::LOGLEVEL::ERROR);
+            console::Log("[hen::Shader] SHADER SOURCE FILE NOT SUCCESFULLY READ: " + std::string(infoLog) , console::LOGLEVEL::ERROR);
         }
 
         const char* vsCode = vsSource.c_str();
@@ -306,7 +306,7 @@ namespace hen::graphics
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-                console::Post("[hen::Shader] " + type + " SHADER COMPILATION FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
+                console::Log("[hen::Shader] " + type + " SHADER COMPILATION FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
             }
         }
         else
@@ -315,7 +315,7 @@ namespace hen::graphics
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-                console::Post("[hen::Shader] SHADER " + type + " COMPILATION FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
+                console::Log("[hen::Shader] SHADER " + type + " COMPILATION FAILED: \n" + infoLog, console::LOGLEVEL::ERROR);
             }
         }
     }

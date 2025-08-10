@@ -160,7 +160,7 @@ namespace hen::renderer
         {
             case BACKEND::NONE:
                 CurrentRHC = nullptr;
-                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 break;
             case BACKEND::OPENGL:
                 CurrentRHC = std::make_unique<RHC_OpenGL>(window);
@@ -169,7 +169,7 @@ namespace hen::renderer
                 break;
             case BACKEND::VULKAN:
                 CurrentRHC = nullptr; // hehe, set that mf to nullptr as a fuck you
-                console::Post("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
+                console::Log("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
                 CurrentRHC = nullptr;
                 break;
@@ -210,7 +210,7 @@ namespace hen::renderer
 
         Initialised = true;
 
-        console::Post("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        console::Log("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
     void Run()
