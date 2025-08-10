@@ -45,6 +45,21 @@ namespace hen::graphics
         
     }
 
+    bool BufferElement::IsIntegerType() const
+    {
+        switch (Type)
+        {
+            case SHADER_PRIMITIVES::INT:
+            case SHADER_PRIMITIVES::INT2:
+            case SHADER_PRIMITIVES::INT3:
+            case SHADER_PRIMITIVES::INT4:
+            case SHADER_PRIMITIVES::BOOL:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     uint32_t BufferElement::GetComponentCount() const
     {
         switch(Type)

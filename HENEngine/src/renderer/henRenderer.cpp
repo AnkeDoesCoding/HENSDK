@@ -69,18 +69,80 @@ namespace hen::renderer
 
     std::unique_ptr <graphics::VertexBuffer> VB;
 
-    unsigned int LampVAO;
+    std::unique_ptr <graphics::VertexArray> LampVA;
+    std::shared_ptr <graphics::VertexBuffer> LampVB;
+    std::shared_ptr <graphics::IndexBuffer> LampIB;
+
+    std::vector<unsigned int> LampIndices;
+
     unsigned int VAO;
     unsigned int Texture;
 
     std::unique_ptr<graphics::Shader> CubeShader;
     std::unique_ptr<graphics::Shader> LampShader;
 
-    glm::mat4 model = glm::mat4(1.0f); 
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 projection = glm::mat4(1.0f);
+    glm::mat4 Model = glm::mat4(1.0f); 
+    glm::mat4 Projection = glm::mat4(1.0f);
     
     glm::vec3 LightPos(0.0f, 1.0f, 1.0f);
+    
+    constexpr float PI = 3.14159265358979323846f;
+
+    // some advanced maths shit Chat GPT helped me make
+    static std::vector<float> GenerateSphereVertices(float radius, unsigned int sectorCount, unsigned int stackCount)
+    {
+        std::vector<float> vertices;
+        float x, y, z, xy;
+        float sectorStep = 2 * PI / sectorCount;
+        float stackStep  = PI / stackCount;
+        float sectorAngle, stackAngle;
+
+        for (unsigned int i = 0; i <= stackCount; ++i)
+        {
+            stackAngle = PI / 2 - i * stackStep;
+            xy = radius * cosf(stackAngle);
+            y  = radius * sinf(stackAngle);
+
+            for (unsigned int j = 0; j <= sectorCount; ++j)
+            {
+                sectorAngle = j * sectorStep;
+                x = xy * cosf(sectorAngle);
+                z = xy * sinf(sectorAngle);
+                vertices.push_back(x);
+                vertices.push_back(y);
+                vertices.push_back(z);
+            }
+        }
+        return vertices;
+    }
+
+    static std::vector<unsigned int> GenerateSphereIndices(unsigned int sectorCount, unsigned int stackCount)
+    {
+        std::vector<unsigned int> indices;
+        unsigned int k1, k2;
+        for (unsigned int i = 0; i < stackCount; ++i)
+        {
+            k1 = i * (sectorCount + 1);
+            k2 = k1 + sectorCount + 1;
+
+            for (unsigned int j = 0; j < sectorCount; ++j, ++k1, ++k2)
+            {
+                if (i != 0)
+                {
+                    indices.push_back(k1);
+                    indices.push_back(k2);
+                    indices.push_back(k1 + 1);
+                }
+                if (i != (stackCount - 1))
+                {
+                    indices.push_back(k1 + 1);
+                    indices.push_back(k2);
+                    indices.push_back(k2 + 1);
+                }
+            }
+        }
+        return indices;
+    }
     
     void Initialise(SDL_Window* window)
     {
@@ -117,13 +179,20 @@ namespace hen::renderer
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        glGenVertexArrays(1, &LampVAO);
-        glBindVertexArray(LampVAO);
+        auto lampVertices = GenerateSphereVertices(0.2f, 24, 16); // radius, sectors, stacks
+        LampIndices = GenerateSphereIndices(24, 16);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
+        LampVA = graphics::VertexArray::Create();
 
-        Texture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container.jpg");
+        LampVB = graphics::VertexBuffer::Create(lampVertices.size() * sizeof(float), lampVertices.data());
+        graphics::BufferLayout layout = {{graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"}};
+        LampVB->SetLayout(layout);
+        LampVA->AddVertexBuffer(LampVB);
+
+        LampIB = graphics::IndexBuffer::Create((uint32_t)LampIndices.size(), LampIndices.data());
+        LampVA->SetIndexBuffer(LampIB);    
+
+        // Texture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container.jpg");
 
         // CubeShader->SetVal("Texture", 0);
 
@@ -141,15 +210,14 @@ namespace hen::renderer
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-        view = Camera.GetViewMatrix();
-        projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
+        Projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
 
         CubeShader->Run();
  
         CubeShader->SetVec3("viewPos", Camera.Position);
-        CubeShader->SetMat4("model", model);
-        CubeShader->SetMat4("view", view);
-        CubeShader->SetMat4("projection", projection);
+        CubeShader->SetMat4("model", Model);
+        CubeShader->SetMat4("view", Camera.GetViewMatrix());
+        CubeShader->SetMat4("projection", Projection);
 
         CubeShader->SetVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
         CubeShader->SetVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
@@ -162,24 +230,24 @@ namespace hen::renderer
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, Texture);
-        glBindVertexArray(VAO);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
         CubeShader->SetMat4("model", model);
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         LampShader->Run();
 
-        LampShader->SetMat4("Projection", projection);
-        LampShader->SetMat4("View", view);
+        LampShader->SetMat4("projection", Projection);
+        LampShader->SetMat4("view", Camera.GetViewMatrix());
         model = glm::mat4(1.0f);
         model = glm::translate(model, LightPos);
-        model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-        LampShader->SetMat4("Model", model);
+        model = glm::scale(model, glm::vec3(0.5f));
+        LampShader->SetMat4("model", model);
 
-        glBindVertexArray(LampVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        LampVA->Bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei)LampIndices.size(), GL_UNSIGNED_INT, nullptr);
 
         Camera.SetDirty();
 

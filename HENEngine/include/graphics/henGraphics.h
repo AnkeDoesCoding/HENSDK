@@ -35,6 +35,8 @@ namespace hen::graphics
 
         BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised = false);
 
+        bool IsIntegerType() const;
+
         uint32_t GetComponentCount() const;
     };
 

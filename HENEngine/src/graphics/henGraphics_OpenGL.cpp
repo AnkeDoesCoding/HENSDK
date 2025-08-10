@@ -130,58 +130,31 @@ namespace hen::graphics
 
 		const auto& layout = vertexBuffer->GetLayout();
 		for (const auto& element : layout)
-		{
-			switch (element.Type)
-			{
-				case SHADER_PRIMITIVES::FLOAT:
-				case SHADER_PRIMITIVES::FLOAT2:
-				case SHADER_PRIMITIVES::FLOAT3:
-				case SHADER_PRIMITIVES::FLOAT4:
-					glEnableVertexAttribArray(m_VertexBufferIndex);
-					glVertexAttribPointer(m_VertexBufferIndex,
-						element.GetComponentCount(),
-						ShaderPrimitiveToOpenGLType(element.Type),
-						element.Normalised ? GL_TRUE : GL_FALSE,
-						layout.GetStride(),
-						(const void*)element.Offset);
-					m_VertexBufferIndex++;
-					break;
-				case SHADER_PRIMITIVES::INT:
-				case SHADER_PRIMITIVES::INT2:
-				case SHADER_PRIMITIVES::INT3:
-				case SHADER_PRIMITIVES::INT4:
-				case SHADER_PRIMITIVES::BOOL:
-					glEnableVertexAttribArray(m_VertexBufferIndex);
-					glVertexAttribIPointer(m_VertexBufferIndex,
-						element.GetComponentCount(),
-						ShaderPrimitiveToOpenGLType(element.Type),
-						layout.GetStride(),
-						(const void*)element.Offset);
-					m_VertexBufferIndex++;
-					break;
-				case SHADER_PRIMITIVES::MAT3:
-				case SHADER_PRIMITIVES::MAT4:
-                {
-					uint8_t count = element.GetComponentCount();
-					for (uint8_t i = 0; i < count; i++)
-					{
-						glEnableVertexAttribArray(m_VertexBufferIndex);
-						glVertexAttribPointer(m_VertexBufferIndex,
-							count,
-							ShaderPrimitiveToOpenGLType(element.Type),
-							element.Normalised ? GL_TRUE : GL_FALSE,
-							layout.GetStride(),
-							(const void*)(element.Offset + sizeof(float) * count * i));
-						glVertexAttribDivisor(m_VertexBufferIndex, 1);
-						m_VertexBufferIndex++;
-					}
-					break;
-                }
-				default:
-					hen::console::Post("[hen::graphics] Unknown shader primitive", console::LOGLEVEL::ERROR);
-                    break;
-			}
-		}
+        {
+            glEnableVertexAttribArray(m_VertexBufferIndex);
+
+            if (element.IsIntegerType()) // ints, uints, bools
+            {
+                glVertexAttribIPointer(
+                    m_VertexBufferIndex,
+                    element.GetComponentCount(),
+                    ShaderPrimitiveToOpenGLType(element.Type),
+                    layout.GetStride(),
+                    reinterpret_cast<const void*>(element.Offset)
+                );
+            }
+            else // floats, vec2, vec3, vec4, etc.
+            {
+                glVertexAttribPointer(
+                    m_VertexBufferIndex,
+                    element.GetComponentCount(),
+                    ShaderPrimitiveToOpenGLType(element.Type),
+                    element.Normalised ? GL_TRUE : GL_FALSE,
+                    layout.GetStride(),
+                    reinterpret_cast<const void*>(element.Offset)
+                );
+            }
+        }
 
 		m_VertexBuffers.push_back(vertexBuffer);
     }
