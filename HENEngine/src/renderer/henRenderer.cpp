@@ -8,6 +8,7 @@
 #include "vendor/glm/gtc/type_ptr.hpp"
 
 #include "graphics/henGraphics.h"
+#include "core/henArguments.h"
 #include "core/henTimer.h"
 #include "input/henInput.h"
 #include "src/renderer/henRHC_OpenGL.h"
@@ -150,20 +151,31 @@ namespace hen::renderer
 
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
+        if(arguments::HasArgument("vulkan"))
+        {
+            CurrentBackend = BACKEND::VULKAN;
+        }
+
         switch(CurrentBackend)
         {
             case BACKEND::NONE:
                 CurrentRHC = nullptr;
-                console::Post("[hen::Renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                console::Post("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 break;
             case BACKEND::OPENGL:
                 CurrentRHC = std::make_unique<RHC_OpenGL>(window);
                 GetRHC() = CurrentRHC.get();    
                 CurrentRHC->Initialise();
                 break;
+            case BACKEND::VULKAN:
+                CurrentRHC = nullptr; // hehe, set that mf to nullptr as a fuck you
+                console::Post("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
+                CurrentRHC = nullptr;
                 break;
         }
+        
+        HEN_ASSERT(CurrentRHC != nullptr, "[hen::renderer] RHC is nullptr");
 
         CubeShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
         LampShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderFS.glsl");

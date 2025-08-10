@@ -2,6 +2,7 @@
 
 #include "vendor/glad/include/glad.h"
 
+#include "core/henArguments.h"
 #include "core/henTimer.h"
 #include "tools/henConsole.h"
 
@@ -28,6 +29,16 @@ namespace hen
         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+        if(arguments::HasArgument("debugcontext"))
+        {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+            console::Post("[hen::RHC_OpenGL] OpenGL context will be created in debug mode");
+        }
 
         SDL_GLContext context = SDL_GL_CreateContext(m_Window);
         SDL_GL_MakeCurrent(m_Window, context);

@@ -17,6 +17,8 @@ SDL_AppResult SDL_AppInit(void** appState, int argC, char* argV[])
 
     Window = SDL_CreateWindow("Egg Editor", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
+    hen::arguments::Parse(argC, argV);
+
     EggEditor.Initialise(Window);
 
     return SDL_APP_CONTINUE;

@@ -23,7 +23,8 @@ namespace hen::renderer
     enum class BACKEND
     {
         NONE,
-        OPENGL
+        OPENGL,
+        VULKAN
     };
 
     extern bool Initialised;

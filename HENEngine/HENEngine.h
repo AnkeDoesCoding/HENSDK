@@ -4,6 +4,7 @@
 // Exposes all public engine features for the user
 
 #include "core/henApplication.h"
+#include "core/henArguments.h"
 #include "core/henVersion.h"
 #include "core/henTimer.h"
 

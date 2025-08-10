@@ -35,7 +35,11 @@ namespace hen
         if(input::Initialised && renderer::Initialised && console::Initialised)
         {
             Initialised = true;
-            console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+            #if DEBUG
+                console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " (DEBUG)" + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+            #elif RELEASE
+                console::Post("[hen::Application] Initialised with HEN Engine " + version::VERSION + " (RELEASE)" + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+            #endif // !DEBUG
         }
 
         input::LockMouse();
