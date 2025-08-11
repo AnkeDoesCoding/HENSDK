@@ -21,6 +21,8 @@ namespace hen
         virtual void FixedUpdate();
         virtual void Update(float deltaTime);
 
+        void ProcessEvent(const SDL_Event& event);
+        
         void ResizeWindow();
 
     public:

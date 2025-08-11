@@ -2,10 +2,13 @@
 
 // YES THIS RENDERER IS A FUCKING MESS BUT I AM GRADUALLY ABSTRACING SHIT UNTIL THIS BECOMES A PROPER RENDERER
 
-
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/glm/gtc/type_ptr.hpp"
+// shittiest fucking imgui implementation, i nuked almost everything in that folder to get this shit working
+#include "vendor/imgui/imgui.h"
+#include "vendor/imgui/backends/imgui_impl_sdl3.h"
+#include "vendor/imgui/backends/imgui_impl_opengl3.h"
 
 #include "graphics/henGraphics.h"
 #include "core/henArguments.h"
@@ -78,6 +81,9 @@ namespace hen::renderer
 
     unsigned int VAO;
     unsigned int Texture;
+
+    unsigned int Counter;
+    std::string FPS;
 
     std::unique_ptr<graphics::Shader> CubeShader;
     std::unique_ptr<graphics::Shader> LampShader;
@@ -208,6 +214,12 @@ namespace hen::renderer
 
         // CubeShader->SetVal("Texture", 0);
 
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::StyleColorsClassic();
+        ImGui_ImplSDL3_InitForOpenGL(window, SDL_GL_GetCurrentContext());
+        ImGui_ImplOpenGL3_Init("#version 460");
+
         Initialised = true;
 
         console::Log("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
@@ -267,6 +279,28 @@ namespace hen::renderer
 
         //2D renderering goes here
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Info");
+        if(ImGui::CollapsingHeader("Controls"))
+        {
+            ImGui::Text("W,A,S,D - move around");
+            ImGui::Text("U - toggle mouse lock");
+            ImGui::Text("Esc - shutdown application");
+        }
+        if(ImGui::CollapsingHeader("Debug info"))
+        {
+            ImGui::Text("FPS:  %.1f", ImGui::GetIO().Framerate);
+            ImGui::Text("MS:  %.3f", 1000.0f / ImGui::GetIO().Framerate);
+
+        }
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         CurrentRHC->Present();
     }
 
@@ -275,6 +309,15 @@ namespace hen::renderer
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-        
+        Counter++;
+        if(deltaTime >= 1.0 / 30.0)
+        {
+            FPS = std::to_string((1.0 / deltaTime) * Counter);
+        }
+    }
+
+    void ProcessEvent(const SDL_Event& event)
+    {
+        ImGui_ImplSDL3_ProcessEvent(&event);
     }
 }

@@ -41,8 +41,6 @@ namespace hen
                 console::Log("[hen::Application] Initialised with HEN Engine " + version::VERSION + " (RELEASE)" + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
             #endif // !DEBUG
         }
-
-        input::LockMouse();
     }
 
     void Application::Shutdown()
@@ -77,6 +75,12 @@ namespace hen
     void Application::Update(float deltaTime)
     {
         renderer::Update(deltaTime);
+    }
+
+    void Application::ProcessEvent(const SDL_Event& event)
+    {
+        input::ProcessEvent(event);
+        renderer::ProcessEvent(event);
     }
 
     void Application::ResizeWindow()

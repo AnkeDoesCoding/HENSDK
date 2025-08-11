@@ -13,6 +13,7 @@ namespace hen::renderer
     void Initialise(SDL_Window* window);
     void Run();
     void Update(float deltaTime);
+    void ProcessEvent(const SDL_Event& event);
 
     inline RHC*& GetRHC()
 	{

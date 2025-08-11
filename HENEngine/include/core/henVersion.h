@@ -7,7 +7,7 @@ namespace hen::version
 {
     constexpr int MAJOR = 0;
     constexpr int MINOR = 4;
-    constexpr int REVISION = 23;
+    constexpr int REVISION = 24;
 
     const std::string VERSION = std::to_string(MAJOR) + "." + std::to_string(MINOR) + "." + std::to_string(REVISION);
 }

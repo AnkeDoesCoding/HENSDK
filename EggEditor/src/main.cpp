@@ -41,7 +41,7 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
         return SDL_APP_SUCCESS; 
     }
 
-    hen::input::ProcessEvent(*event);
+    EggEditor.ProcessEvent(*event);
     return SDL_APP_CONTINUE;
 }
 
