@@ -73,6 +73,16 @@ namespace hen
         glDisable(GL_DEPTH_TEST);
     }
 
+    void RHC_OpenGL::EnableVSync()
+    {
+        SDL_GL_SetSwapInterval(1);
+    }
+
+    void RHC_OpenGL::DisableVSync()
+    {
+        SDL_GL_SetSwapInterval(0);
+    }
+
     void RHC_OpenGL::EnableBackFaceCulling()
     {
         glEnable(GL_CULL_FACE);

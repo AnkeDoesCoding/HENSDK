@@ -18,6 +18,9 @@ namespace hen
         virtual void EnableDepth() = 0;
         virtual void DisableDepth() = 0;
 
+        virtual void EnableVSync() = 0;
+        virtual void DisableVSync() = 0;
+
         virtual void EnableBackFaceCulling() = 0;
         virtual void DisableBackFaceCulling() = 0;
 

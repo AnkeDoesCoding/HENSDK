@@ -19,6 +19,9 @@ namespace hen
         void EnableDepth() override;
         void DisableDepth() override;
 
+        void EnableVSync() override;
+        void DisableVSync() override;
+
         void EnableBackFaceCulling() override;
         void DisableBackFaceCulling() override;
 
