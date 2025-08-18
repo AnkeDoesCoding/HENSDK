@@ -284,17 +284,28 @@ namespace hen::renderer
         ImGui::NewFrame();
 
         ImGui::Begin("Info");
+
         if(ImGui::CollapsingHeader("Controls"))
         {
             ImGui::Text("W,A,S,D - move around");
-            ImGui::Text("U - toggle mouse lock");
+            ImGui::Text("M - toggle mouse lock");
             ImGui::Text("Esc - shutdown application");
         }
-        if(ImGui::CollapsingHeader("Debug info"))
+
+        if(ImGui::CollapsingHeader("Stats"))
         {
             ImGui::Text("FPS:  %.1f", ImGui::GetIO().Framerate);
             ImGui::Text("MS:  %.3f", 1000.0f / ImGui::GetIO().Framerate);
 
+        }
+
+        if(ImGui::CollapsingHeader("Camera"))
+        {
+            ImGui::Text("Speed:  %.1f", Camera.Speed);
+            ImGui::Text("FOV:  %.0f", Camera.FOV);
+            ImGui::Text("Yaw:  %.3f", Camera.Yaw);
+            ImGui::Text("Pitch:  %.1f", Camera.Pitch);
+            ImGui::Text("Position:  %.4f, %.4f, %.4f", Camera.Position.x, Camera.Position.y, Camera.Position.z);
         }
         ImGui::End();
 
