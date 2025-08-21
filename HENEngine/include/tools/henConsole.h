@@ -28,6 +28,7 @@ namespace hen::console
 
     void Initialise();
     void Shutdown();
+    void Draw();
 
     void Toggle();
     void SetLocked(bool lock);
@@ -35,6 +36,8 @@ namespace hen::console
     void Log(const std::string& message, LOGLEVEL level = LOGLEVEL::INFO);
 
     extern bool Initialised;
+    extern bool Visible;
+    extern bool Locked;
 }
 
 #endif // !_HENCONSOLE_H_

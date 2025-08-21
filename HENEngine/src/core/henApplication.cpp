@@ -69,7 +69,10 @@ namespace hen
 
     void Application::FixedUpdate()
     {
-        
+        if(input::Press(input::KEYBOARD_BUTTON_TILDE))
+        {
+            console::Toggle();
+        }
     }
 
     void Application::Update(float deltaTime)

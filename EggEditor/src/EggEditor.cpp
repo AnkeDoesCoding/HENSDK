@@ -1,7 +1,7 @@
 #include "EggEditor.h"
 
 static hen::scene::actors::Camera& Cam = hen::renderer::Camera;
-static float MouseSensitivity = 3.0f;
+static float MouseSensitivity = 4.0f;
 static bool MouseLocked = false;
 static float CameraVelocity = 0.0f;
 
@@ -41,26 +41,29 @@ void Editor::FixedUpdate()
         Cam.Speed = 1.0f;
     }
 
-    if(hen::input::Down(hen::input::BUTTON('W')))
+    if(!hen::console::Visible)
     {
-        Cam.Position += Cam.Front * CameraVelocity;
-    }
-    if(hen::input::Down(hen::input::BUTTON('S')))
-    {
-        Cam.Position -= Cam.Front * CameraVelocity;            
-    }
-    if(hen::input::Down(hen::input::BUTTON('A')))
-    {
-        Cam.Position -= Cam.Right * CameraVelocity;            
-    }
-    if(hen::input::Down(hen::input::BUTTON('D')))
-    {
-        Cam.Position += Cam.Right * CameraVelocity;            
-    }
-    if(hen::input::Press(hen::input::BUTTON('U')))
-    {
-        MouseLocked = (MouseLocked ? false : true);
-        (MouseLocked ? hen::input::LockMouse() : hen::input::UnLockMouse());
+        if(hen::input::Down(hen::input::BUTTON('W')))
+        {
+            Cam.Position += Cam.Front * CameraVelocity;
+        }
+        if(hen::input::Down(hen::input::BUTTON('S')))
+        {
+            Cam.Position -= Cam.Front * CameraVelocity;            
+        }
+        if(hen::input::Down(hen::input::BUTTON('A')))
+        {
+            Cam.Position -= Cam.Right * CameraVelocity;            
+        }
+        if(hen::input::Down(hen::input::BUTTON('D')))
+        {
+            Cam.Position += Cam.Right * CameraVelocity;            
+        }
+        if(hen::input::Press(hen::input::BUTTON('M')))
+        {
+            MouseLocked = (MouseLocked ? false : true);
+            (MouseLocked ? hen::input::LockMouse() : hen::input::UnLockMouse());
+        }
     }
 
 }

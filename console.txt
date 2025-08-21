@@ -1,0 +1,5 @@
+[hen::RHC_OpenGL] Initialised in 27 ms - 19/08/2025 17:19:26
+[hen::renderer] Initialised in 110 ms - 19/08/2025 17:19:26
+[hen::input] Initialised in 0 ms - 19/08/2025 17:19:26
+[hen::Application] Initialised with HEN Engine 0.4.24 (DEBUG) in 112 ms - 19/08/2025 17:19:26
+[hen::Application] Shutting down... - 19/08/2025 17:19:27

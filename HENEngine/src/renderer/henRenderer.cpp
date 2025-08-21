@@ -116,7 +116,7 @@ namespace hen::renderer
                 x = xy * cosf(sectorAngle);
                 z = xy * sinf(sectorAngle);
                 vertices.push_back(x);
-                vertices.push_back(y);
+                vertices.push_back(y);  
                 vertices.push_back(z);
             }
         }
@@ -265,7 +265,7 @@ namespace hen::renderer
 
         LampShader->SetMat4("projection", Projection);
         LampShader->SetMat4("view", Camera.GetViewMatrix());
-        model = glm::mat4(1.0f);
+        model = glm::mat4(1.0f);    
         model = glm::translate(model, LightPos);
         model = glm::scale(model, glm::vec3(0.5f));
         LampShader->SetMat4("model", model);
@@ -289,6 +289,7 @@ namespace hen::renderer
         {
             ImGui::Text("W,A,S,D - move around");
             ImGui::Text("M - toggle mouse lock");
+            ImGui::Text("Tilde - toggle console");
             ImGui::Text("Esc - shutdown application");
         }
 
@@ -308,6 +309,8 @@ namespace hen::renderer
             ImGui::Text("Position:  %.4f, %.4f, %.4f", Camera.Position.x, Camera.Position.y, Camera.Position.z);
         }
         ImGui::End();
+
+        console::Draw();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

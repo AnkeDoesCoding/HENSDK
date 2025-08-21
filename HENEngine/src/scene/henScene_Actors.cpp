@@ -16,6 +16,9 @@ namespace hen::scene::actors
     void Camera::SetDirty()
     {
         glm::vec3 front;
+
+        Pitch = glm::clamp(Pitch, -89.99f, 89.99f); // you can never truly look 90 up or down, hopefully this doesnt fuck up future calculations
+
         front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         front.y = sin(glm::radians(Pitch));
         front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
