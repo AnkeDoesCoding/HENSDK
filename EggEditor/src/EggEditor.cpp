@@ -24,7 +24,7 @@ void Editor::FixedUpdate()
     glm::vec2 originalMouse = glm::vec2(0.0f, 0.0f);
     glm::vec2 currentMouse = hen::input::GetPointerPos();
 
-    if(MouseLocked)
+    if(MouseLocked && !hen::console::Visible)
     {
         xDiff = hen::input::GetMouseState().DeltaPos.x;
         yDiff = hen::input::GetMouseState().DeltaPos.y;
@@ -43,6 +43,7 @@ void Editor::FixedUpdate()
 
     if(!hen::console::Visible)
     {
+    
         if(hen::input::Down(hen::input::BUTTON('W')))
         {
             Cam.Position += Cam.Front * CameraVelocity;
@@ -61,8 +62,8 @@ void Editor::FixedUpdate()
         }
         if(hen::input::Press(hen::input::BUTTON('M')))
         {
-            MouseLocked = (MouseLocked ? false : true);
-            (MouseLocked ? hen::input::LockMouse() : hen::input::UnLockMouse());
+            MouseLocked = !MouseLocked;
+            MouseLocked ? hen::input::LockMouse() : hen::input::UnLockMouse();
         }
     }
 

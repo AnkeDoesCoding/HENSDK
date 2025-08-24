@@ -13,6 +13,7 @@
 #include "graphics/henGraphics.h"
 #include "core/henArguments.h"
 #include "core/henTimer.h"
+#include "core/henCVar.h"
 #include "input/henInput.h"
 #include "src/renderer/henRHC_OpenGL.h"
 #include "scene/henScene.h"
@@ -22,6 +23,11 @@
 namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
+
+    cvar::CVar cvar_VSync("r_vysnc", false, cvar::FLAGS_ARCHIVE, []()
+    {
+        cvar_VSync.GetBool() ? CurrentRHC->EnableVSync() : CurrentRHC->DisableVSync();
+    });  
 
     scene::actors::Camera Camera(glm::vec3(0.0f,0.0f, 3.0f));
     bool Initialised = false;

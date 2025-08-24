@@ -6,6 +6,8 @@
 #include <cassert>
 
 #if DEBUG
+    #define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg) + " [ FILE: " + __FILE__ + " LINE: " + std::to_string(__LINE__) + " ]", hen::console::LOGLEVEL::ERROR), hen::console::Shutdown(), assert(cond)))
+
     #if PLATFORM_WINDOWS
         #define HEN_DEBUG_BREAK() __debugbreak();
     #elif PLATFORM_LINUX
@@ -13,9 +15,10 @@
     #endif // !PLATFORM_WINDOWS
 #else
     #define HEN_DEBUG_BREAK() ((void)0)
+    #define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg), hen::console::LOGLEVEL::ERROR), hen::console::Shutdown(), assert(cond)))
+
 #endif // !DEBUG
 
-#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg) + " [ FILE: " + __FILE__ + " LINE: " + std::to_string(__LINE__) + " ]", hen::console::LOGLEVEL::ERROR), hen::console::Shutdown(), assert(cond)))
 
 namespace hen::console
 {

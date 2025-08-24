@@ -2,6 +2,8 @@
 
 #include "vendor/imgui/imgui.h"
 
+#include "core/henCVar.h"
+
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -33,7 +35,7 @@ namespace hen::console
 
     static std::deque<LogEntry> Entries;
     static std::mutex Mutex; // yeah bitch this shi gonna be thread safe, if i managed to do it right
-    static char InputBuffer[512] = "";
+    static char InputBuffer[1024] = "";
     static std::vector<std::string> CommandHistory;
     static int HistoryIndex = -1;
 
@@ -90,6 +92,7 @@ namespace hen::console
                 }
             }
         }
+
         return 0;
     }
 
@@ -155,7 +158,6 @@ namespace hen::console
         }
 
         ImGui::EndChild();
-        ImGui::Separator();
         ImGui::PushItemWidth(-1);
 
         if (ImGui::IsWindowAppearing())
@@ -165,7 +167,8 @@ namespace hen::console
 
         if(ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter, InputCallback))
         {
-            if(InputBuffer[0] != '\0')
+            std::string line(InputBuffer);
+            if(!line.empty())
             {
                 Log(std::string("[User] ") + InputBuffer, LOGLEVEL::INFO);
 
@@ -173,9 +176,10 @@ namespace hen::console
                 {
                     CommandHistory.push_back(InputBuffer);
                 }
+
                 HistoryIndex = -1;
 
-                //commands and future cvar shit
+                cvar::GetSystem()->Execute(line);
 
                 InputBuffer[0] = '\0';
 
@@ -183,8 +187,71 @@ namespace hen::console
             }
         }
 
-
         ImGui::PopItemWidth();
+
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+        std::string currentInput(InputBuffer);
+        if (!currentInput.empty())
+        {
+            cvar::System& system = *cvar::GetSystem();
+            std::vector<std::string> allCVarNames = system.GetAllCVarNames();
+            std::vector<std::string> matches;
+        
+            matches.clear();
+
+            for (auto& name : allCVarNames)
+            {
+                if (name.find(currentInput) == 0)
+                {
+                    if (hen::cvar::CVar* cvar = system.GetCVar(name))
+                    {
+                        std::string valueStr;
+                    
+                        std::visit([&](auto&& val)
+                        {
+                            using T = std::decay_t<decltype(val)>;
+                            if constexpr (std::is_same_v<T, bool>)
+                                valueStr = (val ? "true" : "false");
+                            else if constexpr (std::is_same_v<T, std::string>)
+                                valueStr = val;
+                            else
+                                valueStr = std::to_string(val);
+                        }, cvar->Value);
+                    
+                        matches.push_back(name + " = " + valueStr);
+                    }
+                }
+            }
+
+            if (!matches.empty())
+            {
+            
+                float lineHeight = ImGui::GetTextLineHeightWithSpacing();
+                float overlayHeight = matches.size() * lineHeight;
+                float maxWidth = 0.0f;
+
+                for (auto& m : matches)
+                {
+                    float w = ImGui::CalcTextSize(m.c_str()).x;
+                    if (w > maxWidth) maxWidth = w;
+                }
+
+                ImVec2 inputMin = ImGui::GetItemRectMin();
+                ImVec2 pos = ImVec2(inputMin.x, inputMin.y - overlayHeight);
+                ImVec2 size = ImVec2(maxWidth + 8.0f, overlayHeight);
+
+                ImU32 bgColour = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
+
+                drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 0.0f);
+
+                for (size_t i = 0; i < matches.size(); i++)
+                {
+                    drawList->AddText(ImVec2(pos.x + 4.0f, pos.y + 2.0f + i * lineHeight), IM_COL32(255, 255, 255, 255), matches[i].c_str());
+                }
+            }
+        }
+
         ImGui::End();
     }
 

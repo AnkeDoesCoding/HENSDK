@@ -2,14 +2,19 @@
 
 #include "core/henVersion.h"
 #include "core/henTimer.h"
+#include "core/henCVar.h"
 #include "input/henInput.h"
 #include "renderer/henRenderer.h"
 #include "tools/henConsole.h"
 
-Uint64 LastTick, CurrentTick = 0;
+#include <memory>
+
 
 namespace hen
 {
+    static Uint64 LastTick, CurrentTick = 0;
+    static std::unique_ptr<cvar::System> CVarSystem;
+
     Application::Application()
     {
 
@@ -24,7 +29,10 @@ namespace hen
     {
         Timer timer;
 
-        console::Initialise(); // this motherfucker is important as fuck
+        CVarSystem = std::make_unique<cvar::System>(); // this motherfucker is important as fuck
+        cvar::GetSystem() = CVarSystem.get();    
+
+        console::Initialise(); 
 
         HEN_ASSERT(window != nullptr, "[hen::Application] Window is nullptr");
 
