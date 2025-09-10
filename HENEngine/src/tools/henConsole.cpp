@@ -96,6 +96,112 @@ namespace hen::console
         return 0;
     }
 
+    static bool ParseBool(const std::string& inputString)
+    {
+        if (inputString == "1" || inputString == "true" )
+        {
+            return true;
+        }
+        if (inputString == "0" || inputString == "false")
+        {
+            return false;
+        }
+
+        console::Log("[hen::console] Invalid bool string: " + inputString, console::LOGLEVEL::WARNING);
+        return false;
+    }
+
+    static void DisplayValue(cvar::CVar* cvar)
+    {
+        std::visit([&](auto&& val)
+        {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, std::string>)
+            {
+                console::Log("[hen::console] " + cvar->Name + " = " + val);
+            }
+            else if constexpr (std::is_same_v<T, bool>)
+            {
+                console::Log("[hen::console] " + cvar->Name + " = " + std::string(val ? "true" : "false"));
+            }
+            else
+            {
+                console::Log("[hen::console] " + cvar->Name + " = " + std::to_string(val));
+            }
+        }, cvar->Value);
+    }
+
+    void Execute(const std::string& command)
+    {
+        std::istringstream iSString(command);
+        std::vector<std::string> tokens;
+        std::string token;
+
+        while (iSString >> token)
+        {
+            tokens.push_back(token);
+        }
+        
+        if(tokens.empty())
+        {
+            return;
+        }
+
+        std::string cvarName = tokens[0];
+
+        if (auto* cvar = cvar::GetSystem()->GetCVar(cvarName))
+        {
+            if (tokens.size() == 1)
+            {
+                DisplayValue(cvar);
+            }
+            else
+            {
+                if ((cvar->Flag & cvar::FLAGS_PROTECTED) && cvar::ProtectionEnabled.GetBool())
+                {
+                    console::Log("[hen::console] Protection is enabled, type protection_enabled 0 to disable it", console::LOGLEVEL::WARNING);
+                    return;
+                }
+
+                try 
+                {
+                    if (std::holds_alternative<int>(cvar->Value))
+                    {
+                        cvar->Set(std::stoi(tokens[1]));
+                    }
+                    else if (std::holds_alternative<float>(cvar->Value))
+                    {
+                        cvar->Set(std::stof(tokens[1]));
+                    }
+                    else if (std::holds_alternative<bool>(cvar->Value))
+                    {
+                        cvar->Set(ParseBool(tokens[1]));
+                    }
+                    else
+                    {
+                        std::string newValue;
+                        for (size_t i = 1; i < tokens.size(); ++i)
+                        {
+                            if (i > 1) newValue += " ";
+                            newValue += tokens[i];
+                        }
+                        cvar->Set(newValue);
+                    }
+                }
+                catch (...) 
+                {
+                    console::Log("[hen::console] Invalid type for " + cvar->Name, console::LOGLEVEL::WARNING);
+                    return;
+                }
+
+                DisplayValue(cvar);
+            }
+            return;
+        }
+
+        console::Log("[hen::console] Unknown CVar: " + cvarName, console::LOGLEVEL::WARNING);
+    }
+
     void Initialise()
     {
         if(!std::filesystem::is_directory(LogFileDir))
@@ -179,7 +285,7 @@ namespace hen::console
 
                 HistoryIndex = -1;
 
-                cvar::GetSystem()->Execute(line);
+                Execute(line);
 
                 InputBuffer[0] = '\0';
 
@@ -304,7 +410,6 @@ namespace hen::console
         }
 
         LogFile << levelText << message << " - " << GetCurrentTime() << "\n";
-        
 
         #if DEBUG
             std::cout << textColour << levelText << message  << " - " << GetCurrentTime() << "\033[0m\n" <<  std::flush;

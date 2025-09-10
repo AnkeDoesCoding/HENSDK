@@ -24,7 +24,7 @@ namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
 
-    cvar::CVar cvar_VSync("r_vysnc", false, cvar::FLAGS_ARCHIVE, []()
+    cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
     {
         cvar_VSync.GetBool() ? CurrentRHC->EnableVSync() : CurrentRHC->DisableVSync();
     });  

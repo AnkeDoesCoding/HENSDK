@@ -10,6 +10,7 @@
 
 namespace hen::cvar
 {
+
     enum FLAGS
     {
         FLAGS_NONE = 0,
@@ -55,14 +56,12 @@ namespace hen::cvar
         void RegisterPendingCVars();
         void Execute(const std::string& command);
 
-
         std::string ListCVars() const;
         std::vector<std::string> GetAllCVarNames() const;
 
         CVar* GetCVar(const std::string& name);
 
-
-    private:
+    public:
         std::unordered_map<std::string, CVar*> CVars;
 
     };
@@ -72,6 +71,9 @@ namespace hen::cvar
 		static System* system = nullptr;
 		return system;
 	}
+
+    extern CVar ProtectionEnabled;
+
 
 }
 

@@ -9,41 +9,6 @@ namespace hen::cvar
 
     CVar ProtectionEnabled("protection_enabled", true);
 
-    static bool ParseBool(const std::string& inputString)
-    {
-        if (inputString == "1" || inputString == "true" )
-        {
-            return true;
-        }
-        if (inputString == "0" || inputString == "false")
-        {
-            return false;
-        }
-
-        console::Log("[hen::cvar] Invalid bool string: " + inputString, console::LOGLEVEL::WARNING);
-        return false;
-    }
-
-    static void DisplayValue(CVar* cvar)
-    {
-        std::visit([&](auto&& val)
-        {
-            using T = std::decay_t<decltype(val)>;
-            if constexpr (std::is_same_v<T, std::string>)
-            {
-                console::Log("[hen::cvar] " + cvar->Name + " = " + val);
-            }
-            else if constexpr (std::is_same_v<T, bool>)
-            {
-                console::Log("[hen::cvar] " + cvar->Name + " = " + std::string(val ? "true" : "false"));
-            }
-            else
-            {
-                console::Log("[hen::cvar] " + cvar->Name + " = " + std::to_string(val));
-            }
-        }, cvar->Value);
-    }
-
     CVar::CVar(const std::string& name, VALUE_TYPE defaultValue, FLAGS flag, std::function<void()> onChange)
         : Name(name), Value(defaultValue), DefaultValue(defaultValue), Flag(flag), OnChange(onChange)
     {
@@ -117,77 +82,6 @@ namespace hen::cvar
             RegisterCVar(cvar);
         }
         CVar::Pending().clear();
-    }
-
-    void System::Execute(const std::string& command)
-    {
-        std::istringstream iSString(command);
-        std::vector<std::string> tokens;
-        std::string token;
-
-        while (iSString >> token)
-        {
-            tokens.push_back(token);
-        }
-        
-        if(tokens.empty())
-        {
-            return;
-        }
-
-        std::string cvarName = tokens[0];
-
-        if (auto* cvar = GetCVar(cvarName))
-        {
-            if (tokens.size() == 1)
-            {
-                DisplayValue(cvar);
-            }
-            else
-            {
-                if ((cvar->Flag & FLAGS_PROTECTED) && ProtectionEnabled.GetBool())
-                {
-                    console::Log("[hen::cvar] Protection is enabled, type protection_enabled 0 to disable it", console::LOGLEVEL::WARNING);
-                    return;
-                }
-
-                try 
-                {
-                    if (std::holds_alternative<int>(cvar->Value))
-                    {
-                        cvar->Set(std::stoi(tokens[1]));
-                    }
-                    else if (std::holds_alternative<float>(cvar->Value))
-                    {
-                        cvar->Set(std::stof(tokens[1]));
-                    }
-                    else if (std::holds_alternative<bool>(cvar->Value))
-                    {
-                        cvar->Set(ParseBool(tokens[1]));
-                    }
-                    else
-                    {
-                        std::string newValue;
-                        for (size_t i = 1; i < tokens.size(); ++i)
-                        {
-                            if (i > 1) newValue += " ";
-                            newValue += tokens[i];
-                        }
-                        cvar->Set(newValue);
-                    }
-                }
-                catch (...) 
-                {
-                    console::Log("[hen::cvar] Invalid type for " + cvar->Name, console::LOGLEVEL::WARNING);
-                    return;
-                }
-
-                DisplayValue(cvar);
-            }
-            return;
-        }
-
-        console::Log("[hen::cvar] Unknown CVar: " + cvarName, console::LOGLEVEL::WARNING);
     }
 
     std::string System::ListCVars() const

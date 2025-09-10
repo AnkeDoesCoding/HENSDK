@@ -43,11 +43,26 @@ namespace hen
         if(input::Initialised && renderer::Initialised && console::Initialised)
         {
             Initialised = true;
+
+            std::string infoStr;
+
+            infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
+            
+            #if PLATFORM_WINDOWS
+                infoStr += " WINDOWS ";
+            #elif PLATFORM_LINUX
+                infoStr += " LINUX ";
+            #endif // !PLATFORM_WINDOWS
+
             #if DEBUG
-                console::Log("[hen::Application] Initialised with HEN Engine " + version::VERSION + " (DEBUG)" + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+                infoStr += "(DEBUG)";
             #elif RELEASE
-                console::Log("[hen::Application] Initialised with HEN Engine " + version::VERSION + " (RELEASE)" + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+                infoStr += "(RELEASE)";
             #endif // !DEBUG
+
+            infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
+
+            console::Log(infoStr, console::LOGLEVEL::INFO);
         }
     }
 

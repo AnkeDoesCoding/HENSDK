@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 4.0.2)
 
 project ("HEN SDK" CXX)
 
-#make sure to delete the build folder and reconfigure after changing this 
-set(SHIPPING_BUILD OFF CACHE BOOL "Turn this on for shipping" FORCE)
+# Make sure to delete the build folder and reconfigure after changing this 
+set(SHIPPING_BUILD OFF CACHE BOOL "" FORCE)
 
 include(FetchContent)
 
@@ -41,13 +41,12 @@ elseif(UNIX AND NOT APPLE)
     add_compile_definitions(PLATFORM_LINUX)
 endif()
 
+
 if(${SHIPPING_BUILD})
-    message("-- [HEN SDK] Shipping Build: ON")
 
     add_compile_definitions(ENGINE_RESOURCE_PATH="./res/engine/")
 
 else()
-    message("-- [HEN SDK] Shipping Build: OFF")
 
     add_compile_definitions(ENGINE_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
 
