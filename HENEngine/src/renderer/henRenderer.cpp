@@ -187,6 +187,7 @@ namespace hen::renderer
                 console::Log("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
                 CurrentRHC = nullptr;
+                console::Log("[hen::renderer] BACKEND::????? how the fuck did we get here?");
                 break;
         }
         
@@ -224,7 +225,6 @@ namespace hen::renderer
 
         DiffuseTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2.png");
         SpecularTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2_specular.png");
-
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();

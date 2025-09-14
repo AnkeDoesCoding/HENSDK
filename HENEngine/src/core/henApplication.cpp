@@ -45,7 +45,6 @@ namespace hen
             Initialised = true;
 
             std::string infoStr;
-
             infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
             
             #if PLATFORM_WINDOWS

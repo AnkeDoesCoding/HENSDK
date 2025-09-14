@@ -58,29 +58,7 @@ There are always spaces between operators:
 ```cpp
 int x = y + z; // Correct
 
-int x = y+z; // Wrong
-```
-
-### Preprocessor Directives
-
-All preprocessor directives must be indented to match the surrounding code:
-
-```cpp
-namespace hen::platform
-{
-    void GetPlatformString(std::string& str)
-    {
-        std::string platformStr = "";
-
-        #if PLATFORM_WINDOWS
-            platformStr = "Windows";
-        #elif PLATFORM_LINUX
-            platformStr = "Linux";
-        #endif
-
-        str = platformStr;
-    }
-}
+int x = y+z; // Wrong!
 ```
 
 ## Namespaces
@@ -97,19 +75,21 @@ etc...
 **AVOID** `using namespace` directives:
 
 ```cpp
-using namespace hen; // Dont do this!
+// Wrong!
+using namespace hen; 
+using namespace std;
 ```
 
 It it preferred to use C++17 namespace syntax over the old syntax, so do this:
 
 ```cpp
-// This is correct
+// Correct
 namespace hen::scene
 {
     ...
 }
 
-// This is wrong
+// Wrong!
 namespace hen
 {
     namespace scene
@@ -150,7 +130,7 @@ namespace Foo
 
     // Functions
 
-    // extern Variables
+    // extern
 }
 
 ```
@@ -163,24 +143,32 @@ The following variable prefixes MUST be used:
 
 * m_ for class/struct private members
 * s_ for class/struct static members
-* g_ any compile unit global variables
+* g_ for compile unit global variables
+* cvar_ for CVars
 
 Variables that dont go out of scope or are class/struct members must use Pascal Case:
 
 ```cpp
-int AnInteger;
+bool Initialised;
 ```
 
 Variables that are created in '.cpp' files should be static unless they **NEED** to not be static.
 
+```cpp
+namespace hen::renderer
+{   
+    static std::unique_ptr<RHC> CurrentRHC;
+}
+```
+
 Variables that are function parameters or go out of scope must use Camel Case:
 
 ```cpp
-void Create(int someParam, float anotherParam);
+Camera(glm::vec3 pos, float yaw, float pitch);
 
-void DoSomething()
+void Camera::SetDirty()
 {
-    int aLocalInteger;
+    glm::vec3 front;
 }
 ```
 
@@ -248,10 +236,30 @@ enum BUTTON
 };
 ```
 
+## Preprocessor
+
 ### Macros
 
 Macros must be declared in ALL CAPS with Snake Case at the top of the file after includes
 
 ```cpp
 #define HEN_DEBUG_BREAK() ((void)0)
+```
+
+###  Directives
+
+All preprocessor directives must be indented to match the surrounding code:
+
+```cpp
+namespace hen::platform
+{
+    void GetPlatformString(std::string& str)
+    {
+        #if PLATFORM_WINDOWS
+            str = "WINDOWS";
+        #elif PLATFORM_LINUX
+            str = "LINUX";
+        #endif
+    }
+}
 ```

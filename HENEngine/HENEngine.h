@@ -1,12 +1,13 @@
 #ifndef _HENENGINE_H_
 #define _HENENGINE_H_
 
-// Exposes all public engine features for the user
+// Exposes all public engine features for the user - 17:08 08/07/2025
 
 #include "core/henApplication.h"
 #include "core/henArguments.h"
-#include "core/henVersion.h"
+#include "core/henCVar.h"
 #include "core/henTimer.h"
+#include "core/henVersion.h"
 
 #include "graphics/henGraphics.h"
 
@@ -16,8 +17,8 @@
 #include "renderer/henRHC.h"
 
 #include "scene/henScene.h"
-#include "scene/henScene_Actors.h"
 
 #include "tools/henConsole.h"
+#include "tools/henHelpers.h"
 
 #endif // !_HENENGINE_H_s
