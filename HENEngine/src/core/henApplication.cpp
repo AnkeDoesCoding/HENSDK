@@ -4,6 +4,7 @@
 #include "core/henTimer.h"
 #include "core/henCVar.h"
 #include "input/henInput.h"
+#include "level/henLevel.h"
 #include "renderer/henRenderer.h"
 #include "tools/henConsole.h"
 
@@ -39,6 +40,19 @@ namespace hen
         renderer::Initialise(window);
 
         input::Initialise(renderer::GetRHC()->GetWindow());
+
+        level::Level level;
+        level::Entity ent = level.CreateEntity("this is the mf name");
+        ent.AddComponent<level::TransformComponent>();
+        
+        if(ent.HasComponent<level::TransformComponent>())
+        {
+            console::Log("ha");
+        }
+
+        auto& nameComp = ent.GetComponent<level::NameComponent>();
+
+        console::Log(nameComp.Name);
 
         if(input::Initialised && renderer::Initialised && console::Initialised)
         {
