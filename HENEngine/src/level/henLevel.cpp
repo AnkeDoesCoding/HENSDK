@@ -3,14 +3,19 @@
 
 namespace hen::level
 {
+    Level* ActiveLevel = nullptr;
+
     Level::Level()
     {
-
+        ActiveLevel = this;
     }
 
     Level::~Level()
     {
-
+        if(ActiveLevel == this)
+        {
+            ActiveLevel = nullptr;
+        }
     }
 
     void Level::Update(float deltaTime)
@@ -18,23 +23,22 @@ namespace hen::level
 
     }
 
+    entt::registry* Level::GetRegistry()
+    {
+        return &m_Registry;
+    }
+
     Entity Level::CreateEntity(const std::string& name)
     {
         Entity entity = {m_Registry.create(), this};
 
-        if (name.empty())
-        {
-            entity.AddComponent<NameComponent>("unknown");
-        }
-        else
-        {
-            entity.AddComponent<NameComponent>(name);
-        }
+        entity.AddComponent<NameComponent>(name.empty() ? "unknown" : name);
 
         return entity;
     }
 
     Entity::Entity(const Entity& other)
+        : m_Handle(other.m_Handle), m_Level(other.m_Level)
     {
 
     }
@@ -44,5 +48,12 @@ namespace hen::level
     {
         
     }
+
+    Level* GetActiveLevel() 
+    { 
+        return ActiveLevel; 
+    }
+
+
 
 }

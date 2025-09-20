@@ -1,9 +1,12 @@
 #ifndef _HENLEVEL_H_
 #define _HENLEVEL_H_
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include <vendor/glm/gtx/matrix_decompose.hpp>
+#include <vendor/glm/gtc/quaternion.hpp>
+#include <vendor/glm/gtx/quaternion.hpp>
 
 #include "vendor/entt/include/entt.hpp"
 
@@ -21,6 +24,8 @@ namespace hen::level
         ~Level();
 
         void Update(float deltaTime);
+
+        entt::registry* GetRegistry();
     
         Entity CreateEntity(const std::string& name = std::string());
 
@@ -74,7 +79,7 @@ namespace hen::level
         operator bool() const
         {
             return m_Handle != entt::null;
-        }
+    }
 
     private:
         entt::entity m_Handle {0};
@@ -105,6 +110,11 @@ namespace hen::level
             : Transform(transform)
         {
 
+        }
+
+        TransformComponent(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+        {
+            Transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
         }
 
         glm::vec3 GetRotation()
@@ -166,6 +176,8 @@ namespace hen::level
 
     };
 
+   Level* GetActiveLevel();
+    
 }
 
 #endif // !_HENLEVEL_H_

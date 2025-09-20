@@ -7,6 +7,7 @@
 #include "renderer/henRHC.h"
 
 #include "scene/henScene.h"
+#include "level/henLevel.h"
 
 namespace hen::renderer
 {
@@ -28,18 +29,20 @@ namespace hen::renderer
     void Update(float deltaTime);
     void ProcessEvent(const SDL_Event& event);
 
-    void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 colour);
+    void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
+
+    void RenderLevel();
 
     inline RHC*& GetRHC()
 	{
 		static RHC* context = nullptr;
 		return context;
 	}
-
     
     extern bool Initialised;
     extern BACKEND CurrentBackend;
     extern scene::actors::Camera Camera;
+    
 }
 
 #endif // !_HENRENDER_H_

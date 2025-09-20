@@ -10,11 +10,12 @@
 
 #include <memory>
 
-
 namespace hen
 {
     static Uint64 LastTick, CurrentTick = 0;
     static std::unique_ptr<cvar::System> CVarSystem;
+
+    level::Level test;
 
     Application::Application()
     {
@@ -41,18 +42,13 @@ namespace hen
 
         input::Initialise(renderer::GetRHC()->GetWindow());
 
-        level::Level level;
-        level::Entity ent = level.CreateEntity("this is the mf name yeah yeah");
-        ent.AddComponent<level::TransformComponent>();
-        
-        if(ent.HasComponent<level::TransformComponent>())
-        {
-            console::Log("ha");
-        }
+        level::Entity ent = test.CreateEntity("ent1");
 
-        auto& nameComp = ent.GetComponent<level::NameComponent>();
+        ent.AddComponent<level::TransformComponent>(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-        console::Log(nameComp.Name);
+        level::Entity ent2 = test.CreateEntity("ent2");
+
+        ent2.AddComponent<level::TransformComponent>(glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(0.0f, 56.0f, 0.0f), glm::vec3(2.0f, 0.5f, 1.0f));
 
         if(input::Initialised && renderer::Initialised && console::Initialised)
         {

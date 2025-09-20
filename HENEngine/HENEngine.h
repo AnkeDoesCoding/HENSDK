@@ -13,6 +13,8 @@
 
 #include "input/henInput.h"
 
+#include "level/henLevel.h"
+
 #include "renderer/henRenderer.h"
 #include "renderer/henRHC.h"
 
