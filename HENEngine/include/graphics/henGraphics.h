@@ -117,6 +117,7 @@ namespace hen::graphics
 
         virtual void Activate() = 0;
         virtual void Run() = 0;
+        virtual void UnBind() = 0;
 
         virtual unsigned int GetID() const = 0;
 

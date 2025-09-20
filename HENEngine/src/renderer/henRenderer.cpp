@@ -24,6 +24,57 @@ namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
 
+    static float CubeVertices[] =
+    {
+        // Front face
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+
+        // Back face
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+
+        // Left face
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+
+        // Right face
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+
+        // Top face
+        -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+
+        // Bottom face
+        -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f,  0.5f, 
+         0.5f, -0.5f,  0.5f, 
+         0.5f, -0.5f, -0.5f,
+    };
+
+    static unsigned int CubeIndices[] = 
+    {
+        0, 1, 2,  2, 3, 0,        // front
+        4, 5, 6,  6, 7, 4,        // back
+        8, 9,10, 10,11, 8,        // left
+        12,13,14, 14,15,12,        // right
+        16,17,18, 18,19,16,        // top
+        20,21,22, 22,23,20         // bottom
+    };
+
+    static std::unique_ptr<graphics::Shader> PrimitiveShader;
+
     cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
     {
         cvar_VSync.GetBool() ? CurrentRHC->EnableVSync() : CurrentRHC->DisableVSync();
@@ -97,25 +148,22 @@ namespace hen::renderer
     std::unique_ptr<graphics::Shader> CubeShader;
     std::unique_ptr<graphics::Shader> LampShader;
 
-    glm::mat4 Model = glm::mat4(1.0f); 
     glm::mat4 Projection = glm::mat4(1.0f);
     
     glm::vec3 LightPos(0.0f, 1.0f, 1.0f);
     
-    constexpr float PI = 3.14159265358979323846f;
-
     // some advanced maths shit Chat GPT helped me make
     static std::vector<float> GenerateSphereVertices(float radius, unsigned int sectorCount, unsigned int stackCount)
     {
         std::vector<float> vertices;
         float x, y, z, xy;
-        float sectorStep = 2 * PI / sectorCount;
-        float stackStep  = PI / stackCount;
+        float sectorStep = 2 * 3.14159265358979323846f / sectorCount;
+        float stackStep  = 3.14159265358979323846f / stackCount;
         float sectorAngle, stackAngle;
 
         for (unsigned int i = 0; i <= stackCount; ++i)
         {
-            stackAngle = PI / 2 - i * stackStep;
+            stackAngle = 3.14159265358979323846f / 2 - i * stackStep;
             xy = radius * cosf(stackAngle);
             y  = radius * sinf(stackAngle);
 
@@ -193,6 +241,8 @@ namespace hen::renderer
         
         HEN_ASSERT(CurrentRHC != nullptr, "[hen::renderer] RHC is nullptr");
 
+        PrimitiveShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+
         CubeShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
         LampShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderFS.glsl");
         
@@ -248,10 +298,12 @@ namespace hen::renderer
 
         Projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
 
+        glm::mat4 model = glm::mat4(1.0f);
+
         CubeShader->Run();
  
         CubeShader->SetVec3("viewPos", Camera.Position);
-        CubeShader->SetMat4("model", Model);
+        CubeShader->SetMat4("model", model);
         CubeShader->SetMat4("view", Camera.GetViewMatrix());
         CubeShader->SetMat4("projection", Projection);
 
@@ -268,11 +320,12 @@ namespace hen::renderer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, SpecularTexture);
 
-        glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
         CubeShader->SetMat4("model", model);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        CubeShader->UnBind();
 
         LampShader->Run();
 
@@ -285,8 +338,13 @@ namespace hen::renderer
 
         LampVA->Bind();
         glDrawElements(GL_TRIANGLES, (GLsizei)LampIndices.size(), GL_UNSIGNED_INT, nullptr);
+        LampVA->UnBind();
+    
+        LampShader->UnBind();
 
         Camera.SetDirty();
+
+        RenderPrimitive(PRIMITIVES::CUBE, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         CurrentRHC->DisableDepth();
 
@@ -346,5 +404,38 @@ namespace hen::renderer
     void ProcessEvent(const SDL_Event& event)
     {
         ImGui_ImplSDL3_ProcessEvent(&event);
+    }
+
+    void RenderPrimitive(PRIMITIVES primitive, glm::vec3 position, glm::vec3 colour)
+    {
+        static std::unique_ptr <graphics::VertexArray> vertexArray = graphics::VertexArray::Create();
+        static std::shared_ptr <graphics::VertexBuffer> vertexBuffer = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
+        static std::shared_ptr <graphics::IndexBuffer> indexBuffer = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
+
+        graphics::BufferLayout layout = 
+        {
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"}
+        };
+
+        vertexBuffer->SetLayout(layout);
+
+        vertexArray->AddVertexBuffer(vertexBuffer);
+        vertexArray->SetIndexBuffer(indexBuffer);
+        
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+
+        PrimitiveShader->Run();
+
+        PrimitiveShader->SetVec3("colour", colour);
+
+        PrimitiveShader->SetMat4("projection", Projection);
+        PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
+        PrimitiveShader->SetMat4("model", model);
+
+        vertexArray->Bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei)indexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+        vertexArray->UnBind();
+
+        PrimitiveShader->UnBind();
     }
 }

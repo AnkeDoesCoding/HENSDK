@@ -69,6 +69,7 @@ namespace hen::graphics
 
         void Activate() override;
         void Run() override;
+        void UnBind() override;
 
         unsigned int GetID() const override;
 

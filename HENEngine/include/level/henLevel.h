@@ -3,6 +3,8 @@
 
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
+#include <vendor/glm/gtx/matrix_decompose.hpp>
+
 #include "vendor/entt/include/entt.hpp"
 
 #include "tools/henConsole.h"
@@ -42,7 +44,7 @@ namespace hen::level
         bool HasComponent() const
         {
             return m_Level->m_Registry.valid(m_Handle) && m_Level->m_Registry.all_of<T>(m_Handle);
-        }
+        }      
 
         template<typename T, typename... Args>
         T& AddComponent(Args&&... args)
@@ -55,7 +57,7 @@ namespace hen::level
         template<typename T>
         T& GetComponent()
         {
-            HEN_ASSERT(!HasComponent<T>(), "Entity doesn't have this component");
+            HEN_ASSERT(HasComponent<T>(), "Entity doesn't have this component");
 
             return m_Level->m_Registry.get<T>(m_Handle);
         }
@@ -63,7 +65,9 @@ namespace hen::level
         template<typename T>
         void RemoveComponent()
         {
-            HEN_ASSERT(!HasComponent<T>(), "Entity doesn't have this component");
+            
+            HEN_ASSERT(HasComponent<T>(), "Entity doesn't have this component");
+            
             m_Level->m_Registry.remove<T>(m_Handle);
         }
 
@@ -105,12 +109,35 @@ namespace hen::level
 
         glm::vec3 GetRotation()
         {
-            // return
+            glm::vec3 scale, translation, skew;
+            glm::vec4 perspective;
+            glm::quat rotation;
+
+            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
+
+            return glm::eulerAngles(rotation);
         }
 
         glm::vec3 GetPosition()
         {
-            // return
+            glm::vec3 scale, translation, skew;
+            glm::vec4 perspective;
+            glm::quat rotation;
+
+            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
+
+            return translation;
+        }
+
+        glm::vec3 GetScale()
+        {
+            glm::vec3 scale, translation, skew;
+            glm::vec4 perspective;
+            glm::quat rotation;
+
+            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
+
+            return scale;
         }
 
         operator glm::mat4& ()
@@ -124,6 +151,21 @@ namespace hen::level
         }
 
     };
+
+    struct CameraComponent
+    {
+        float FOV = 90.0f;
+
+        CameraComponent() = default;
+        CameraComponent(const CameraComponent& other) = default;
+        CameraComponent(const float& fov)
+            : FOV(fov)
+        {
+
+        }
+
+    };
+
 }
 
 #endif // !_HENLEVEL_H_

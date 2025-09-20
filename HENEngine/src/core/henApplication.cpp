@@ -42,7 +42,7 @@ namespace hen
         input::Initialise(renderer::GetRHC()->GetWindow());
 
         level::Level level;
-        level::Entity ent = level.CreateEntity("this is the mf name");
+        level::Entity ent = level.CreateEntity("this is the mf name yeah yeah");
         ent.AddComponent<level::TransformComponent>();
         
         if(ent.HasComponent<level::TransformComponent>())

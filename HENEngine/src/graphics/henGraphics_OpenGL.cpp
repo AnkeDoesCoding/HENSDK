@@ -246,6 +246,11 @@ namespace hen::graphics
         glUseProgram(m_ID);
     }
 
+    void Shader_OpenGL::UnBind()
+    {
+        glUseProgram(0);
+    }
+
     unsigned int Shader_OpenGL::GetID() const
     {
         return m_ID;
