@@ -1,17 +1,12 @@
 #ifndef _HENLEVEL_H_
 #define _HENLEVEL_H_
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "vendor/glm/glm.hpp"
-#include "vendor/glm/gtc/matrix_transform.hpp"
-#include <vendor/glm/gtx/matrix_decompose.hpp>
-#include <vendor/glm/gtc/quaternion.hpp>
-#include <vendor/glm/gtx/quaternion.hpp>
-
 #include "vendor/entt/include/entt.hpp"
 
 #include "tools/henConsole.h"
+#include "level/henLevel_Components.h"
 
+#define UNDERLYING_VIEW decltype(std::declval<entt::registry>().view<Components...>())
 
 namespace hen::level
 {
@@ -29,12 +24,16 @@ namespace hen::level
     
         Entity CreateEntity(const std::string& name = std::string());
 
-    public:
+        template<typename... Components>
+        auto GetView() 
+        {
+            return View<Components...>(m_Registry, this);
+        }
 
+    public:
         glm::vec3 Up;
 
     private:
-        
         entt::registry m_Registry;
         
     };
@@ -45,135 +44,117 @@ namespace hen::level
         Entity(const Entity& other);
         Entity(entt::entity handle, Level* level);
 
-        template<typename T>
+        template<typename Component>
         bool HasComponent() const
         {
-            return m_Level->m_Registry.valid(m_Handle) && m_Level->m_Registry.all_of<T>(m_Handle);
+            return m_Level->m_Registry.valid(m_Handle) && m_Level->m_Registry.all_of<Component>(m_Handle);
         }      
 
-        template<typename T, typename... Args>
-        T& AddComponent(Args&&... args)
+        template<typename Component, typename... Args>
+        Component& AddComponent(Args&&... args)
         {
-            HEN_ASSERT(!HasComponent<T>(), "Entity already has this component");
+            HEN_ASSERT(!HasComponent<Component>(), "Entity already has this component");
 
-            return m_Level->m_Registry.emplace<T>(m_Handle, std::forward<Args>(args)...);
+            return m_Level->m_Registry.emplace<Component>(m_Handle, std::forward<Args>(args)...);
         }
 
-        template<typename T>
-        T& GetComponent()
+        template<typename Component>
+        Component& GetComponent()
         {
-            HEN_ASSERT(HasComponent<T>(), "Entity doesn't have this component");
+            HEN_ASSERT(HasComponent<Component>(), "Entity doesn't have this component");
 
-            return m_Level->m_Registry.get<T>(m_Handle);
+            return m_Level->m_Registry.get<Component>(m_Handle);
         }
 
-        template<typename T>
+        template<typename Component>
         void RemoveComponent()
         {
             
-            HEN_ASSERT(HasComponent<T>(), "Entity doesn't have this component");
+            HEN_ASSERT(HasComponent<Component>(), "Entity doesn't have this component");
             
-            m_Level->m_Registry.remove<T>(m_Handle);
+            m_Level->m_Registry.remove<Component>(m_Handle);
         }
 
         operator bool() const
         {
             return m_Handle != entt::null;
-    }
+        }
+
+        operator entt::entity() const 
+        { 
+            return m_Handle; 
+        }
 
     private:
-        entt::entity m_Handle {0};
+        entt::entity m_Handle { entt::null };
         Level* m_Level = nullptr;
 
     };
 
-    struct NameComponent
+    template<typename... Components>
+    class View
     {
-        std::string Name = "unknown";
+    public:
 
-        NameComponent() = default;
-        NameComponent(const NameComponent& other) = default;
-        NameComponent(const std::string& name)
-            : Name(name)
-        {
-
-        }
-    };
-
-    struct TransformComponent
-    {
-        glm::mat4 Transform;
-
-        TransformComponent() = default;
-        TransformComponent(const TransformComponent& other) = default;
-        TransformComponent(const glm::mat4& transform)
-            : Transform(transform)
+        explicit View(entt::registry& registry, Level* level)
+            : m_View(registry.view<Components...>()), m_Level(level) 
         {
 
         }
 
-        TransformComponent(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+        class Iterator
         {
-            Transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+        public:
+            Iterator(typename UNDERLYING_VIEW::iterator it, Level* level)
+                : m_It(it), m_Level(level) 
+            {
+                
+            }
+
+            Entity operator*() const 
+            { 
+                return Entity(*m_It, m_Level); 
+            }
+
+            Iterator& operator++() 
+            { 
+                ++m_It; return *this; 
+            }
+
+            bool operator!=(const Iterator& other) const 
+            { 
+                return m_It != other.m_It; 
+            }
+
+        private:
+            typename UNDERLYING_VIEW::iterator m_It;
+            Level* m_Level;
+        };
+
+        Iterator begin() 
+        { 
+            return Iterator(m_View.begin(), m_Level); 
         }
 
-        glm::vec3 GetRotation()
-        {
-            glm::vec3 scale, translation, skew;
-            glm::vec4 perspective;
-            glm::quat rotation;
-
-            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
-
-            return glm::eulerAngles(rotation);
+        Iterator end()   
+        { 
+            return Iterator(m_View.end(),   m_Level); 
         }
 
-        glm::vec3 GetPosition()
+        template<typename... T>
+        auto Get(Entity entity)
         {
-            glm::vec3 scale, translation, skew;
-            glm::vec4 perspective;
-            glm::quat rotation;
-
-            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
-
-            return translation;
+            return m_View.template get<T...>((entt::entity)entity);
         }
 
-        glm::vec3 GetScale()
+        bool Contains(Entity entity) const
         {
-            glm::vec3 scale, translation, skew;
-            glm::vec4 perspective;
-            glm::quat rotation;
-
-            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
-
-            return scale;
+            return m_View.contains((entt::entity)entity);
         }
 
-        operator glm::mat4& ()
-        {
-            return Transform;
-        }
-
-        operator const glm::mat4& () const
-        {
-            return Transform;
-        }
-
-    };
-
-    struct CameraComponent
-    {
-        float FOV = 90.0f;
-
-        CameraComponent() = default;
-        CameraComponent(const CameraComponent& other) = default;
-        CameraComponent(const float& fov)
-            : FOV(fov)
-        {
-
-        }
-
+    private:
+        UNDERLYING_VIEW m_View;
+        Level* m_Level = nullptr;
     };
 
    Level* GetActiveLevel();

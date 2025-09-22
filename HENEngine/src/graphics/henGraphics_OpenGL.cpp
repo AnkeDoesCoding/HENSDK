@@ -181,10 +181,10 @@ namespace hen::graphics
     Shader_OpenGL::Shader_OpenGL(const char* vsPath, const char* fsPath)
         : m_VSPath(vsPath), m_FSPath(fsPath)
     {
-        Activate();
+        Compile();
     }
 
-    void Shader_OpenGL::Activate()
+    void Shader_OpenGL::Compile()
     {
         std::string vsSource, fsSource;
         std::ifstream vsFile, fsFile;
@@ -241,7 +241,7 @@ namespace hen::graphics
         glDeleteShader(fragShader);
     }
 
-    void Shader_OpenGL::Run()
+    void Shader_OpenGL::Bind()
     {
         glUseProgram(m_ID);
     }

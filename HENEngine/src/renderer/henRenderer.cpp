@@ -261,7 +261,7 @@ namespace hen::renderer
 
         glm::mat4 model = glm::mat4(1.0f);
 
-        CubeShader->Run();
+        CubeShader->Bind();
  
         CubeShader->SetVec3("viewPos", Camera.Position);
         CubeShader->SetMat4("model", model);
@@ -391,7 +391,7 @@ namespace hen::renderer
         glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
         model = glm::scale(model, scale);
 
-        PrimitiveShader->Run();
+        PrimitiveShader->Bind();
 
         PrimitiveShader->SetVec3("colour", colour);
 
@@ -410,11 +410,13 @@ namespace hen::renderer
     {
         if (auto level = level::GetActiveLevel())
         {
-            auto view = level->GetRegistry()->view<level::TransformComponent>();
+            auto view = level->GetView<level::TransformComponent, level::MeshComponent>();
 
             for (auto entity : view)
             {
-                auto& transform = view.get<level::TransformComponent>(entity);
+                auto& transform = entity.GetComponent<hen::level::TransformComponent>();
+                auto& mesh      = entity.GetComponent<hen::level::MeshComponent>();
+
 
                 glm::vec3 position = transform.GetPosition();
                 glm::vec3 rotation = transform.GetRotation();

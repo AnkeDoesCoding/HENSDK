@@ -45,10 +45,12 @@ namespace hen
         level::Entity ent = test.CreateEntity("ent1");
 
         ent.AddComponent<level::TransformComponent>(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+        ent.AddComponent<level::MeshComponent>();
 
         level::Entity ent2 = test.CreateEntity("ent2");
 
         ent2.AddComponent<level::TransformComponent>(glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(0.0f, 56.0f, 0.0f), glm::vec3(2.0f, 0.5f, 1.0f));
+        ent2.AddComponent<level::MeshComponent>();
 
         if(input::Initialised && renderer::Initialised && console::Initialised)
         {
