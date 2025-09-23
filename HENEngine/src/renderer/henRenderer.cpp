@@ -288,7 +288,7 @@ namespace hen::renderer
 
         CubeShader->UnBind();
 
-        // RenderPrimitive(PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
+        RenderPrimitive(PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
 
         RenderLevel();
 
@@ -356,35 +356,42 @@ namespace hen::renderer
 
     void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
     {
-        static std::unique_ptr <graphics::VertexArray> vertexArray = graphics::VertexArray::Create();
-        static std::shared_ptr <graphics::VertexBuffer> vertexBuffer;
-        static std::shared_ptr <graphics::IndexBuffer> indexBuffer;
+        // This function looks like shit and will perform like shit, i need to clean it up
+        std::unique_ptr <graphics::VertexArray> cubeVertexArray = graphics::VertexArray::Create();
+        std::unique_ptr <graphics::VertexArray> sphereVertexArray = graphics::VertexArray::Create();
 
-        switch(primitve)
-        {
-            case PRIMITIVES::CUBE:
-                vertexBuffer = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
-                indexBuffer = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
-                break;
-            case PRIMITIVES::SPHERE:
-                vertexBuffer = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
-                indexBuffer = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
-                break;
-            default:
-                break;
-        }
-        
+        std::shared_ptr <graphics::VertexBuffer> vertexBuffer;
+        std::shared_ptr <graphics::IndexBuffer> indexBuffer;
 
         graphics::BufferLayout layout = 
         {
             {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"}
         };
 
-        vertexBuffer->SetLayout(layout);
+        switch(primitve)
+        {
+            case PRIMITIVES::CUBE:
+                vertexBuffer = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
+                indexBuffer = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
 
-        vertexArray->AddVertexBuffer(vertexBuffer);
-        vertexArray->SetIndexBuffer(indexBuffer);
-        
+                vertexBuffer->SetLayout(layout);
+
+                cubeVertexArray->AddVertexBuffer(vertexBuffer);
+                cubeVertexArray->SetIndexBuffer(indexBuffer);
+                break;
+            case PRIMITIVES::SPHERE:
+                vertexBuffer = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
+                indexBuffer = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
+
+                vertexBuffer->SetLayout(layout);
+
+                sphereVertexArray->AddVertexBuffer(vertexBuffer);
+                sphereVertexArray->SetIndexBuffer(indexBuffer);
+                break;
+            default:
+                break;
+        }
+
         glm::quat quat = glm::quat(glm::vec3(rotation.x, rotation.y, rotation.z));
         glm::mat4 rotationMatrix = glm::toMat4(quat);
 
@@ -399,9 +406,21 @@ namespace hen::renderer
         PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
         PrimitiveShader->SetMat4("model", model);
 
-        vertexArray->Bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei)indexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
-        vertexArray->UnBind();
+        switch(primitve)
+        {
+            case PRIMITIVES::CUBE:
+                cubeVertexArray->Bind();
+                glDrawElements(GL_TRIANGLES, (GLsizei)indexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                cubeVertexArray->UnBind();
+                break;
+            case PRIMITIVES::SPHERE:
+                sphereVertexArray->Bind();
+                glDrawElements(GL_TRIANGLES, (GLsizei)indexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                sphereVertexArray->UnBind();
+                break;
+            default:
+                break;
+        }
 
         PrimitiveShader->UnBind();
     }
