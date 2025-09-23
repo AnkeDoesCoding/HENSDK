@@ -125,34 +125,74 @@ namespace hen::graphics
     void VertexArray_OpenGL::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
     {
         Bind();
-        HEN_ASSERT(vertexBuffer != nullptr, "[hen::graphics] Vertex buffer is nullptr");
+        HEN_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "[hen::graphics] Vertex buffer has no layout");
         vertexBuffer->Bind();
 
 		const auto& layout = vertexBuffer->GetLayout();
 		for (const auto& element : layout)
         {
-            glEnableVertexAttribArray(m_VertexBufferIndex);
-
-            if (element.IsIntegerType()) // ints, uints, bools
+            switch (element.Type)
             {
-                glVertexAttribIPointer(
-                    m_VertexBufferIndex,
-                    element.GetComponentCount(),
-                    ShaderPrimitiveToOpenGLType(element.Type),
-                    layout.GetStride(),
-                    reinterpret_cast<const void*>(element.Offset)
-                );
-            }
-            else // floats, vec2, vec3, vec4, etc.
-            {
-                glVertexAttribPointer(
-                    m_VertexBufferIndex,
-                    element.GetComponentCount(),
-                    ShaderPrimitiveToOpenGLType(element.Type),
-                    element.Normalised ? GL_TRUE : GL_FALSE,
-                    layout.GetStride(),
-                    reinterpret_cast<const void*>(element.Offset)
-                );
+                case SHADER_PRIMITIVES::FLOAT:
+                case SHADER_PRIMITIVES::FLOAT2:
+                case SHADER_PRIMITIVES::FLOAT3:
+                case SHADER_PRIMITIVES::FLOAT4:
+                {
+                    glEnableVertexAttribArray(m_VertexBufferIndex);
+                    glVertexAttribPointer
+                    (
+                        m_VertexBufferIndex,
+                        element.GetComponentCount(),
+                        ShaderPrimitiveToOpenGLType(element.Type),
+                        element.Normalised ? GL_TRUE : GL_FALSE,
+                        layout.GetStride(),
+                        (const void*) element.Offset
+                    );
+                    m_VertexBufferIndex++;
+                    break;
+                }
+                case SHADER_PRIMITIVES::INT:
+                case SHADER_PRIMITIVES::INT2:
+                case SHADER_PRIMITIVES::INT3:
+                case SHADER_PRIMITIVES::INT4:
+                case SHADER_PRIMITIVES::BOOL:
+                {
+                    glEnableVertexAttribArray(m_VertexBufferIndex);
+                    glVertexAttribIPointer
+                    (
+                        m_VertexBufferIndex,
+                        element.GetComponentCount(),
+                        ShaderPrimitiveToOpenGLType(element.Type),
+                        layout.GetStride(),
+                        (const void*) element.Offset
+                    );
+                    m_VertexBufferIndex++;
+                    break;
+                }
+                case SHADER_PRIMITIVES::MAT3:
+                case SHADER_PRIMITIVES::MAT4:
+                {
+                    uint8_t count = element.GetComponentCount();
+                    for(uint8_t i = 0; 1 < count; i++)
+                    {
+                        glEnableVertexAttribArray(m_VertexBufferIndex);
+                        glVertexAttribPointer
+                        (
+                            m_VertexBufferIndex,
+                            count,
+                            ShaderPrimitiveToOpenGLType(element.Type),
+                            element.Normalised ? GL_TRUE : GL_FALSE,
+                            layout.GetStride(),
+                            (const void*) (element.Offset + sizeof(float) * count * i)
+                        );
+                        glVertexAttribDivisor(m_VertexBufferIndex, 1);
+                        m_VertexBufferIndex++;
+                    }
+                    break;
+                }
+                default:
+                    HEN_ASSERT(false, "SHADER_PRIMITIVES::???? ");
+                    break;
             }
         }
 
