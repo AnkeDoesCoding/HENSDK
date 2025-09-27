@@ -30,30 +30,30 @@ namespace hen::renderer
 
     static float CubeVertices[] =
     {
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-         0.5f, -0.5f,  0.5f, 
-         0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+        -0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f,-1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f,-1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   0.0f,-1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   0.0f,-1.0f, 0.0f
     };
 
     static unsigned int CubeIndices[] = 
@@ -66,34 +66,35 @@ namespace hen::renderer
         20,21,22, 22,23,20
     };
 
-    static float SphereVertices[] = 
+    static float SphereVertices[] =
     {
-        0.0f, 1.0f, 0.0f,
-        0.0f, 0.707f, 0.707f,
-        0.5f, 0.707f, 0.5f,
-        0.707f, 0.707f, 0.0f,
-        0.5f, 0.707f, -0.5f,
-        0.0f, 0.707f, -0.707f,
-        -0.5f, 0.707f, -0.5f,
-        -0.707f, 0.707f, 0.0f,
-        -0.5f, 0.707f, 0.5f,
-        0.0f, 0.0f, 1.0f,
-        0.707f, 0.0f, 0.707f,
-        1.0f, 0.0f, 0.0f,
-        0.707f, 0.0f, -0.707f,
-        0.0f, 0.0f, -1.0f,
-        -0.707f, 0.0f, -0.707f,
-        -1.0f, 0.0f, 0.0f,
-        -0.707f, 0.0f, 0.707f,
-        0.0f, -0.707f, 0.707f,
-        0.5f, -0.707f, 0.5f,
-        0.707f, -0.707f, 0.0f,
-        0.5f, -0.707f, -0.5f,
-        0.0f, -0.707f, -0.707f,
-        -0.5f, -0.707f, -0.5f,
-        -0.707f, -0.707f, 0.0f,
-        -0.5f, -0.707f, 0.5f,
-        0.0f, -1.0f, 0.0f
+        // position             // normal
+         0.0f,  1.0f,  0.0f,    0.0f,  1.0f,  0.0f,
+         0.0f,  0.707f,  0.707f, 0.0f,  0.707f,  0.707f,
+         0.5f,  0.707f,  0.5f,   0.5f,  0.707f,  0.5f,
+         0.707f, 0.707f,  0.0f,  0.707f, 0.707f, 0.0f,
+         0.5f,  0.707f, -0.5f,  0.5f, 0.707f, -0.5f,
+         0.0f,  0.707f, -0.707f, 0.0f, 0.707f, -0.707f,
+        -0.5f, 0.707f, -0.5f,  -0.5f, 0.707f, -0.5f,
+        -0.707f, 0.707f, 0.0f,  -0.707f, 0.707f, 0.0f,
+        -0.5f, 0.707f, 0.5f,   -0.5f, 0.707f, 0.5f,
+         0.0f, 0.0f, 1.0f,      0.0f, 0.0f, 1.0f,
+         0.707f, 0.0f, 0.707f,  0.707f, 0.0f, 0.707f,
+         1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+         0.707f, 0.0f, -0.707f, 0.707f, 0.0f, -0.707f,
+         0.0f, 0.0f, -1.0f,     0.0f, 0.0f, -1.0f,
+        -0.707f, 0.0f, -0.707f, -0.707f, 0.0f, -0.707f,
+        -1.0f, 0.0f, 0.0f,     -1.0f, 0.0f, 0.0f,
+        -0.707f, 0.0f, 0.707f, -0.707f, 0.0f, 0.707f,
+         0.0f, -0.707f, 0.707f, 0.0f, -0.707f, 0.707f,
+         0.5f, -0.707f, 0.5f,   0.5f, -0.707f, 0.5f,
+         0.707f, -0.707f, 0.0f, 0.707f, -0.707f, 0.0f,
+         0.5f, -0.707f, -0.5f,  0.5f, -0.707f, -0.5f,
+         0.0f, -0.707f, -0.707f,0.0f, -0.707f, -0.707f,
+        -0.5f, -0.707f, -0.5f, -0.5f, -0.707f, -0.5f,
+        -0.707f, -0.707f, 0.0f, -0.707f, -0.707f, 0.0f,
+        -0.5f, -0.707f, 0.5f,  -0.5f, -0.707f, 0.5f,
+         0.0f, -1.0f, 0.0f,     0.0f, -1.0f, 0.0f
     };
 
 
@@ -356,52 +357,45 @@ namespace hen::renderer
 
     void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
     {
-        // This function looks like shit and will perform like shit, i need to clean it up
-        std::unique_ptr <graphics::VertexArray> cubeVertexArray = graphics::VertexArray::Create();
-        std::unique_ptr <graphics::VertexArray> sphereVertexArray = graphics::VertexArray::Create();
+        static std::unique_ptr <graphics::VertexArray> cubeVertexArray = graphics::VertexArray::Create();
+        static std::unique_ptr <graphics::VertexArray> sphereVertexArray = graphics::VertexArray::Create();
 
-        std::shared_ptr <graphics::VertexBuffer> vertexBuffer;
-        std::shared_ptr <graphics::IndexBuffer> indexBuffer;
+        static std::shared_ptr<graphics::VertexBuffer> cubeVB = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
+        static std::shared_ptr<graphics::IndexBuffer> cubeIB = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
 
-        graphics::BufferLayout layout = 
+        static std::shared_ptr<graphics::VertexBuffer> sphereVB = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
+        static std::shared_ptr<graphics::IndexBuffer> sphereIB = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
+
+        static graphics::BufferLayout layout = 
         {
-            {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"}
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"},
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aNormal"}
         };
 
-        switch(primitve)
+        static bool initialised = false;
+        
+        if (!initialised)
         {
-            case PRIMITIVES::CUBE:
-                vertexBuffer = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
-                indexBuffer = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
+            cubeVertexArray = graphics::VertexArray::Create();
+            cubeVB->SetLayout(layout);
+            cubeVertexArray->AddVertexBuffer(cubeVB);
+            cubeVertexArray->SetIndexBuffer(cubeIB);
 
-                vertexBuffer->SetLayout(layout);
+            sphereVertexArray = graphics::VertexArray::Create();
+            sphereVB->SetLayout(layout);
+            sphereVertexArray->AddVertexBuffer(sphereVB);
+            sphereVertexArray->SetIndexBuffer(sphereIB);
 
-                cubeVertexArray->AddVertexBuffer(vertexBuffer);
-                cubeVertexArray->SetIndexBuffer(indexBuffer);
-                break;
-            case PRIMITIVES::SPHERE:
-                vertexBuffer = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
-                indexBuffer = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
-
-                vertexBuffer->SetLayout(layout);
-
-                sphereVertexArray->AddVertexBuffer(vertexBuffer);
-                sphereVertexArray->SetIndexBuffer(indexBuffer);
-                break;
-            default:
-                break;
+            initialised = true;
         }
 
-        glm::quat quat = glm::quat(glm::vec3(rotation.x, rotation.y, rotation.z));
-        glm::mat4 rotationMatrix = glm::toMat4(quat);
-
+        glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotation));
         glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
         model = glm::scale(model, scale);
 
         PrimitiveShader->Bind();
 
         PrimitiveShader->SetVec3("colour", colour);
-
         PrimitiveShader->SetMat4("projection", Projection);
         PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
         PrimitiveShader->SetMat4("model", model);
@@ -409,15 +403,19 @@ namespace hen::renderer
         switch(primitve)
         {
             case PRIMITIVES::CUBE:
+            {
                 cubeVertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, (GLsizei)indexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                glDrawElements(GL_TRIANGLES, (GLsizei)cubeVertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
                 cubeVertexArray->UnBind();
                 break;
+            }
             case PRIMITIVES::SPHERE:
+            {
                 sphereVertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, (GLsizei)indexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                glDrawElements(GL_TRIANGLES, (GLsizei)sphereVertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
                 sphereVertexArray->UnBind();
                 break;
+            }
             default:
                 break;
         }
