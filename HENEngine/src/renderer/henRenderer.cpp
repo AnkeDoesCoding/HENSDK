@@ -283,8 +283,6 @@ namespace hen::renderer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, SpecularTexture);
 
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        CubeShader->SetMat4("model", model);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -292,13 +290,11 @@ namespace hen::renderer
 
         RenderPrimitive(PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
 
-        RenderLevel();
-
         Camera.SetDirty();
 
-        CurrentRHC->DisableDepth();
+        RenderLevel();
 
-        //2D renderering goes here
+        CurrentRHC->DisableDepth();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
@@ -433,12 +429,11 @@ namespace hen::renderer
             for (auto entity : view)
             {
                 auto& transform = entity.GetComponent<hen::level::TransformComponent>();
-                auto& mesh      = entity.GetComponent<hen::level::MeshComponent>();
+                auto& mesh = entity.GetComponent<hen::level::MeshComponent>();
 
                 glm::vec3 position = transform.GetPosition();
                 glm::vec3 rotation = transform.GetRotation();
                 glm::vec3 scale    = transform.GetScale();
-
 
                 glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotation));
                 glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
@@ -460,7 +455,6 @@ namespace hen::renderer
                 
                 PrimitiveShader->UnBind();
                 
-                // RenderPrimitive(PRIMITIVES::CUBE, position, rotation, scale, glm::vec3(1.0f));
             }
         }
     }

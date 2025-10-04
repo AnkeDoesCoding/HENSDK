@@ -45,7 +45,6 @@ namespace hen
         level::Entity ent = test.CreateEntity("ent1");
 
         ent.AddComponent<level::TransformComponent>(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-
         auto& mesh1 = ent.AddComponent<level::MeshComponent>();
 
         mesh1.Verticies = 
