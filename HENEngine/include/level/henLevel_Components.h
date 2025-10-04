@@ -8,6 +8,8 @@
 #include <vendor/glm/gtc/quaternion.hpp>
 #include <vendor/glm/gtx/quaternion.hpp>
 
+#include "graphics/henGraphics.h"
+
 #include <string>
 
 namespace hen::level
@@ -94,12 +96,73 @@ namespace hen::level
 
     struct MeshComponent
     {
-        std::vector<float> Verticies;
+        std::vector<glm::vec3> Verticies;
+        std::vector<glm::vec3> Normals;
         std::vector<uint32_t> Indicies;
+
+        std::shared_ptr<graphics::VertexArray> VertexArray;
+        std::shared_ptr<graphics::VertexBuffer> VertexBuffer;
+        std::shared_ptr<graphics::IndexBuffer> IndexBuffer;
+
+        graphics::BufferLayout BufferLayout
+        {
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"},
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aNormal"}
+        };
+
+        unsigned int ID;
 
         MeshComponent() = default;
 
         MeshComponent(const MeshComponent& other) = default;
+
+        void CreateRenderData()
+        {
+            HEN_ASSERT(Verticies.size() == Normals.size(), "Positions and Normals size mismatch!");
+
+            std::vector<float> interleavedBuffer;
+            interleavedBuffer.reserve(Verticies.size() * 6);
+
+            for (size_t i = 0; i < Verticies.size(); i++)
+            {
+                interleavedBuffer.push_back(Verticies[i].x);
+                interleavedBuffer.push_back(Verticies[i].y);
+                interleavedBuffer.push_back(Verticies[i].z);
+
+                interleavedBuffer.push_back(Normals[i].x);
+                interleavedBuffer.push_back(Normals[i].y);
+                interleavedBuffer.push_back(Normals[i].z);
+            }
+            
+            VertexBuffer = graphics::VertexBuffer::Create(interleavedBuffer.size() * sizeof(float), interleavedBuffer.data());
+            VertexBuffer->SetLayout(BufferLayout);
+
+            IndexBuffer = graphics::IndexBuffer::Create(Indicies.size(), Indicies.data());
+
+            VertexArray = graphics::VertexArray::Create();
+            VertexArray->AddVertexBuffer(VertexBuffer);
+            VertexArray->SetIndexBuffer(IndexBuffer);
+
+        }
+
+        void DeleteRenderData()
+        {
+            if (VertexArray)
+            {
+                VertexArray->UnBind();
+                VertexArray.reset();
+            }
+        
+            if (VertexBuffer)
+            {
+                VertexBuffer.reset();
+            }
+        
+            if (IndexBuffer)
+            {
+                IndexBuffer.reset();
+            }
+        }
 
     };
 

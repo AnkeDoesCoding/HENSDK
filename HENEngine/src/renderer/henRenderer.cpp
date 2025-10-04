@@ -30,6 +30,7 @@ namespace hen::renderer
 
     static float CubeVertices[] =
     {
+        // vertices           // normals
         -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
          0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
          0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
@@ -60,7 +61,7 @@ namespace hen::renderer
     {
         0, 1, 2,  2, 3, 0,
         4, 5, 6,  6, 7, 4,
-        8, 9,10, 10,11, 8,
+        8, 9,10,  10,11,8,
         12,13,14, 14,15,12,
         16,17,18, 18,19,16,
         20,21,22, 22,23,20
@@ -68,33 +69,33 @@ namespace hen::renderer
 
     static float SphereVertices[] =
     {
-        // position             // normal
-         0.0f,  1.0f,  0.0f,    0.0f,  1.0f,  0.0f,
-         0.0f,  0.707f,  0.707f, 0.0f,  0.707f,  0.707f,
-         0.5f,  0.707f,  0.5f,   0.5f,  0.707f,  0.5f,
-         0.707f, 0.707f,  0.0f,  0.707f, 0.707f, 0.0f,
-         0.5f,  0.707f, -0.5f,  0.5f, 0.707f, -0.5f,
-         0.0f,  0.707f, -0.707f, 0.0f, 0.707f, -0.707f,
-        -0.5f, 0.707f, -0.5f,  -0.5f, 0.707f, -0.5f,
-        -0.707f, 0.707f, 0.0f,  -0.707f, 0.707f, 0.0f,
-        -0.5f, 0.707f, 0.5f,   -0.5f, 0.707f, 0.5f,
-         0.0f, 0.0f, 1.0f,      0.0f, 0.0f, 1.0f,
-         0.707f, 0.0f, 0.707f,  0.707f, 0.0f, 0.707f,
-         1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
-         0.707f, 0.0f, -0.707f, 0.707f, 0.0f, -0.707f,
-         0.0f, 0.0f, -1.0f,     0.0f, 0.0f, -1.0f,
-        -0.707f, 0.0f, -0.707f, -0.707f, 0.0f, -0.707f,
-        -1.0f, 0.0f, 0.0f,     -1.0f, 0.0f, 0.0f,
-        -0.707f, 0.0f, 0.707f, -0.707f, 0.0f, 0.707f,
-         0.0f, -0.707f, 0.707f, 0.0f, -0.707f, 0.707f,
-         0.5f, -0.707f, 0.5f,   0.5f, -0.707f, 0.5f,
-         0.707f, -0.707f, 0.0f, 0.707f, -0.707f, 0.0f,
-         0.5f, -0.707f, -0.5f,  0.5f, -0.707f, -0.5f,
-         0.0f, -0.707f, -0.707f,0.0f, -0.707f, -0.707f,
-        -0.5f, -0.707f, -0.5f, -0.5f, -0.707f, -0.5f,
-        -0.707f, -0.707f, 0.0f, -0.707f, -0.707f, 0.0f,
-        -0.5f, -0.707f, 0.5f,  -0.5f, -0.707f, 0.5f,
-         0.0f, -1.0f, 0.0f,     0.0f, -1.0f, 0.0f
+        // vertices                // normals
+         0.0f,    1.0f,    0.0f,    0.0f,    1.0f,    0.0f,
+         0.0f,    0.707f,  0.707f,  0.0f,    0.707f,  0.707f,
+         0.5f,    0.707f,  0.5f,    0.5f,    0.707f,  0.5f,
+         0.707f,  0.707f,  0.0f,    0.707f,  0.707f,  0.0f,
+         0.5f,    0.707f, -0.5f,    0.5f,    0.707f, -0.5f,
+         0.0f,    0.707f, -0.707f,  0.0f,    0.707f, -0.707f,
+        -0.5f,    0.707f, -0.5f,   -0.5f,    0.707f, -0.5f,
+        -0.707f,  0.707f,  0.0f,   -0.707f,  0.707f,  0.0f,
+        -0.5f,    0.707f,  0.5f,   -0.5f,    0.707f,  0.5f,
+         0.0f,    0.0f,    1.0f,    0.0f,    0.0f,    1.0f,
+         0.707f,  0.0f,    0.707f,  0.707f,  0.0f,    0.707f,
+         1.0f,    0.0f,    0.0f,    1.0f,    0.0f,    0.0f,
+         0.707f,  0.0f,   -0.707f,  0.707f,  0.0f,   -0.707f,
+         0.0f,    0.0f,   -1.0f,    0.0f,    0.0f,   -1.0f,
+        -0.707f,  0.0f,   -0.707f, -0.707f,  0.0f,   -0.707f,
+        -1.0f,    0.0f,    0.0f,   -1.0f,    0.0f,    0.0f,
+        -0.707f,  0.0f,    0.707f, -0.707f,  0.0f,    0.707f,
+         0.0f,   -0.707f,  0.707f,  0.0f,   -0.707f,  0.707f,
+         0.5f,   -0.707f,  0.5f,    0.5f,   -0.707f,  0.5f,
+         0.707f, -0.707f,  0.0f,    0.707f, -0.707f,  0.0f,
+         0.5f,   -0.707f, -0.5f,    0.5f,   -0.707f, -0.5f,
+         0.0f,   -0.707f, -0.707f,  0.0f,   -0.707f, -0.707f,
+        -0.5f,   -0.707f, -0.5f,   -0.5f,   -0.707f, -0.5f,
+        -0.707f, -0.707f,  0.0f,   -0.707f, -0.707f,  0.0f,
+        -0.5f,   -0.707f,  0.5f,   -0.5f,   -0.707f,  0.5f,
+         0.0f,   -1.0f,    0.0f,    0.0f,   -1.0f,    0.0f
     };
 
 
@@ -434,13 +435,36 @@ namespace hen::renderer
                 auto& transform = entity.GetComponent<hen::level::TransformComponent>();
                 auto& mesh      = entity.GetComponent<hen::level::MeshComponent>();
 
-
                 glm::vec3 position = transform.GetPosition();
                 glm::vec3 rotation = transform.GetRotation();
                 glm::vec3 scale    = transform.GetScale();
 
+
+                glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotation));
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
+                model = glm::scale(model, scale);
+
+                PrimitiveShader->Bind();
+
+                PrimitiveShader->SetVec3("colour", glm::vec3(1.0f));
+                PrimitiveShader->SetMat4("projection", Projection);
+                PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
+                PrimitiveShader->SetMat4("model", model);
+
+                mesh.CreateRenderData();
+
+                if (mesh.VertexArray)
+                {
+                    mesh.VertexArray->Bind();
+                    glDrawElements(GL_TRIANGLES, (GLsizei)mesh.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                    mesh.VertexArray->UnBind();
+                }
+
+                mesh.DeleteRenderData();
                 
-                RenderPrimitive(PRIMITIVES::CUBE, position, rotation, scale, glm::vec3(1.0f));
+                PrimitiveShader->UnBind();
+                
+                // RenderPrimitive(PRIMITIVES::CUBE, position, rotation, scale, glm::vec3(1.0f));
             }
         }
     }
