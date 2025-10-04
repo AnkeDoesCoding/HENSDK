@@ -451,16 +451,12 @@ namespace hen::renderer
                 PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
                 PrimitiveShader->SetMat4("model", model);
 
-                mesh.CreateRenderData();
-
                 if (mesh.VertexArray)
                 {
                     mesh.VertexArray->Bind();
                     glDrawElements(GL_TRIANGLES, (GLsizei)mesh.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
                     mesh.VertexArray->UnBind();
                 }
-
-                mesh.DeleteRenderData();
                 
                 PrimitiveShader->UnBind();
                 

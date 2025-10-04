@@ -78,6 +78,8 @@ namespace hen
             20,21,22, 22,23,20
         };
 
+        mesh1.CreateRenderData();
+
         if(input::Initialised && renderer::Initialised && console::Initialised)
         {
             Initialised = true;
