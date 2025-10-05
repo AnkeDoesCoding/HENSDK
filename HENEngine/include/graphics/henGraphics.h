@@ -35,8 +35,6 @@ namespace hen::graphics
 
         BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised = false);
 
-        bool IsIntegerType() const;
-
         uint32_t GetComponentCount() const;
     };
 
@@ -115,8 +113,9 @@ namespace hen::graphics
     {
     public:
 
-        virtual void Activate() = 0;
-        virtual void Run() = 0;
+        virtual void Compile() = 0;
+        virtual void Bind() = 0;
+        virtual void UnBind() = 0;
 
         virtual unsigned int GetID() const = 0;
 

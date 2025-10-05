@@ -7,20 +7,10 @@
 #include "renderer/henRHC.h"
 
 #include "scene/henScene.h"
+#include "level/henLevel.h"
 
 namespace hen::renderer
 {
-    void Initialise(SDL_Window* window);
-    void Run();
-    void Update(float deltaTime);
-    void ProcessEvent(const SDL_Event& event);
-
-    inline RHC*& GetRHC()
-	{
-		static RHC* context = nullptr;
-		return context;
-	}
-
     enum class BACKEND
     {
         NONE,
@@ -28,9 +18,31 @@ namespace hen::renderer
         VULKAN
     };
 
+    enum class PRIMITIVES
+    {
+        CUBE,
+        SPHERE
+    };
+
+    void Initialise(SDL_Window* window);
+    void Run();
+    void Update(float deltaTime);
+    void ProcessEvent(const SDL_Event& event);
+
+    void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
+
+    void RenderLevel();
+
+    inline RHC*& GetRHC()
+	{
+		static RHC* context = nullptr;
+		return context;
+	}
+    
     extern bool Initialised;
     extern BACKEND CurrentBackend;
     extern scene::actors::Camera Camera;
+    
 }
 
 #endif // !_HENRENDER_H_

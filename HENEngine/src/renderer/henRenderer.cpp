@@ -2,9 +2,12 @@
 
 // YES THIS RENDERER IS A FUCKING MESS BUT I AM GRADUALLY ABSTRACING SHIT UNTIL THIS BECOMES A PROPER RENDERER
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/glm/gtc/type_ptr.hpp"
+#include <vendor/glm/gtc/quaternion.hpp>
+#include <vendor/glm/gtx/quaternion.hpp>
 // shittiest fucking imgui implementation, i nuked almost everything in that folder to get this shit working
 #include "vendor/imgui/imgui.h"
 #include "vendor/imgui/backends/imgui_impl_sdl3.h"
@@ -23,6 +26,94 @@
 namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
+    static std::unique_ptr<graphics::Shader> PrimitiveShader;
+
+    static float CubeVertices[] =
+    {
+        // vertices           // normals
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
+        -0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f,-1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f,-1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   0.0f,-1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   0.0f,-1.0f, 0.0f
+    };
+
+    static unsigned int CubeIndices[] = 
+    {
+        0, 1, 2,  2, 3, 0,
+        4, 5, 6,  6, 7, 4,
+        8, 9,10,  10,11,8,
+        12,13,14, 14,15,12,
+        16,17,18, 18,19,16,
+        20,21,22, 22,23,20
+    };
+
+    static float SphereVertices[] =
+    {
+        // vertices                // normals
+         0.0f,    1.0f,    0.0f,    0.0f,    1.0f,    0.0f,
+         0.0f,    0.707f,  0.707f,  0.0f,    0.707f,  0.707f,
+         0.5f,    0.707f,  0.5f,    0.5f,    0.707f,  0.5f,
+         0.707f,  0.707f,  0.0f,    0.707f,  0.707f,  0.0f,
+         0.5f,    0.707f, -0.5f,    0.5f,    0.707f, -0.5f,
+         0.0f,    0.707f, -0.707f,  0.0f,    0.707f, -0.707f,
+        -0.5f,    0.707f, -0.5f,   -0.5f,    0.707f, -0.5f,
+        -0.707f,  0.707f,  0.0f,   -0.707f,  0.707f,  0.0f,
+        -0.5f,    0.707f,  0.5f,   -0.5f,    0.707f,  0.5f,
+         0.0f,    0.0f,    1.0f,    0.0f,    0.0f,    1.0f,
+         0.707f,  0.0f,    0.707f,  0.707f,  0.0f,    0.707f,
+         1.0f,    0.0f,    0.0f,    1.0f,    0.0f,    0.0f,
+         0.707f,  0.0f,   -0.707f,  0.707f,  0.0f,   -0.707f,
+         0.0f,    0.0f,   -1.0f,    0.0f,    0.0f,   -1.0f,
+        -0.707f,  0.0f,   -0.707f, -0.707f,  0.0f,   -0.707f,
+        -1.0f,    0.0f,    0.0f,   -1.0f,    0.0f,    0.0f,
+        -0.707f,  0.0f,    0.707f, -0.707f,  0.0f,    0.707f,
+         0.0f,   -0.707f,  0.707f,  0.0f,   -0.707f,  0.707f,
+         0.5f,   -0.707f,  0.5f,    0.5f,   -0.707f,  0.5f,
+         0.707f, -0.707f,  0.0f,    0.707f, -0.707f,  0.0f,
+         0.5f,   -0.707f, -0.5f,    0.5f,   -0.707f, -0.5f,
+         0.0f,   -0.707f, -0.707f,  0.0f,   -0.707f, -0.707f,
+        -0.5f,   -0.707f, -0.5f,   -0.5f,   -0.707f, -0.5f,
+        -0.707f, -0.707f,  0.0f,   -0.707f, -0.707f,  0.0f,
+        -0.5f,   -0.707f,  0.5f,   -0.5f,   -0.707f,  0.5f,
+         0.0f,   -1.0f,    0.0f,    0.0f,   -1.0f,    0.0f
+    };
+
+
+    static unsigned int SphereIndices[] = 
+    {
+        0,1,2, 0,2,3, 0,3,4, 0,4,5,
+        0,5,6, 0,6,7, 0,7,8, 0,8,1,
+        1,9,2, 2,9,10, 2,10,3, 3,10,11,
+        3,11,4, 4,11,12, 4,12,5, 5,12,13,
+        5,13,6, 6,13,14, 6,14,7, 7,14,15,
+        7,15,8, 8,15,16, 8,16,1, 1,16,9,
+        9,17,10, 10,17,18, 10,18,11, 11,18,19,
+        11,19,12, 12,19,20, 12,20,13, 13,20,21,
+        13,21,14, 14,21,22, 14,22,15, 15,22,23,
+        15,23,16, 16,23,24, 16,24,9, 9,24,17,
+        25,17,18, 25,18,19, 25,19,20, 25,20,21,
+        25,21,22, 25,22,23, 25,23,24, 25,24,17
+    };
 
     cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
     {
@@ -81,12 +172,6 @@ namespace hen::renderer
 
     std::unique_ptr <graphics::VertexBuffer> VB;
 
-    std::unique_ptr <graphics::VertexArray> LampVA;
-    std::shared_ptr <graphics::VertexBuffer> LampVB;
-    std::shared_ptr <graphics::IndexBuffer> LampIB;
-
-    std::vector<unsigned int> LampIndices;
-
     unsigned int VAO;
     unsigned int DiffuseTexture;
     unsigned int SpecularTexture;
@@ -95,70 +180,10 @@ namespace hen::renderer
     std::string FPS;
 
     std::unique_ptr<graphics::Shader> CubeShader;
-    std::unique_ptr<graphics::Shader> LampShader;
 
-    glm::mat4 Model = glm::mat4(1.0f); 
     glm::mat4 Projection = glm::mat4(1.0f);
     
     glm::vec3 LightPos(0.0f, 1.0f, 1.0f);
-    
-    constexpr float PI = 3.14159265358979323846f;
-
-    // some advanced maths shit Chat GPT helped me make
-    static std::vector<float> GenerateSphereVertices(float radius, unsigned int sectorCount, unsigned int stackCount)
-    {
-        std::vector<float> vertices;
-        float x, y, z, xy;
-        float sectorStep = 2 * PI / sectorCount;
-        float stackStep  = PI / stackCount;
-        float sectorAngle, stackAngle;
-
-        for (unsigned int i = 0; i <= stackCount; ++i)
-        {
-            stackAngle = PI / 2 - i * stackStep;
-            xy = radius * cosf(stackAngle);
-            y  = radius * sinf(stackAngle);
-
-            for (unsigned int j = 0; j <= sectorCount; ++j)
-            {
-                sectorAngle = j * sectorStep;
-                x = xy * cosf(sectorAngle);
-                z = xy * sinf(sectorAngle);
-                vertices.push_back(x);
-                vertices.push_back(y);  
-                vertices.push_back(z);
-            }
-        }
-        return vertices;
-    }
-
-    static std::vector<unsigned int> GenerateSphereIndices(unsigned int sectorCount, unsigned int stackCount)
-    {
-        std::vector<unsigned int> indices;
-        unsigned int k1, k2;
-        for (unsigned int i = 0; i < stackCount; ++i)
-        {
-            k1 = i * (sectorCount + 1);
-            k2 = k1 + sectorCount + 1;
-
-            for (unsigned int j = 0; j < sectorCount; ++j, ++k1, ++k2)
-            {
-                if (i != 0)
-                {
-                    indices.push_back(k1);
-                    indices.push_back(k2);
-                    indices.push_back(k1 + 1);
-                }
-                if (i != (stackCount - 1))
-                {
-                    indices.push_back(k1 + 1);
-                    indices.push_back(k2);
-                    indices.push_back(k2 + 1);
-                }
-            }
-        }
-        return indices;
-    }
     
     void Initialise(SDL_Window* window)
     {
@@ -187,14 +212,16 @@ namespace hen::renderer
                 console::Log("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
                 CurrentRHC = nullptr;
+                console::Log("[hen::renderer] BACKEND::????? how the fuck did we get here?");
                 break;
         }
         
         HEN_ASSERT(CurrentRHC != nullptr, "[hen::renderer] RHC is nullptr");
 
+        PrimitiveShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+
         CubeShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
-        LampShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LampShaderFS.glsl");
-        
+
         VB = graphics::VertexBuffer::Create(sizeof(vertices), vertices);
 
         glGenVertexArrays(1, &VAO);
@@ -207,24 +234,10 @@ namespace hen::renderer
         glEnableVertexAttribArray(1);
 
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-
-        auto lampVertices = GenerateSphereVertices(0.2f, 24, 16); // radius, sectors, stacks
-        LampIndices = GenerateSphereIndices(24, 16);
-
-        LampVA = graphics::VertexArray::Create();
-
-        LampVB = graphics::VertexBuffer::Create(lampVertices.size() * sizeof(float), lampVertices.data());
-        graphics::BufferLayout layout = {{graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"}};
-        LampVB->SetLayout(layout);
-        LampVA->AddVertexBuffer(LampVB);
-
-        LampIB = graphics::IndexBuffer::Create((uint32_t)LampIndices.size(), LampIndices.data());
-        LampVA->SetIndexBuffer(LampIB);    
+        glEnableVertexAttribArray(2); 
 
         DiffuseTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2.png");
         SpecularTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2_specular.png");
-
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -248,10 +261,12 @@ namespace hen::renderer
 
         Projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
 
-        CubeShader->Run();
+        glm::mat4 model = glm::mat4(1.0f);
+
+        CubeShader->Bind();
  
         CubeShader->SetVec3("viewPos", Camera.Position);
-        CubeShader->SetMat4("model", Model);
+        CubeShader->SetMat4("model", model);
         CubeShader->SetMat4("view", Camera.GetViewMatrix());
         CubeShader->SetMat4("projection", Projection);
 
@@ -268,29 +283,18 @@ namespace hen::renderer
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, SpecularTexture);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        CubeShader->SetMat4("model", model);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        LampShader->Run();
+        CubeShader->UnBind();
 
-        LampShader->SetMat4("projection", Projection);
-        LampShader->SetMat4("view", Camera.GetViewMatrix());
-        model = glm::mat4(1.0f);    
-        model = glm::translate(model, LightPos);
-        model = glm::scale(model, glm::vec3(0.5f));
-        LampShader->SetMat4("model", model);
-
-        LampVA->Bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei)LampIndices.size(), GL_UNSIGNED_INT, nullptr);
+        RenderPrimitive(PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
 
         Camera.SetDirty();
 
-        CurrentRHC->DisableDepth();
+        RenderLevel();
 
-        //2D renderering goes here
+        CurrentRHC->DisableDepth();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
@@ -346,5 +350,112 @@ namespace hen::renderer
     void ProcessEvent(const SDL_Event& event)
     {
         ImGui_ImplSDL3_ProcessEvent(&event);
+    }
+
+    void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
+    {
+        static std::unique_ptr <graphics::VertexArray> cubeVertexArray = graphics::VertexArray::Create();
+        static std::unique_ptr <graphics::VertexArray> sphereVertexArray = graphics::VertexArray::Create();
+
+        static std::shared_ptr<graphics::VertexBuffer> cubeVB = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
+        static std::shared_ptr<graphics::IndexBuffer> cubeIB = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
+
+        static std::shared_ptr<graphics::VertexBuffer> sphereVB = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
+        static std::shared_ptr<graphics::IndexBuffer> sphereIB = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
+
+        static graphics::BufferLayout layout = 
+        {
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"},
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aNormal"}
+        };
+
+        static bool initialised = false;
+        
+        if (!initialised)
+        {
+            cubeVertexArray = graphics::VertexArray::Create();
+            cubeVB->SetLayout(layout);
+            cubeVertexArray->AddVertexBuffer(cubeVB);
+            cubeVertexArray->SetIndexBuffer(cubeIB);
+
+            sphereVertexArray = graphics::VertexArray::Create();
+            sphereVB->SetLayout(layout);
+            sphereVertexArray->AddVertexBuffer(sphereVB);
+            sphereVertexArray->SetIndexBuffer(sphereIB);
+
+            initialised = true;
+        }
+
+        glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotation));
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
+        model = glm::scale(model, scale);
+
+        PrimitiveShader->Bind();
+
+        PrimitiveShader->SetVec3("colour", colour);
+        PrimitiveShader->SetMat4("projection", Projection);
+        PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
+        PrimitiveShader->SetMat4("model", model);
+
+        switch(primitve)
+        {
+            case PRIMITIVES::CUBE:
+            {
+                cubeVertexArray->Bind();
+                glDrawElements(GL_TRIANGLES, (GLsizei)cubeVertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+                cubeVertexArray->UnBind();
+                break;
+            }
+            case PRIMITIVES::SPHERE:
+            {
+                sphereVertexArray->Bind();
+                glDrawElements(GL_TRIANGLES, (GLsizei)sphereVertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+                sphereVertexArray->UnBind();
+                break;
+            }
+            default:
+                break;
+        }
+
+        PrimitiveShader->UnBind();
+    }
+
+    void RenderLevel()
+    {
+        if (auto level = level::GetActiveLevel())
+        {
+            auto view = level->GetView<level::TransformComponent, level::MeshComponent>();
+
+            for (auto entity : view)
+            {
+                auto& transform = entity.GetComponent<hen::level::TransformComponent>();
+                auto& mesh = entity.GetComponent<hen::level::MeshComponent>();
+
+                glm::vec3 position = transform.GetPosition();
+                glm::vec3 rotation = transform.GetRotation();
+                glm::vec3 scale    = transform.GetScale();
+
+                glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotation));
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
+                model = glm::scale(model, scale);
+
+                PrimitiveShader->Bind();
+
+                PrimitiveShader->SetVec3("colour", glm::vec3(1.0f));
+                PrimitiveShader->SetMat4("projection", Projection);
+                PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
+                PrimitiveShader->SetMat4("model", model);
+
+                if (mesh.VertexArray)
+                {
+                    mesh.VertexArray->Bind();
+                    glDrawElements(GL_TRIANGLES, (GLsizei)mesh.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                    mesh.VertexArray->UnBind();
+                }
+                
+                PrimitiveShader->UnBind();
+                
+            }
+        }
     }
 }

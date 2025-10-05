@@ -67,8 +67,9 @@ namespace hen::graphics
 
         Shader_OpenGL(const char* vsPath, const char* fsPath);
 
-        void Activate() override;
-        void Run() override;
+        void Compile() override;
+        void Bind() override;
+        void UnBind() override;
 
         unsigned int GetID() const override;
 

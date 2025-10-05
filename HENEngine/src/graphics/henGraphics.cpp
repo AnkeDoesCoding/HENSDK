@@ -14,23 +14,23 @@ namespace hen::graphics
         case SHADER_PRIMITIVES::FLOAT:
             return 4;
         case SHADER_PRIMITIVES::FLOAT2:
-            return 8;
+            return 4 * 2;
         case SHADER_PRIMITIVES::FLOAT3:
-            return 12;
+            return 4 * 3;
         case SHADER_PRIMITIVES::FLOAT4:
-            return 16;
+            return 4 * 4;
         case SHADER_PRIMITIVES::INT:
             return 4;
         case SHADER_PRIMITIVES::INT2:
-            return 8;
+            return 4 * 2;
         case SHADER_PRIMITIVES::INT3:
-            return 12;
+            return 4 * 3;
         case SHADER_PRIMITIVES::INT4:
-            return 16;
+            return 4 * 4;
         case SHADER_PRIMITIVES::MAT3:
-            return 36;
+            return 4 * 3 * 3;
         case SHADER_PRIMITIVES::MAT4:
-            return 64;
+            return 4 * 4 * 4;
         case SHADER_PRIMITIVES::BOOL:
             return 4;
         }
@@ -43,21 +43,6 @@ namespace hen::graphics
         : Name(name), Size(PrimitiveSize(primitive)), Offset(0), Type(primitive), Normalised(normalised)
     {
         
-    }
-
-    bool BufferElement::IsIntegerType() const
-    {
-        switch (Type)
-        {
-            case SHADER_PRIMITIVES::INT:
-            case SHADER_PRIMITIVES::INT2:
-            case SHADER_PRIMITIVES::INT3:
-            case SHADER_PRIMITIVES::INT4:
-            case SHADER_PRIMITIVES::BOOL:
-                return true;
-            default:
-                return false;
-        }
     }
 
     uint32_t BufferElement::GetComponentCount() const
