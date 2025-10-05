@@ -10,6 +10,7 @@
 
 namespace hen::level
 {
+    class Entity;
 
     class Level
     {
