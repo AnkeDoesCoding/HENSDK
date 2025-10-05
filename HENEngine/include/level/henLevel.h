@@ -12,6 +12,9 @@ namespace hen::level
 {
     class Entity;
 
+    template<typename... Components>
+    class View;
+
     class Level
     {
         friend class Entity;

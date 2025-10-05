@@ -9,4 +9,4 @@ namespace hen::arguments
     bool HasArgument(const std::string& argument);
 }
 
-#endif _HENARGUMENTS_H_
+#endif // !_HENARGUMENTS_H_
