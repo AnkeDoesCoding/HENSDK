@@ -232,7 +232,7 @@ namespace hen::console
             return;
         }
 
-        ImGui::Begin("Console", &Visible, ImGuiWindowFlags_None);
+        ImGui::Begin("Console", &Visible, ImGuiWindowFlags_NoDocking);
 
         float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 
