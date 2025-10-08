@@ -5,8 +5,6 @@
 
 #include "vendor/glad/include/glad.h"
 #include "renderer/henRHC.h"
-
-#include "scene/henScene.h"
 #include "level/henLevel.h"
 
 namespace hen::renderer
@@ -41,7 +39,8 @@ namespace hen::renderer
     
     extern bool Initialised;
     extern BACKEND CurrentBackend;
-    extern scene::actors::Camera Camera;
+    // extern scene::actors::Camera Camera;
+    extern level::CameraComponent Camera;
     
 }
 

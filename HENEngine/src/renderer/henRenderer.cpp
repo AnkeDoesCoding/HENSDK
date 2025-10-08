@@ -19,7 +19,6 @@
 #include "core/henCVar.h"
 #include "input/henInput.h"
 #include "src/renderer/henRHC_OpenGL.h"
-#include "scene/henScene.h"
 #include "tools/henConsole.h"
 #include "tools/henHelpers.h"
 
@@ -120,9 +119,9 @@ namespace hen::renderer
         cvar_VSync.GetBool() ? CurrentRHC->EnableVSync() : CurrentRHC->DisableVSync();
     });  
 
-    scene::actors::Camera Camera(glm::vec3(0.0f,0.0f, 3.0f));
     bool Initialised = false;
     BACKEND CurrentBackend = BACKEND::OPENGL;
+    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0, -90.0f, 0.0f));
 
     float vertices[] = 
     {
@@ -291,7 +290,7 @@ namespace hen::renderer
 
         RenderPrimitive(PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
 
-        Camera.SetDirty();
+        Camera.SetDirty(level::GetActiveLevel()->Up);
 
         RenderLevel();
 
@@ -313,7 +312,7 @@ namespace hen::renderer
             ImGui::SetNextWindowViewport(viewport->ID);
 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
             ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
             ImGui::PopStyleVar(3);
@@ -343,10 +342,10 @@ namespace hen::renderer
 
         if(ImGui::CollapsingHeader("Camera"))
         {
-            ImGui::Text("Speed:  %.1f", Camera.Speed);
+            // ImGui::Text("Speed:  %.1f", Camera);
             ImGui::Text("FOV:  %.0f", Camera.FOV);
-            ImGui::Text("Yaw:  %.3f", Camera.Yaw);
-            ImGui::Text("Pitch:  %.1f", Camera.Pitch);
+            ImGui::Text("Yaw:  %.3f", Camera.Rotation.y);
+            ImGui::Text("Pitch:  %.1f", Camera.Rotation.x);
             ImGui::Text("Position:  %.4f, %.4f, %.4f", Camera.Position.x, Camera.Position.y, Camera.Position.z);
         }
         ImGui::End();
@@ -361,9 +360,6 @@ namespace hen::renderer
 
     void Update(float deltaTime)
     {
-        int windowWidth, windowHeight;
-        SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
-
         Counter++;
         if(deltaTime >= 1.0 / 30.0)
         {

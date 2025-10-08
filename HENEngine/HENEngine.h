@@ -18,8 +18,6 @@
 #include "renderer/henRenderer.h"
 #include "renderer/henRHC.h"
 
-#include "scene/henScene.h"
-
 #include "tools/henConsole.h"
 #include "tools/henHelpers.h"
 
