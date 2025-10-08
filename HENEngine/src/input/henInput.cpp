@@ -1,7 +1,5 @@
 #include "input/henInput.h"
 
-#include "vendor/imgui/imgui.h"
-
 #include "core/henTimer.h"
 #include "tools/henConsole.h"
 
@@ -294,16 +292,11 @@ namespace hen::input
     void LockMouse()
     {
         SDL_SetWindowRelativeMouseMode(Window, true);
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
     }
 
     void UnLockMouse()
     {
         SDL_SetWindowRelativeMouseMode(Window, false);
-
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
     }
 
     bool Down(BUTTON button)

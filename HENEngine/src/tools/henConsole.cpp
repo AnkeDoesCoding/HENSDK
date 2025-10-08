@@ -1,8 +1,7 @@
 #include "tools/henConsole.h"
 
-#include "vendor/imgui/imgui.h"
-
 #include "core/henCVar.h"
+#include "ui/henUI.h"
 
 #include <iostream>
 #include <fstream>
@@ -214,6 +213,141 @@ namespace hen::console
         LogFile = std::ofstream(LogFilePath, std::ios::out); // overwrite any existing file
         HEN_ASSERT(LogFile.is_open(), "[hen::console] Failed to open log file");
 
+        ui::GetIMGUIManager()->RegisterDrawCallback([]() {
+            if(!Visible || Locked)
+            {
+                return;
+            }
+        
+            ImGui::Begin("Console", &Visible, ImGuiWindowFlags_NoDocking);
+        
+            float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        
+            ImGui::BeginChild("Scrolling Region", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
+            for(auto &entry : Entries)
+            {
+                ImVec4 color;
+                switch(entry.Level)
+                {
+                case LOGLEVEL::INFO:
+                    color = ImVec4(1,1,1,1);
+                    break;
+                case LOGLEVEL::WARNING:
+                    color = ImVec4(1,1,0,1);
+                    break;
+                case LOGLEVEL::ERROR:
+                    color = ImVec4(1,0,0,1);
+                    break;
+                }
+            
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                ImGui::Text("%s - %s", entry.Message.c_str(), entry.Time.c_str());
+                ImGui::PopStyleColor();
+            }
+        
+            if(!Locked && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            {
+                ImGui::SetScrollHereY(1.0f);
+            }
+        
+            ImGui::EndChild();
+            ImGui::PushItemWidth(-1);
+        
+            if (ImGui::IsWindowAppearing())
+            {
+                ImGui::SetKeyboardFocusHere();
+            }
+        
+            if(ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter, InputCallback))
+            {
+                std::string line(InputBuffer);
+                if(!line.empty())
+                {
+                    Log(std::string("[User] ") + InputBuffer, LOGLEVEL::INFO);
+                
+                    if (CommandHistory.empty() || CommandHistory.back() != InputBuffer)
+                    {
+                        CommandHistory.push_back(InputBuffer);
+                    }
+                
+                    HistoryIndex = -1;
+                
+                    Execute(line);
+                
+                    InputBuffer[0] = '\0';
+                
+                    ImGui::SetKeyboardFocusHere(-1);
+                }
+            }
+        
+            ImGui::PopItemWidth();
+        
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+        
+            std::string currentInput(InputBuffer);
+            if (!currentInput.empty())
+            {
+                cvar::System& system = *cvar::GetSystem();
+                std::vector<std::string> allCVarNames = system.GetAllCVarNames();
+                std::vector<std::string> matches;
+            
+                matches.clear();
+            
+                for (auto& name : allCVarNames)
+                {
+                    if (name.find(currentInput) == 0)
+                    {
+                        if (hen::cvar::CVar* cvar = system.GetCVar(name))
+                        {
+                            std::string valueStr;
+                        
+                            std::visit([&](auto&& val)
+                            {
+                                using T = std::decay_t<decltype(val)>;
+                                if constexpr (std::is_same_v<T, bool>)
+                                    valueStr = (val ? "true" : "false");
+                                else if constexpr (std::is_same_v<T, std::string>)
+                                    valueStr = val;
+                                else
+                                    valueStr = std::to_string(val);
+                            }, cvar->Value);
+                        
+                            matches.push_back(name + " = " + valueStr);
+                        }
+                    }
+                }
+            
+                if (!matches.empty())
+                {
+                
+                    float lineHeight = ImGui::GetTextLineHeightWithSpacing();
+                    float overlayHeight = matches.size() * lineHeight;
+                    float maxWidth = 0.0f;
+                
+                    for (auto& m : matches)
+                    {
+                        float w = ImGui::CalcTextSize(m.c_str()).x;
+                        if (w > maxWidth) maxWidth = w;
+                    }
+                
+                    ImVec2 inputMin = ImGui::GetItemRectMin();
+                    ImVec2 pos = ImVec2(inputMin.x, inputMin.y - overlayHeight);
+                    ImVec2 size = ImVec2(maxWidth + 8.0f, overlayHeight);
+                
+                    ImU32 bgColour = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
+                
+                    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 0.0f);
+                
+                    for (size_t i = 0; i < matches.size(); i++)
+                    {
+                        drawList->AddText(ImVec2(pos.x + 4.0f, pos.y + 2.0f + i * lineHeight), IM_COL32(255, 255, 255, 255), matches[i].c_str());
+                    }
+                }
+            }
+        
+            ImGui::End();
+        });
+
         Initialised = true;
     }
 
@@ -223,142 +357,6 @@ namespace hen::console
         {
             LogFile.close();
         }
-    }
-
-    void Draw()
-    {
-        if(!Visible || Locked)
-        {
-            return;
-        }
-
-        ImGui::Begin("Console", &Visible, ImGuiWindowFlags_NoDocking);
-
-        float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-
-        ImGui::BeginChild("Scrolling Region", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
-        for(auto &entry : Entries)
-        {
-            ImVec4 color;
-            switch(entry.Level)
-            {
-            case LOGLEVEL::INFO:
-                color = ImVec4(1,1,1,1);
-                break;
-            case LOGLEVEL::WARNING:
-                color = ImVec4(1,1,0,1);
-                break;
-            case LOGLEVEL::ERROR:
-                color = ImVec4(1,0,0,1);
-                break;
-            }
-
-            ImGui::PushStyleColor(ImGuiCol_Text, color);
-            ImGui::Text("%s - %s", entry.Message.c_str(), entry.Time.c_str());
-            ImGui::PopStyleColor();
-        }
-
-        if(!Locked && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-        {
-            ImGui::SetScrollHereY(1.0f);
-        }
-
-        ImGui::EndChild();
-        ImGui::PushItemWidth(-1);
-
-        if (ImGui::IsWindowAppearing())
-        {
-            ImGui::SetKeyboardFocusHere();
-        }
-
-        if(ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter, InputCallback))
-        {
-            std::string line(InputBuffer);
-            if(!line.empty())
-            {
-                Log(std::string("[User] ") + InputBuffer, LOGLEVEL::INFO);
-
-                if (CommandHistory.empty() || CommandHistory.back() != InputBuffer)
-                {
-                    CommandHistory.push_back(InputBuffer);
-                }
-
-                HistoryIndex = -1;
-
-                Execute(line);
-
-                InputBuffer[0] = '\0';
-
-                ImGui::SetKeyboardFocusHere(-1);
-            }
-        }
-
-        ImGui::PopItemWidth();
-
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-        std::string currentInput(InputBuffer);
-        if (!currentInput.empty())
-        {
-            cvar::System& system = *cvar::GetSystem();
-            std::vector<std::string> allCVarNames = system.GetAllCVarNames();
-            std::vector<std::string> matches;
-        
-            matches.clear();
-
-            for (auto& name : allCVarNames)
-            {
-                if (name.find(currentInput) == 0)
-                {
-                    if (hen::cvar::CVar* cvar = system.GetCVar(name))
-                    {
-                        std::string valueStr;
-                    
-                        std::visit([&](auto&& val)
-                        {
-                            using T = std::decay_t<decltype(val)>;
-                            if constexpr (std::is_same_v<T, bool>)
-                                valueStr = (val ? "true" : "false");
-                            else if constexpr (std::is_same_v<T, std::string>)
-                                valueStr = val;
-                            else
-                                valueStr = std::to_string(val);
-                        }, cvar->Value);
-                    
-                        matches.push_back(name + " = " + valueStr);
-                    }
-                }
-            }
-
-            if (!matches.empty())
-            {
-            
-                float lineHeight = ImGui::GetTextLineHeightWithSpacing();
-                float overlayHeight = matches.size() * lineHeight;
-                float maxWidth = 0.0f;
-
-                for (auto& m : matches)
-                {
-                    float w = ImGui::CalcTextSize(m.c_str()).x;
-                    if (w > maxWidth) maxWidth = w;
-                }
-
-                ImVec2 inputMin = ImGui::GetItemRectMin();
-                ImVec2 pos = ImVec2(inputMin.x, inputMin.y - overlayHeight);
-                ImVec2 size = ImVec2(maxWidth + 8.0f, overlayHeight);
-
-                ImU32 bgColour = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
-
-                drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 0.0f);
-
-                for (size_t i = 0; i < matches.size(); i++)
-                {
-                    drawList->AddText(ImVec2(pos.x + 4.0f, pos.y + 2.0f + i * lineHeight), IM_COL32(255, 255, 255, 255), matches[i].c_str());
-                }
-            }
-        }
-
-        ImGui::End();
     }
 
     void Toggle()

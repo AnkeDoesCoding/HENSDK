@@ -13,41 +13,69 @@ void Editor::Initialise(SDL_Window* window)
     hen::Application::Initialise(window);
 
     Test = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("test"));
-    Test->AddComponent<hen::level::TransformComponent>();
+    auto& transform = Test->AddComponent<hen::level::TransformComponent>();
+    transform.SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+    auto& mesh = Test->AddComponent<hen::level::MeshComponent>();
 
-    auto& mesh1 = Test->AddComponent<hen::level::MeshComponent>();
+    mesh.Verticies = 
+    {
+        {-0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f, -0.5f}, { 0.5f,  0.5f, -0.5f}, {-0.5f,  0.5f, -0.5f},
+        {-0.5f, -0.5f,  0.5f}, { 0.5f, -0.5f,  0.5f}, { 0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f},
+        {-0.5f, -0.5f, -0.5f}, {-0.5f, -0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f, -0.5f},
+        { 0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f,  0.5f}, { 0.5f,  0.5f,  0.5f}, { 0.5f,  0.5f, -0.5f},
+        {-0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f,  0.5f}, {-0.5f, -0.5f,  0.5f},
+        {-0.5f,  0.5f, -0.5f}, { 0.5f,  0.5f, -0.5f}, { 0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f}
+    };
+    mesh.Normals = 
+    {
+        {0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},
+        {0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},
+        {-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f}
+    };
+    mesh.Indicies = 
+    {
+        0,1,2, 2,3,0,
+        4,5,6, 6,7,4,
+        8,9,10, 10,11,8,
+        12,13,14, 14,15,12,
+        16,17,18, 18,19,16,
+        20,21,22, 22,23,20
+    };
 
-        mesh1.Verticies = 
+    mesh.CreateRenderData();
+
+    hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
+    {
+        ImGui::Begin("Info");
+        
+        if(ImGui::CollapsingHeader("Controls"))
         {
-            {-0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f, -0.5f}, { 0.5f,  0.5f, -0.5f}, {-0.5f,  0.5f, -0.5f},
-            {-0.5f, -0.5f,  0.5f}, { 0.5f, -0.5f,  0.5f}, { 0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f},
-            {-0.5f, -0.5f, -0.5f}, {-0.5f, -0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f, -0.5f},
-            { 0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f,  0.5f}, { 0.5f,  0.5f,  0.5f}, { 0.5f,  0.5f, -0.5f},
-            {-0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f,  0.5f}, {-0.5f, -0.5f,  0.5f},
-            {-0.5f,  0.5f, -0.5f}, { 0.5f,  0.5f, -0.5f}, { 0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f}
-        };
-
-        mesh1.Normals = 
+            ImGui::Text("W,A,S,D - move around");
+            ImGui::Text("M - toggle mouse lock");
+            ImGui::Text("Tilde - toggle console");
+            ImGui::Text("Esc - shutdown application");
+        }
+    
+        if(ImGui::CollapsingHeader("Stats"))
         {
-            {0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},
-            {0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},
-            {-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},
-            {1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},
-            {0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},
-            {0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f}
-        };
-
-        mesh1.Indicies = 
+            ImGui::Text("FPS:  %.1f", ImGui::GetIO().Framerate);
+            ImGui::Text("MS:  %.3f", 1000.0f / ImGui::GetIO().Framerate);
+        
+        }
+    
+        if(ImGui::CollapsingHeader("Camera"))
         {
-            0,1,2, 2,3,0,
-            4,5,6, 6,7,4,
-            8,9,10, 10,11,8,
-            12,13,14, 14,15,12,
-            16,17,18, 18,19,16,
-            20,21,22, 22,23,20
-        };
-
-        mesh1.CreateRenderData();
+            ImGui::Text("Speed:  %.1f", CameraSpeed);
+            ImGui::Text("FOV:  %.0f", Cam.FOV);
+            ImGui::Text("Yaw:  %.3f", Cam.Rotation.y);
+            ImGui::Text("Pitch:  %.1f", Cam.Rotation.x);
+            ImGui::Text("Position:  %.4f, %.4f, %.4f", Cam.Position.x, Cam.Position.y, Cam.Position.z);
+        }
+        ImGui::End();
+    });
 }
 
 void Editor::Shutdown()
@@ -90,11 +118,6 @@ void Editor::Update(float deltaTime)
     {
         CameraSpeed = 1.0f;
     }
-
-    auto& trans = Test->GetComponent<hen::level::TransformComponent>();
-
-    glm::vec3 newPos = glm::vec3(Cam.Position.x, Cam.Position.y + 3, Cam.Position.z);
-    trans.SetPosition(newPos);
 
     if(!hen::console::Visible)
     {

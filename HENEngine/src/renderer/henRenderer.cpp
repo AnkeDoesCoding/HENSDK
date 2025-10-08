@@ -8,19 +8,15 @@
 #include "vendor/glm/gtc/type_ptr.hpp"
 #include <vendor/glm/gtc/quaternion.hpp>
 #include <vendor/glm/gtx/quaternion.hpp>
-// shittiest fucking imgui implementation, i nuked almost everything in that folder to get this shit working
-#include "vendor/imgui/imgui.h"
-#include "vendor/imgui/backends/imgui_impl_sdl3.h"
-#include "vendor/imgui/backends/imgui_impl_opengl3.h"
 
 #include "graphics/henGraphics.h"
 #include "core/henArguments.h"
 #include "core/henTimer.h"
 #include "core/henCVar.h"
-#include "input/henInput.h"
 #include "src/renderer/henRHC_OpenGL.h"
 #include "tools/henConsole.h"
 #include "tools/henHelpers.h"
+#include "ui/henUI.h"
 
 namespace hen::renderer
 {   
@@ -118,6 +114,11 @@ namespace hen::renderer
     {
         cvar_VSync.GetBool() ? CurrentRHC->EnableVSync() : CurrentRHC->DisableVSync();
     });  
+
+    cvar::CVar cvar_FOV("r_fov", Camera.FOV, cvar::FLAGS_ARCHIVE, []()
+    {
+        Camera.FOV = cvar_FOV.GetFloat();
+    });
 
     bool Initialised = false;
     BACKEND CurrentBackend = BACKEND::OPENGL;
@@ -238,13 +239,6 @@ namespace hen::renderer
         DiffuseTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2.png");
         SpecularTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2_specular.png");
 
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsClassic();
-        ImGui_ImplSDL3_InitForOpenGL(window, SDL_GL_GetCurrentContext());
-        ImGui_ImplOpenGL3_Init("#version 460");
-        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
         Initialised = true;
 
         console::Log("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
@@ -296,64 +290,9 @@ namespace hen::renderer
 
         CurrentRHC->DisableDepth();
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
+        ui::GetIMGUIManager()->BeginFrame();
 
-        {
-            ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
-            ImGuiWindowFlags_NoBackground;
-
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->Pos);
-            ImGui::SetNextWindowSize(viewport->Size);
-            ImGui::SetNextWindowViewport(viewport->ID);
-
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-            ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
-            ImGui::PopStyleVar(3);
-
-            ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
-
-            ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-            ImGui::End();
-        }
-
-        ImGui::Begin("Info");
-
-        if(ImGui::CollapsingHeader("Controls"))
-        {
-            ImGui::Text("W,A,S,D - move around");
-            ImGui::Text("M - toggle mouse lock");
-            ImGui::Text("Tilde - toggle console");
-            ImGui::Text("Esc - shutdown application");
-        }
-
-        if(ImGui::CollapsingHeader("Stats"))
-        {
-            ImGui::Text("FPS:  %.1f", ImGui::GetIO().Framerate);
-            ImGui::Text("MS:  %.3f", 1000.0f / ImGui::GetIO().Framerate);
-
-        }
-
-        if(ImGui::CollapsingHeader("Camera"))
-        {
-            // ImGui::Text("Speed:  %.1f", Camera);
-            ImGui::Text("FOV:  %.0f", Camera.FOV);
-            ImGui::Text("Yaw:  %.3f", Camera.Rotation.y);
-            ImGui::Text("Pitch:  %.1f", Camera.Rotation.x);
-            ImGui::Text("Position:  %.4f, %.4f, %.4f", Camera.Position.x, Camera.Position.y, Camera.Position.z);
-        }
-        ImGui::End();
-
-        console::Draw();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ui::GetIMGUIManager()->EndFrame();
 
         CurrentRHC->Present();
     }
@@ -365,11 +304,6 @@ namespace hen::renderer
         {
             FPS = std::to_string((1.0 / deltaTime) * Counter);
         }
-    }
-
-    void ProcessEvent(const SDL_Event& event)
-    {
-        ImGui_ImplSDL3_ProcessEvent(&event);
     }
 
     void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)

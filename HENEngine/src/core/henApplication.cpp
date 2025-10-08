@@ -7,6 +7,7 @@
 #include "level/henLevel.h"
 #include "renderer/henRenderer.h"
 #include "tools/henConsole.h"
+#include "ui/henUI.h"
 
 #include <memory>
 
@@ -14,6 +15,7 @@ namespace hen
 {
     static Uint64 LastTick, CurrentTick = 0;
     static std::unique_ptr<cvar::System> CVarSystem;
+    static std::unique_ptr<ui::IMGUIManager> ImGuiManager;
 
     level::Level test;
 
@@ -39,6 +41,11 @@ namespace hen
         HEN_ASSERT(window != nullptr, "[hen::Application] Window is nullptr");
 
         renderer::Initialise(window);
+
+        ImGuiManager = std::make_unique<ui::IMGUIManager>();
+        ui::GetIMGUIManager() = ImGuiManager.get(); 
+
+        ImGuiManager->Initialise(window);
 
         input::Initialise(renderer::GetRHC()->GetWindow());
 
@@ -71,6 +78,8 @@ namespace hen
     {
         console::Log("[hen::Application] Shutting down...");
         console::Shutdown();
+
+        ui::GetIMGUIManager()->Shutdown();
     }
 
     void Application::Run()
@@ -107,7 +116,7 @@ namespace hen
     void Application::ProcessEvent(const SDL_Event& event)
     {
         input::ProcessEvent(event);
-        renderer::ProcessEvent(event);
+        ImGuiManager->ProcessEvent(event);
     }
 
     void Application::ResizeWindow()

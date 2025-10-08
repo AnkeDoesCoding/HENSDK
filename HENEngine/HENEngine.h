@@ -21,4 +21,6 @@
 #include "tools/henConsole.h"
 #include "tools/henHelpers.h"
 
+#include "ui/henUI.h"
+
 #endif // !_HENENGINE_H_s

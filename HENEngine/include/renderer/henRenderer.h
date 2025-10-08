@@ -25,7 +25,6 @@ namespace hen::renderer
     void Initialise(SDL_Window* window);
     void Run();
     void Update(float deltaTime);
-    void ProcessEvent(const SDL_Event& event);
 
     void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
 
@@ -39,7 +38,6 @@ namespace hen::renderer
     
     extern bool Initialised;
     extern BACKEND CurrentBackend;
-    // extern scene::actors::Camera Camera;
     extern level::CameraComponent Camera;
     
 }

@@ -37,7 +37,6 @@ namespace hen::console
 
     void Initialise();
     void Shutdown();
-    void Draw();
 
     void Toggle();
     void SetLocked(bool lock);
