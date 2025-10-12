@@ -10,7 +10,6 @@ static float CameraSpeed = 1.0f;
 
 static hen::level::Entity* Test;
 
-
 void Editor::Initialise(SDL_Window* window)
 {
     hen::Application::Initialise(window);

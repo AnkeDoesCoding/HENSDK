@@ -57,15 +57,15 @@ namespace hen
             infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
             
             #if PLATFORM_WINDOWS
-                infoStr += " WINDOWS ";
+                infoStr += " WINDOWS_";
             #elif PLATFORM_LINUX
-                infoStr += " LINUX ";
+                infoStr += " LINUX_";
             #endif // !PLATFORM_WINDOWS
 
             #if DEBUG
-                infoStr += "(DEBUG)";
+                infoStr += "DEBUG";
             #elif RELEASE
-                infoStr += "(RELEASE)";
+                infoStr += "RELEASE";
             #endif // !DEBUG
 
             infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";

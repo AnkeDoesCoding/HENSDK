@@ -264,15 +264,23 @@ namespace hen::console
                 if(!line.empty())
                 {
                     Log(std::string("[User] ") + InputBuffer, LOGLEVEL::INFO);
-                
-                    if (CommandHistory.empty() || CommandHistory.back() != InputBuffer)
+                     
+                    if (line.find("log ") != std::string::npos)
                     {
-                        CommandHistory.push_back(InputBuffer);
+                        //Dont execute because this is a command for letting [User] write something into log                        
                     }
-                
-                    HistoryIndex = -1;
-                
-                    Execute(line);
+                    else
+                    {
+                        if (CommandHistory.empty() || CommandHistory.back() != InputBuffer)
+                        {
+                            CommandHistory.push_back(InputBuffer);
+                        }
+                    
+                        HistoryIndex = -1;
+
+                        Execute(line);
+                    }
+
                 
                     InputBuffer[0] = '\0';
                 

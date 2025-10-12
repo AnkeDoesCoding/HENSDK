@@ -15,7 +15,7 @@ SDL_AppResult SDL_AppInit(void** appState, int argC, char* argV[])
         return SDL_APP_FAILURE;
     }
 
-    Window = SDL_CreateWindow("Egg Editor", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    Window = SDL_CreateWindow("Egg Editor", 1920, 1080, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     hen::arguments::Parse(argC, argV);
 
