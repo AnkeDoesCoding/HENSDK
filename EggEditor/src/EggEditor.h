@@ -1,5 +1,4 @@
-#ifndef _EGGEDITOR_H_
-#define _EGGEDITOR_H_
+#pragma once
 
 #include "HENEngine.h"
 
@@ -13,4 +12,3 @@ public:
     void Update(float deltaTime) override;
 };
 
-#endif // !_EGGEDITOR_H_

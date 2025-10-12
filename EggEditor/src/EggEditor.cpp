@@ -1,5 +1,7 @@
 #include "EggEditor.h"
 
+#include "ModelImporter.h"
+
 static hen::level::CameraComponent& Cam = hen::renderer::Camera;
 static float MouseSensitivity = 4.0f;
 static bool MouseLocked = false;
@@ -8,6 +10,7 @@ static float CameraSpeed = 1.0f;
 
 static hen::level::Entity* Test;
 
+
 void Editor::Initialise(SDL_Window* window)
 {
     hen::Application::Initialise(window);
@@ -15,37 +18,10 @@ void Editor::Initialise(SDL_Window* window)
     Test = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("test"));
     auto& transform = Test->AddComponent<hen::level::TransformComponent>();
     transform.SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+    transform.SetScale(glm::vec3(0.5f));
     auto& mesh = Test->AddComponent<hen::level::MeshComponent>();
 
-    mesh.Verticies = 
-    {
-        {-0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f, -0.5f}, { 0.5f,  0.5f, -0.5f}, {-0.5f,  0.5f, -0.5f},
-        {-0.5f, -0.5f,  0.5f}, { 0.5f, -0.5f,  0.5f}, { 0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f},
-        {-0.5f, -0.5f, -0.5f}, {-0.5f, -0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f, -0.5f},
-        { 0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f,  0.5f}, { 0.5f,  0.5f,  0.5f}, { 0.5f,  0.5f, -0.5f},
-        {-0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f, -0.5f}, { 0.5f, -0.5f,  0.5f}, {-0.5f, -0.5f,  0.5f},
-        {-0.5f,  0.5f, -0.5f}, { 0.5f,  0.5f, -0.5f}, { 0.5f,  0.5f,  0.5f}, {-0.5f,  0.5f,  0.5f}
-    };
-    mesh.Normals = 
-    {
-        {0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},{0.0f, 0.0f, -1.0f},
-        {0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},{0.0f, 0.0f, 1.0f},
-        {-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},{-1.0f, 0.0f, 0.0f},
-        {1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},{1.0f, 0.0f, 0.0f},
-        {0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},{0.0f, -1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f},{0.0f, 1.0f, 0.0f}
-    };
-    mesh.Indicies = 
-    {
-        0,1,2, 2,3,0,
-        4,5,6, 6,7,4,
-        8,9,10, 10,11,8,
-        12,13,14, 14,15,12,
-        16,17,18, 18,19,16,
-        20,21,22, 22,23,20
-    };
-
-    mesh.CreateRenderData();
+    importer::ImportModel("res/models/survival_guitar_backpack/scene.gltf", mesh);
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
     {
@@ -63,7 +39,6 @@ void Editor::Initialise(SDL_Window* window)
         {
             ImGui::Text("FPS:  %.1f", ImGui::GetIO().Framerate);
             ImGui::Text("MS:  %.3f", 1000.0f / ImGui::GetIO().Framerate);
-        
         }
     
         if(ImGui::CollapsingHeader("Camera"))

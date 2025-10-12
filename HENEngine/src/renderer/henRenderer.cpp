@@ -176,9 +176,6 @@ namespace hen::renderer
     unsigned int DiffuseTexture;
     unsigned int SpecularTexture;
 
-    unsigned int Counter;
-    std::string FPS;
-
     std::unique_ptr<graphics::Shader> CubeShader;
 
     glm::mat4 Projection = glm::mat4(1.0f);
@@ -299,11 +296,7 @@ namespace hen::renderer
 
     void Update(float deltaTime)
     {
-        Counter++;
-        if(deltaTime >= 1.0 / 30.0)
-        {
-            FPS = std::to_string((1.0 / deltaTime) * Counter);
-        }
+
     }
 
     void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
@@ -382,29 +375,21 @@ namespace hen::renderer
 
             for (auto entity : view)
             {
-                auto& transform = entity.GetComponent<hen::level::TransformComponent>();
-                auto& mesh = entity.GetComponent<hen::level::MeshComponent>();
-
-                glm::vec3 position = transform.GetPosition();
-                glm::vec3 rotation = transform.GetRotation();
-                glm::vec3 scale    = transform.GetScale();
-
-                glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotation));
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
-                model = glm::scale(model, scale);
+                auto& transformComp = entity.GetComponent<hen::level::TransformComponent>();
+                auto& meshComp = entity.GetComponent<hen::level::MeshComponent>();
 
                 PrimitiveShader->Bind();
 
                 PrimitiveShader->SetVec3("colour", glm::vec3(1.0f));
                 PrimitiveShader->SetMat4("projection", Projection);
                 PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
-                PrimitiveShader->SetMat4("model", model);
+                PrimitiveShader->SetMat4("model", transformComp.Transform);
 
-                if (mesh.VertexArray)
+                if (meshComp.VertexArray)
                 {
-                    mesh.VertexArray->Bind();
-                    glDrawElements(GL_TRIANGLES, (GLsizei)mesh.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
-                    mesh.VertexArray->UnBind();
+                    meshComp.VertexArray->Bind();
+                    glDrawElements(GL_TRIANGLES, (GLsizei)meshComp.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                    meshComp.VertexArray->UnBind();
                 }
                 
                 PrimitiveShader->UnBind();
