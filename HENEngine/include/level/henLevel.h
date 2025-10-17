@@ -65,8 +65,6 @@ namespace hen::level
         template<typename Component>
         Component& GetComponent()
         {
-            HEN_ASSERT(HasComponent<Component>(), "Entity doesn't have this component");
-
             return m_Level->m_Registry.get<Component>(m_Handle);
         }
 

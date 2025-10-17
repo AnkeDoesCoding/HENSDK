@@ -19,7 +19,6 @@
 #include "renderer/henRHC.h"
 
 #include "tools/henConsole.h"
-#include "tools/henHelpers.h"
 
 #include "ui/henUI.h"
 

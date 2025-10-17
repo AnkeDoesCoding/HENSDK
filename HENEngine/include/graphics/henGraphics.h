@@ -3,6 +3,7 @@
 
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
+#include "vendor/stb/include/stb_image.h" // #define STB_IMAGE_IMPLEMENTATION is in henGraphics.cpp
 
 #include <string>
 #include <memory>
@@ -10,7 +11,7 @@
 namespace hen::graphics
 {
 
-    enum SHADER_PRIMITIVES
+    enum class SHADER_PRIMITIVES
     {
         FLOAT,
         FLOAT2,
@@ -23,6 +24,27 @@ namespace hen::graphics
         MAT3,
         MAT4,
         BOOL
+    };
+
+    enum class SHADER_TYPES
+    {
+        VERTEX,
+        FRAGMENT
+    };
+
+    struct Texture2D
+    {
+        int Width;
+        int Height;
+        int Components;
+        unsigned char* Data;
+        unsigned int ID = 0;
+
+        void Load(const char* path);
+        ~Texture2D();
+
+        void Free();
+
     };
 
     struct BufferElement

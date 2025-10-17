@@ -15,7 +15,6 @@
 #include "core/henCVar.h"
 #include "src/renderer/henRHC_OpenGL.h"
 #include "tools/henConsole.h"
-#include "tools/henHelpers.h"
 #include "ui/henUI.h"
 
 namespace hen::renderer
@@ -173,8 +172,8 @@ namespace hen::renderer
     std::unique_ptr <graphics::VertexBuffer> VB;
 
     unsigned int VAO;
-    unsigned int DiffuseTexture;
-    unsigned int SpecularTexture;
+    graphics::Texture2D DiffuseTexture;
+    graphics::Texture2D SpecularTexture;
 
     std::unique_ptr<graphics::Shader> CubeShader;
 
@@ -233,8 +232,8 @@ namespace hen::renderer
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2); 
 
-        DiffuseTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2.png");
-        SpecularTexture = helpers::LoadTexture(ENGINE_RESOURCE_PATH "textures/container2_specular.png");
+        DiffuseTexture.Load(ENGINE_RESOURCE_PATH "textures/container2.png");
+        SpecularTexture.Load(ENGINE_RESOURCE_PATH "textures/container2_specular.png");
 
         Initialised = true;
 
@@ -270,9 +269,9 @@ namespace hen::renderer
         CubeShader->SetVec3("light.position", LightPos);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, DiffuseTexture);
+        glBindTexture(GL_TEXTURE_2D, DiffuseTexture.ID);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, SpecularTexture);
+        glBindTexture(GL_TEXTURE_2D, SpecularTexture.ID);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -377,6 +376,19 @@ namespace hen::renderer
             {
                 auto& transformComp = entity.GetComponent<hen::level::TransformComponent>();
                 auto& meshComp = entity.GetComponent<hen::level::MeshComponent>();
+                
+                if (level::GetActiveLevel() && entity.HasComponent<hen::level::MaterialComponent>())
+                {
+                    auto& materialComp = entity.GetComponent<hen::level::MaterialComponent>();
+
+                    if (materialComp.DiffuseTexture.ID != 0 && materialComp.SpecularTexture.ID != 0)
+                    {
+                        glActiveTexture(GL_TEXTURE0);
+                        glBindTexture(GL_TEXTURE_2D, materialComp.DiffuseTexture.ID);
+                        glActiveTexture(GL_TEXTURE1);
+                        glBindTexture(GL_TEXTURE_2D, materialComp.SpecularTexture.ID);
+                    }
+                }
 
                 PrimitiveShader->Bind();
 
@@ -387,6 +399,9 @@ namespace hen::renderer
 
                 if (meshComp.VertexArray)
                 {
+                    
+                    
+                    
                     meshComp.VertexArray->Bind();
                     glDrawElements(GL_TRIANGLES, (GLsizei)meshComp.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
                     meshComp.VertexArray->UnBind();

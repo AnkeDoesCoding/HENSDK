@@ -1,3 +1,4 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include "graphics/henGraphics.h"
 
 #include "src/graphics/henGraphics_OpenGL.h"
@@ -37,6 +38,57 @@ namespace hen::graphics
 
         console::Log("[hen::graphics] Failed to get primitive size", console::LOGLEVEL::ERROR);
         return 0;
+    }
+
+    void Texture2D::Load(const char* path)
+    {
+        glGenTextures(1, &ID);
+
+        Data = stbi_load(path, &Width, &Height, &Components, 0);
+        if (Data)
+        {
+            GLenum format;
+            if (Components == 1)
+            {
+                format = GL_RED;
+            }
+            else if (Components == 3)
+            {
+                format = GL_RGB;
+            }
+            else if (Components == 4)
+            {
+                format = GL_RGBA;
+            }
+
+            glBindTexture(GL_TEXTURE_2D, ID);
+            glTexImage2D(GL_TEXTURE_2D, 0, format, Width, Height, 0, format, GL_UNSIGNED_BYTE, Data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        }
+        else
+        {
+            console::Log("Failed to load texture", console::LOGLEVEL::ERROR);
+            Free();
+        }
+    }
+
+    Texture2D::~Texture2D()
+    {
+        Free();
+    }
+
+    void Texture2D::Free()
+    {
+        if (Data)
+        {
+            Data = nullptr;
+        }
     }
 
     BufferElement::BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised)

@@ -190,6 +190,12 @@ namespace hen::level
 
     };
 
+    struct MaterialComponent
+    {
+        graphics::Texture2D DiffuseTexture;
+        graphics::Texture2D SpecularTexture;
+    };
+
     struct CameraComponent
     {
         float FOV = 90.0f;
