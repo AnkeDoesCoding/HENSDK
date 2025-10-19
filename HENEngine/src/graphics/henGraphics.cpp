@@ -87,6 +87,7 @@ namespace hen::graphics
     {
         if (Data)
         {
+            stbi_image_free(Data);
             Data = nullptr;
         }
     }
@@ -204,17 +205,130 @@ namespace hen::graphics
         return nullptr;
     }
 
-    std::unique_ptr<Shader> Shader::Create(const char *vsPath, const char *fsPath)
+    bool Shader::IsBackendValid() const
+    {
+        return m_BackendImpl != nullptr;
+    }
+
+    void Shader::Compile()
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->Compile();
+        }
+    }
+
+    void Shader::Bind()
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->Bind();
+        }
+    }
+
+    void Shader::UnBind()
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->UnBind();
+        }
+    }
+
+    unsigned int Shader::GetID() const
+    {
+        if(IsBackendValid())
+        {
+            return m_BackendImpl->GetID();
+        }
+
+        return 0;
+    }
+
+    void Shader::SetVal(const std::string& name, bool val) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetVal(name, val);
+        }
+    }
+
+    void Shader::SetVal(const std::string& name, int val) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetVal(name, val);
+        }
+    }
+
+    void Shader::SetVal(const std::string& name, float val) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetVal(name, val);
+        }
+    }
+
+    void Shader::SetVec2(const std::string &name, const glm::vec2 &value) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetVec2(name, value);
+        }
+    }
+
+    void Shader::SetVec3(const std::string &name, const glm::vec3 &value) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetVec3(name, value);
+        }
+    }
+
+    void Shader::SetVec4(const std::string &name, const glm::vec4 &value) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetVec4(name, value);
+        }
+    }
+
+    void Shader::SetMat2(const std::string &name, const glm::mat2 &mat) const
+    {   
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetMat2(name, mat);
+        }
+    }
+
+    void Shader::SetMat3(const std::string &name, const glm::mat3 &mat) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetMat3(name, mat);
+        }
+    }
+
+    void Shader::SetMat4(const std::string &name, const glm::mat4 &mat) const
+    {
+        if(IsBackendValid())
+        {
+            m_BackendImpl->SetMat4(name, mat);
+        }
+    }   
+
+    void Shader::Create(const char *vsPath, const char *fsPath)
     {
         switch(renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
-                return nullptr;
+                m_BackendImpl = nullptr;
+                break;
             case renderer::BACKEND::OPENGL:
-                return std::make_unique<Shader_OpenGL>(vsPath, fsPath);
+                m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
+                break;
         }
-
-        return nullptr;
     }
+
+    
 }

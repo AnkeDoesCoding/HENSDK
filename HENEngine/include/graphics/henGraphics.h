@@ -5,6 +5,8 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/stb/include/stb_image.h" // #define STB_IMAGE_IMPLEMENTATION is in henGraphics.cpp
 
+#include "core/henSlotMap.h"
+
 #include <string>
 #include <memory>
 
@@ -31,6 +33,20 @@ namespace hen::graphics
         VERTEX,
         FRAGMENT
     };
+
+    // this will be used soon
+    template <typename Type>
+    struct Handle
+    {
+        uint32_t Index = 0;
+        uint32_t Generation = 0;
+        bool Valid() const
+        {
+            return Index != 0;
+        }   
+    };
+
+    using ShaderHandle = Handle<struct ShaderType>;
 
     struct Texture2D
     {
@@ -134,26 +150,54 @@ namespace hen::graphics
     class Shader
     {
     public:
+    
+        bool IsBackendValid() const;    
 
-        virtual void Compile() = 0;
-        virtual void Bind() = 0;
-        virtual void UnBind() = 0;
+        void Compile();
+        void Bind();
+        void UnBind();
 
-        virtual unsigned int GetID() const = 0;
+        unsigned int GetID() const;
 
-        virtual void SetVal(const std::string& name, bool val) const = 0;
-        virtual void SetVal(const std::string& name, int val) const = 0;
-        virtual void SetVal(const std::string& name, float val) const = 0;
+        void SetVal(const std::string& name, bool val) const;
+        void SetVal(const std::string& name, int val) const;
+        void SetVal(const std::string& name, float val) const;
 
-        virtual void SetVec2(const std::string &name, const glm::vec2 &value) const = 0;
-        virtual void SetVec3(const std::string &name, const glm::vec3 &value) const = 0;
-        virtual void SetVec4(const std::string &name, const glm::vec4 &value) const = 0;
+        void SetVec2(const std::string &name, const glm::vec2 &value) const;
+        void SetVec3(const std::string &name, const glm::vec3 &value) const;
+        void SetVec4(const std::string &name, const glm::vec4 &value) const;
 
-        virtual void SetMat2(const std::string &name, const glm::mat2 &mat) const = 0;
-        virtual void SetMat3(const std::string &name, const glm::mat3 &mat) const = 0;
-        virtual void SetMat4(const std::string &name, const glm::mat4 &mat) const = 0;
+        void SetMat2(const std::string &name, const glm::mat2 &mat) const;
+        void SetMat3(const std::string &name, const glm::mat3 &mat) const;
+        void SetMat4(const std::string &name, const glm::mat4 &mat) const;
 
-        static std::unique_ptr<Shader> Create(const char* vsPath, const char* fsPath);
+        void Create(const char* vsPath, const char* fsPath);
+
+    public:
+        
+        struct Backend
+        {
+            virtual void Compile() = 0;
+            virtual void Bind() = 0;
+            virtual void UnBind() = 0;
+
+            virtual unsigned int GetID() const = 0;
+
+            virtual void SetVal(const std::string& name, bool val) const = 0;
+            virtual void SetVal(const std::string& name, int val) const = 0;
+            virtual void SetVal(const std::string& name, float val) const = 0;
+
+            virtual void SetVec2(const std::string &name, const glm::vec2 &value) const = 0;
+            virtual void SetVec3(const std::string &name, const glm::vec3 &value) const = 0;
+            virtual void SetVec4(const std::string &name, const glm::vec4 &value) const = 0;
+
+            virtual void SetMat2(const std::string &name, const glm::mat2 &mat) const = 0;
+            virtual void SetMat3(const std::string &name, const glm::mat3 &mat) const = 0;
+            virtual void SetMat4(const std::string &name, const glm::mat4 &mat) const = 0;
+        };   
+
+    private:
+        std::unique_ptr<Backend> m_BackendImpl;
     };
 
     uint32_t PrimitiveSize(SHADER_PRIMITIVES primitive);

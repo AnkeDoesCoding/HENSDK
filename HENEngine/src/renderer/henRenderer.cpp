@@ -20,7 +20,7 @@
 namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
-    static std::unique_ptr<graphics::Shader> PrimitiveShader;
+    static graphics::Shader PrimitiveShader;
 
     static float CubeVertices[] =
     {
@@ -175,7 +175,7 @@ namespace hen::renderer
     graphics::Texture2D DiffuseTexture;
     graphics::Texture2D SpecularTexture;
 
-    std::unique_ptr<graphics::Shader> CubeShader;
+    graphics::Shader CubeShader;
 
     glm::mat4 Projection = glm::mat4(1.0f);
     
@@ -214,9 +214,9 @@ namespace hen::renderer
         
         HEN_ASSERT(CurrentRHC != nullptr, "[hen::renderer] RHC is nullptr");
 
-        PrimitiveShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+        PrimitiveShader.Create(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
 
-        CubeShader = graphics::Shader::Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
+        CubeShader.Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
 
         VB = graphics::VertexBuffer::Create(sizeof(vertices), vertices);
 
@@ -253,20 +253,20 @@ namespace hen::renderer
 
         glm::mat4 model = glm::mat4(1.0f);
 
-        CubeShader->Bind();
+        CubeShader.Bind();
  
-        CubeShader->SetVec3("viewPos", Camera.Position);
-        CubeShader->SetMat4("model", model);
-        CubeShader->SetMat4("view", Camera.GetViewMatrix());
-        CubeShader->SetMat4("projection", Projection);
+        CubeShader.SetVec3("viewPos", Camera.Position);
+        CubeShader.SetMat4("model", model);
+        CubeShader.SetMat4("view", Camera.GetViewMatrix());
+        CubeShader.SetMat4("projection", Projection);
 
-        CubeShader->SetVal("material.diffuse", 0);
-        CubeShader->SetVal("material.specular", 1);
-        CubeShader->SetVal("material.shininess", 32.0f);
-        CubeShader->SetVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
-        CubeShader->SetVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
-        CubeShader->SetVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
-        CubeShader->SetVec3("light.position", LightPos);
+        CubeShader.SetVal("material.diffuse", 0);
+        CubeShader.SetVal("material.specular", 1);
+        CubeShader.SetVal("material.shininess", 32.0f);
+        CubeShader.SetVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
+        CubeShader.SetVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
+        CubeShader.SetVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
+        CubeShader.SetVec3("light.position", LightPos);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, DiffuseTexture.ID);
@@ -276,7 +276,7 @@ namespace hen::renderer
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        CubeShader->UnBind();
+        CubeShader.UnBind();
 
         RenderPrimitive(PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
 
@@ -336,12 +336,12 @@ namespace hen::renderer
         glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
         model = glm::scale(model, scale);
 
-        PrimitiveShader->Bind();
+        PrimitiveShader.Bind();
 
-        PrimitiveShader->SetVec3("colour", colour);
-        PrimitiveShader->SetMat4("projection", Projection);
-        PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
-        PrimitiveShader->SetMat4("model", model);
+        PrimitiveShader.SetVec3("colour", colour);
+        PrimitiveShader.SetMat4("projection", Projection);
+        PrimitiveShader.SetMat4("view", Camera.GetViewMatrix());
+        PrimitiveShader.SetMat4("model", model);
 
         switch(primitve)
         {
@@ -363,7 +363,7 @@ namespace hen::renderer
                 break;
         }
 
-        PrimitiveShader->UnBind();
+        PrimitiveShader.UnBind();
     }
 
     void RenderLevel()
@@ -390,24 +390,21 @@ namespace hen::renderer
                     }
                 }
 
-                PrimitiveShader->Bind();
+                PrimitiveShader.Bind();
 
-                PrimitiveShader->SetVec3("colour", glm::vec3(1.0f));
-                PrimitiveShader->SetMat4("projection", Projection);
-                PrimitiveShader->SetMat4("view", Camera.GetViewMatrix());
-                PrimitiveShader->SetMat4("model", transformComp.Transform);
+                PrimitiveShader.SetVec3("colour", glm::vec3(1.0f));
+                PrimitiveShader.SetMat4("projection", Projection);
+                PrimitiveShader.SetMat4("view", Camera.GetViewMatrix());
+                PrimitiveShader.SetMat4("model", transformComp.Transform);
 
                 if (meshComp.VertexArray)
                 {
-                    
-                    
-                    
                     meshComp.VertexArray->Bind();
                     glDrawElements(GL_TRIANGLES, (GLsizei)meshComp.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
                     meshComp.VertexArray->UnBind();
                 }
                 
-                PrimitiveShader->UnBind();
+                PrimitiveShader.UnBind();
                 
             }
         }

@@ -61,7 +61,7 @@ namespace hen::graphics
         uint32_t m_VertexBufferIndex = 0;
     };
 
-    class Shader_OpenGL : public Shader
+    class Shader_OpenGL : public Shader::Backend
     {
     public:
 
