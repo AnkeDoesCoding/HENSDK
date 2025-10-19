@@ -300,8 +300,8 @@ namespace hen::renderer
 
     void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
     {
-        static std::unique_ptr <graphics::VertexArray> cubeVertexArray = graphics::VertexArray::Create();
-        static std::unique_ptr <graphics::VertexArray> sphereVertexArray = graphics::VertexArray::Create();
+        static std::unique_ptr <graphics::VertexArray> cubeVertexArray;
+        static std::unique_ptr <graphics::VertexArray> sphereVertexArray;
 
         static std::shared_ptr<graphics::VertexBuffer> cubeVB = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
         static std::shared_ptr<graphics::IndexBuffer> cubeIB = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);

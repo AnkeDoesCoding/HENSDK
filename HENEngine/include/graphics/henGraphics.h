@@ -150,7 +150,11 @@ namespace hen::graphics
     class Shader
     {
     public:
-    
+
+        Shader() = default;
+        Shader(const char* vsPath, const char* fsPath);
+        ~Shader();
+
         bool IsBackendValid() const;    
 
         void Compile();
@@ -172,6 +176,7 @@ namespace hen::graphics
         void SetMat4(const std::string &name, const glm::mat4 &mat) const;
 
         void Create(const char* vsPath, const char* fsPath);
+        void Destroy();
 
     public:
         

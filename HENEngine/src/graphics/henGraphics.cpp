@@ -205,6 +205,16 @@ namespace hen::graphics
         return nullptr;
     }
 
+    Shader::Shader(const char* vsPath, const char* fsPath)
+    {
+        Create(vsPath, fsPath);
+    }
+
+    Shader::~Shader()
+    {
+        Destroy();
+    }
+
     bool Shader::IsBackendValid() const
     {
         return m_BackendImpl != nullptr;
@@ -212,7 +222,7 @@ namespace hen::graphics
 
     void Shader::Compile()
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->Compile();
         }
@@ -220,7 +230,7 @@ namespace hen::graphics
 
     void Shader::Bind()
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->Bind();
         }
@@ -228,7 +238,7 @@ namespace hen::graphics
 
     void Shader::UnBind()
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->UnBind();
         }
@@ -236,7 +246,7 @@ namespace hen::graphics
 
     unsigned int Shader::GetID() const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             return m_BackendImpl->GetID();
         }
@@ -246,7 +256,7 @@ namespace hen::graphics
 
     void Shader::SetVal(const std::string& name, bool val) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetVal(name, val);
         }
@@ -254,7 +264,7 @@ namespace hen::graphics
 
     void Shader::SetVal(const std::string& name, int val) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetVal(name, val);
         }
@@ -262,7 +272,7 @@ namespace hen::graphics
 
     void Shader::SetVal(const std::string& name, float val) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetVal(name, val);
         }
@@ -270,7 +280,7 @@ namespace hen::graphics
 
     void Shader::SetVec2(const std::string &name, const glm::vec2 &value) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetVec2(name, value);
         }
@@ -278,7 +288,7 @@ namespace hen::graphics
 
     void Shader::SetVec3(const std::string &name, const glm::vec3 &value) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetVec3(name, value);
         }
@@ -286,7 +296,7 @@ namespace hen::graphics
 
     void Shader::SetVec4(const std::string &name, const glm::vec4 &value) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetVec4(name, value);
         }
@@ -294,7 +304,7 @@ namespace hen::graphics
 
     void Shader::SetMat2(const std::string &name, const glm::mat2 &mat) const
     {   
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetMat2(name, mat);
         }
@@ -302,7 +312,7 @@ namespace hen::graphics
 
     void Shader::SetMat3(const std::string &name, const glm::mat3 &mat) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetMat3(name, mat);
         }
@@ -310,7 +320,7 @@ namespace hen::graphics
 
     void Shader::SetMat4(const std::string &name, const glm::mat4 &mat) const
     {
-        if(IsBackendValid())
+        if (IsBackendValid())
         {
             m_BackendImpl->SetMat4(name, mat);
         }
@@ -327,6 +337,14 @@ namespace hen::graphics
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
                 break;
+        }
+    }
+
+    void Shader::Destroy()
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl.reset();
         }
     }
 
