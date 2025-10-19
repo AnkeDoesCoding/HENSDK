@@ -5,8 +5,6 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/stb/include/stb_image.h" // #define STB_IMAGE_IMPLEMENTATION is in henGraphics.cpp
 
-#include "core/henSlotMap.h"
-
 #include <string>
 #include <memory>
 
@@ -33,20 +31,6 @@ namespace hen::graphics
         VERTEX,
         FRAGMENT
     };
-
-    // this will be used soon
-    template <typename Type>
-    struct Handle
-    {
-        uint32_t Index = 0;
-        uint32_t Generation = 0;
-        bool Valid() const
-        {
-            return Index != 0;
-        }   
-    };
-
-    using ShaderHandle = Handle<struct ShaderType>;
 
     struct Texture2D
     {
@@ -153,7 +137,10 @@ namespace hen::graphics
 
         Shader() = default;
         Shader(const char* vsPath, const char* fsPath);
+        Shader(Shader&&) noexcept = default; // move constructor
+        Shader& operator=(Shader&&) noexcept = default;
         ~Shader();
+
 
         bool IsBackendValid() const;    
 

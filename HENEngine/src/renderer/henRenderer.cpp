@@ -20,7 +20,8 @@
 namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
-    static graphics::Shader PrimitiveShader;
+    static std::unique_ptr<ShaderManager> CurrentShaderManager;
+    static ShaderHandle PrimitiveShader;
 
     static float CubeVertices[] =
     {
@@ -214,7 +215,10 @@ namespace hen::renderer
         
         HEN_ASSERT(CurrentRHC != nullptr, "[hen::renderer] RHC is nullptr");
 
-        PrimitiveShader.Create(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+        CurrentShaderManager = std::make_unique<ShaderManager>();
+        GetShaderManager() = CurrentShaderManager.get();
+
+        PrimitiveShader = CurrentShaderManager->CreateOrGet(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
 
         CubeShader.Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
 
@@ -336,12 +340,15 @@ namespace hen::renderer
         glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
         model = glm::scale(model, scale);
 
-        PrimitiveShader.Bind();
 
-        PrimitiveShader.SetVec3("colour", colour);
-        PrimitiveShader.SetMat4("projection", Projection);
-        PrimitiveShader.SetMat4("view", Camera.GetViewMatrix());
-        PrimitiveShader.SetMat4("model", model);
+        auto* shader = CurrentShaderManager->Get(PrimitiveShader);
+
+        shader->Bind();
+
+        shader->SetVec3("colour", colour);
+        shader->SetMat4("projection", Projection);
+        shader->SetMat4("view", Camera.GetViewMatrix());
+        shader->SetMat4("model", model);
 
         switch(primitve)
         {
@@ -363,7 +370,7 @@ namespace hen::renderer
                 break;
         }
 
-        PrimitiveShader.UnBind();
+        shader->UnBind();
     }
 
     void RenderLevel()
@@ -390,12 +397,14 @@ namespace hen::renderer
                     }
                 }
 
-                PrimitiveShader.Bind();
+                auto* shader = CurrentShaderManager->Get(PrimitiveShader);
 
-                PrimitiveShader.SetVec3("colour", glm::vec3(1.0f));
-                PrimitiveShader.SetMat4("projection", Projection);
-                PrimitiveShader.SetMat4("view", Camera.GetViewMatrix());
-                PrimitiveShader.SetMat4("model", transformComp.Transform);
+                shader->Bind();
+
+                shader->SetVec3("colour", glm::vec3(1.0f));
+                shader->SetMat4("projection", Projection);
+                shader->SetMat4("view", Camera.GetViewMatrix());
+                shader->SetMat4("model", transformComp.Transform);
 
                 if (meshComp.VertexArray)
                 {
@@ -404,7 +413,7 @@ namespace hen::renderer
                     meshComp.VertexArray->UnBind();
                 }
                 
-                PrimitiveShader.UnBind();
+                shader->UnBind();
                 
             }
         }
