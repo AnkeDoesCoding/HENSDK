@@ -167,14 +167,21 @@ namespace hen
 
         bool IsAlive(const Handle& handle) const 
         {
-            if (handle.Index >= m_Slots.size())
+            if (!handle.IsValid()) 
             {
                 return false;
             }
 
-            const Slot& slot = m_Slots[handle.Index];
+            uint32_t index0 = handle.Index - 1;
 
-            return { slot.Alive && slot.Generation == handle.Generation };
+            if (index0 >= m_Slots.size()) 
+            {
+                return false;
+            }
+
+            const Slot& slot = m_Slots[index0];
+
+            return slot.Alive && slot.Generation == handle.Generation;
         }
     
     private:
