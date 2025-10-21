@@ -14,26 +14,37 @@ namespace hen::graphics
         {
         case SHADER_PRIMITIVES::FLOAT:
             return 4;
+            break;
         case SHADER_PRIMITIVES::FLOAT2:
             return 4 * 2;
+            break;
         case SHADER_PRIMITIVES::FLOAT3:
             return 4 * 3;
+            break;
         case SHADER_PRIMITIVES::FLOAT4:
             return 4 * 4;
+            break;
         case SHADER_PRIMITIVES::INT:
             return 4;
+            break;
         case SHADER_PRIMITIVES::INT2:
             return 4 * 2;
+            break;
         case SHADER_PRIMITIVES::INT3:
             return 4 * 3;
+            break;
         case SHADER_PRIMITIVES::INT4:
             return 4 * 4;
+            break;
         case SHADER_PRIMITIVES::MAT3:
             return 4 * 3 * 3;
+            break;
         case SHADER_PRIMITIVES::MAT4:
             return 4 * 4 * 4;
+            break;
         case SHADER_PRIMITIVES::BOOL:
             return 4;
+            break;
         }
 
         console::Log("[hen::graphics] Failed to get primitive size", console::LOGLEVEL::ERROR);
@@ -100,30 +111,41 @@ namespace hen::graphics
 
     uint32_t BufferElement::GetComponentCount() const
     {
-        switch(Type)
+        switch (Type)
         {
             case SHADER_PRIMITIVES::FLOAT:
                 return 1;
+                break;
             case SHADER_PRIMITIVES::FLOAT2:
                 return 2;
+                break;
             case SHADER_PRIMITIVES::FLOAT3:
                 return 3;
+                break;
             case SHADER_PRIMITIVES::FLOAT4:
                 return 4;
+                break;
             case SHADER_PRIMITIVES::INT:
                 return 1;
+                break;
             case SHADER_PRIMITIVES::INT2:
                 return 2;
+                break;
             case SHADER_PRIMITIVES::INT3:
                 return 3;
+                break;
             case SHADER_PRIMITIVES::INT4:
                 return 4;
+                break;
             case SHADER_PRIMITIVES::MAT3:
                 return 3;
+                break;
             case SHADER_PRIMITIVES::MAT4:
                 return 4;
+                break;
             case SHADER_PRIMITIVES::BOOL:
                 return 1;
+                break;
         }
 
         console::Log("[hen::graphics] Couldn't get component count", console::LOGLEVEL::ERROR);
@@ -165,13 +187,15 @@ namespace hen::graphics
 
     std::unique_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size, float* vertices)
     {
-        switch(renderer::CurrentBackend)
+        switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
+                break;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<VertexBuffer_OpenGL>(size, vertices);
+                break;
         }
 
         return nullptr;
@@ -179,13 +203,15 @@ namespace hen::graphics
 
     std::unique_ptr<IndexBuffer> IndexBuffer::Create(uint32_t size, uint32_t* count)
     {
-        switch(renderer::CurrentBackend)
+        switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
+                break;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<IndexBuffer_OpenGL>(size, count);
+                break;
         }
 
         return nullptr;
@@ -193,13 +219,15 @@ namespace hen::graphics
 
     std::unique_ptr<VertexArray> VertexArray::Create()
     {
-        switch(renderer::CurrentBackend)
+        switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
                 return nullptr;
+                break;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<VertexArray_OpenGL>();
+                break;
         }
 
         return nullptr;
@@ -328,7 +356,7 @@ namespace hen::graphics
 
     void Shader::Create(const char *vsPath, const char *fsPath)
     {
-        switch(renderer::CurrentBackend)
+        switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);

@@ -15,7 +15,7 @@ namespace hen::ui
         ImGui::StyleColorsDark();
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-        switch(renderer::CurrentBackend)
+        switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 break;
@@ -34,7 +34,7 @@ namespace hen::ui
 
     void IMGUIManager::Shutdown()
     {
-        switch(renderer::CurrentBackend)
+        switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 break;
@@ -57,7 +57,7 @@ namespace hen::ui
         if (Initialised)
         {
             ImGui_ImplSDL3_NewFrame();
-            switch(renderer::CurrentBackend)
+            switch (renderer::CurrentBackend)
             {
                 case renderer::BACKEND::NONE:
                     break;
@@ -101,11 +101,11 @@ namespace hen::ui
 
     void IMGUIManager::EndFrame()
     {
-        if(Initialised)
+        if (Initialised)
         {
             ImGui::Render();
 
-            switch(renderer::CurrentBackend)
+            switch (renderer::CurrentBackend)
             {
                 case renderer::BACKEND::NONE:
                     break;

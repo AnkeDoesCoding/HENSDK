@@ -49,7 +49,7 @@ namespace hen
 
         input::Initialise(renderer::GetRHC()->GetWindow());
 
-        if(input::Initialised && renderer::Initialised && console::Initialised)
+        if (input::Initialised && renderer::Initialised && console::Initialised)
         {
             Initialised = true;
 
@@ -84,7 +84,7 @@ namespace hen
 
     void Application::Run()
     {
-        if(Initialised)
+        if (Initialised)
         {
             renderer::Run();
 
@@ -102,7 +102,7 @@ namespace hen
 
     void Application::FixedUpdate()
     {
-        if(input::Press(input::KEYBOARD_BUTTON_TILDE))
+        if (input::Press(input::KEYBOARD_BUTTON_TILDE))
         {
             console::Toggle();
         }
@@ -121,7 +121,7 @@ namespace hen
 
     void Application::ResizeWindow()
     {
-        if(renderer::GetRHC() != nullptr)
+        if (renderer::GetRHC() != nullptr)
         {
             renderer::GetRHC()->ResizeWindow();
         }

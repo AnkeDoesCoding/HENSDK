@@ -16,26 +16,35 @@ namespace hen::graphics
 		{
 			case SHADER_PRIMITIVES::FLOAT:    
                 return GL_FLOAT;
+                break;
 			case SHADER_PRIMITIVES::FLOAT2:   
                 return GL_FLOAT;
+                break;
 			case SHADER_PRIMITIVES::FLOAT3:   
                 return GL_FLOAT;
 			case SHADER_PRIMITIVES::FLOAT4:   
                 return GL_FLOAT;
+                break;
 			case SHADER_PRIMITIVES::MAT3:     
                 return GL_FLOAT;
 			case SHADER_PRIMITIVES::MAT4:     
                 return GL_FLOAT;
+                break;
 			case SHADER_PRIMITIVES::INT:      
                 return GL_INT;
+                break;
 			case SHADER_PRIMITIVES::INT2:     
                 return GL_INT;
+                break;
 			case SHADER_PRIMITIVES::INT3:     
                 return GL_INT;
+                break;
 			case SHADER_PRIMITIVES::INT4:     
                 return GL_INT;
+                break;
 			case SHADER_PRIMITIVES::BOOL:     
                 return GL_BOOL;
+                break;
 		}
 
         console::Log("[hen::graphics] Couldn't find corresponding OpenGL type", console::LOGLEVEL::ERROR);

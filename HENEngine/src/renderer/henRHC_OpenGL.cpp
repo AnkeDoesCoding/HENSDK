@@ -34,7 +34,7 @@ namespace hen
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-        if(arguments::HasArgument("debugcontext"))
+        if (arguments::HasArgument("debugcontext"))
         {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
             console::Log("[hen::RHC_OpenGL] OpenGL context will be created in debug mode");

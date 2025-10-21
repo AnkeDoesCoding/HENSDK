@@ -72,7 +72,7 @@ namespace hen::cvar
 		return system;
 	}
 
-    extern CVar ProtectionEnabled;
+    extern CVar cvar_ProtectionEnabled;
 
 
 }

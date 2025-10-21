@@ -12,7 +12,7 @@ namespace hen::level
 
     Level::~Level()
     {
-        if(ActiveLevel == this)
+        if (ActiveLevel == this)
         {
             ActiveLevel = nullptr;
         }

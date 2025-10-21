@@ -39,98 +39,131 @@ namespace hen::input
 
     int ConvertScanCode(const SDL_Scancode& key, const SDL_Keycode& keyCode)
     {
-        if(key >= 4 && key <= 29) // A to Z
+        if (key >= 4 && key <= 29) // A to Z
         { 
             return (key - 4) + CHARACTER_RANGE_START;
         }
 
-        if(key >= 30 && key <= 39) // 0 to 9
+        if (key >= 30 && key <= 39) // 0 to 9
         { 
             return (key - 30) + DIGIT_RANGE_START;
         }
 
-        if(key >= 58 && key <= 69) // F1 to F12
+        if (key >= 58 && key <= 69) // F1 to F12
         { 
             return (key - 58) + KEYBOARD_BUTTON_F1;
         }
 
-        if(key >= 79 && key <= 82) // Keyboard directional buttons
+        if (key >= 79 && key <= 82) // Keyboard directional buttons
         { 
             return (82 - key) + KEYBOARD_BUTTON_UP;
         }
         
-        switch(key) // Individual scancode key conversion
+        switch (key) // Individual scancode key conversion
         { 
             case SDL_SCANCODE_SPACE:
                 return KEYBOARD_BUTTON_SPACE;
+                break;
             case SDL_SCANCODE_LSHIFT:
                 return KEYBOARD_BUTTON_LSHIFT;
+                break;
             case SDL_SCANCODE_RSHIFT:
                 return KEYBOARD_BUTTON_RSHIFT;
+                break;
             case SDL_SCANCODE_RETURN:
                 return KEYBOARD_BUTTON_ENTER;
+                break;
             case SDL_SCANCODE_ESCAPE:
                 return KEYBOARD_BUTTON_ESCAPE;
+                break;
             case SDL_SCANCODE_HOME:
                 return KEYBOARD_BUTTON_HOME;
+                break;
             case SDL_SCANCODE_RCTRL:
                 return KEYBOARD_BUTTON_RCONTROL;
+                break;
             case SDL_SCANCODE_LCTRL:
                 return KEYBOARD_BUTTON_LCONTROL;
+                break;
             case SDL_SCANCODE_DELETE:
                 return KEYBOARD_BUTTON_DELETE;
+                break;
             case SDL_SCANCODE_BACKSPACE:
                 return KEYBOARD_BUTTON_BACKSPACE;
+                break;
             case SDL_SCANCODE_PAGEDOWN:
                 return KEYBOARD_BUTTON_PAGEDOWN;
+                break;
             case SDL_SCANCODE_PAGEUP:
                 return KEYBOARD_BUTTON_PAGEUP;
+                break;
 			case SDL_SCANCODE_KP_0:
 				return KEYBOARD_BUTTON_NUMPAD0;
+                break;
 			case SDL_SCANCODE_KP_1:
 				return KEYBOARD_BUTTON_NUMPAD1;
+                break;
 			case SDL_SCANCODE_KP_2:
 				return KEYBOARD_BUTTON_NUMPAD2;
+                break;
 			case SDL_SCANCODE_KP_3:
 				return KEYBOARD_BUTTON_NUMPAD3;
+                break;
 			case SDL_SCANCODE_KP_4:
 				return KEYBOARD_BUTTON_NUMPAD4;
+                break;
 			case SDL_SCANCODE_KP_5:
 				return KEYBOARD_BUTTON_NUMPAD5;
+                break;
 			case SDL_SCANCODE_KP_6:
 				return KEYBOARD_BUTTON_NUMPAD6;
+                break;
 			case SDL_SCANCODE_KP_7:
 				return KEYBOARD_BUTTON_NUMPAD7;
+                break;
 			case SDL_SCANCODE_KP_8:
 				return KEYBOARD_BUTTON_NUMPAD8;
+                break;
 			case SDL_SCANCODE_KP_9:
 				return KEYBOARD_BUTTON_NUMPAD9;
+                break;
 			case SDL_SCANCODE_KP_MULTIPLY:
 				return KEYBOARD_BUTTON_MULTIPLY;
+                break;
 			case SDL_SCANCODE_KP_PLUS:
 				return KEYBOARD_BUTTON_ADD;
+                break;
 			case SDL_SCANCODE_SEPARATOR:
 				return KEYBOARD_BUTTON_SEPARATOR;
+                break;
 			case SDL_SCANCODE_KP_MINUS:
 				return KEYBOARD_BUTTON_SUBTRACT;
+                break;
 			case SDL_SCANCODE_KP_DECIMAL:
 				return KEYBOARD_BUTTON_DECIMAL;
+                break;
 			case SDL_SCANCODE_KP_DIVIDE:
 				return KEYBOARD_BUTTON_DIVIDE;
+                break;
 			case SDL_SCANCODE_INSERT:
 				return KEYBOARD_BUTTON_INSERT;
+                break;
 			case SDL_SCANCODE_TAB:
 				return KEYBOARD_BUTTON_TAB;
+                break;
 			case SDL_SCANCODE_GRAVE: 
     			return KEYBOARD_BUTTON_TILDE;
+                break;
 			case SDL_SCANCODE_LALT:
 				return KEYBOARD_BUTTON_ALT;
+                break;
 			case SDL_SCANCODE_RALT:
 				return KEYBOARD_BUTTON_ALTGR;
+                break;
         }
 
         // Keycode Conversion
-        if(keyCode >= 91 && keyCode <= 126){
+        if (keyCode >= 91 && keyCode <= 126){
             return keyCode;
         }
 
@@ -200,7 +233,7 @@ namespace hen::input
                 }
                 break;
             case SDL_EVENT_MOUSE_BUTTON_UP:        
-                switch(event.button.button)
+                switch (event.button.button)
                 {
                     case SDL_BUTTON_LEFT:
                         Mouse.LMB = false;
@@ -311,18 +344,21 @@ namespace hen::input
 				return true;
             }
 			return false;
+            break;
 		case MOUSE_BUTTON_RIGHT:
 			if (Mouse.RMB) 
             {
 				return true;
             }
 			return false;
+            break;
 		case MOUSE_BUTTON_MIDDLE:
 			if (Mouse.MMB) 
             {
 				return true;
             }
 			return false;
+            break;
         default: 
             break;
         }

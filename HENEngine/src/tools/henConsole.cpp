@@ -141,7 +141,7 @@ namespace hen::console
             tokens.push_back(token);
         }
         
-        if(tokens.empty())
+        if (tokens.empty())
         {
             return;
         }
@@ -156,7 +156,7 @@ namespace hen::console
             }
             else
             {
-                if ((cvar->Flag & cvar::FLAGS_PROTECTED) && cvar::ProtectionEnabled.GetBool())
+                if ((cvar->Flag & cvar::FLAGS_PROTECTED) && cvar::cvar_ProtectionEnabled.GetBool())
                 {
                     console::Log("[hen::console] Protection is enabled, type protection_enabled 0 to disable it", console::LOGLEVEL::WARNING);
                     return;
@@ -203,7 +203,7 @@ namespace hen::console
 
     void Initialise()
     {
-        if(!std::filesystem::is_directory(LogFileDir))
+        if (!std::filesystem::is_directory(LogFileDir))
         {
             bool result = std::filesystem::create_directory(LogFileDir);
             Initialised = result;
@@ -214,7 +214,7 @@ namespace hen::console
         HEN_ASSERT(LogFile.is_open(), "[hen::console] Failed to open log file");
 
         ui::GetIMGUIManager()->RegisterDrawCallback([]() {
-            if(!Visible || Locked)
+            if (!Visible || Locked)
             {
                 return;
             }
@@ -227,7 +227,7 @@ namespace hen::console
             for(auto &entry : Entries)
             {
                 ImVec4 color;
-                switch(entry.Level)
+                switch (entry.Level)
                 {
                 case LOGLEVEL::INFO:
                     color = ImVec4(1,1,1,1);
@@ -245,7 +245,7 @@ namespace hen::console
                 ImGui::PopStyleColor();
             }
         
-            if(!Locked && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            if (!Locked && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
             {
                 ImGui::SetScrollHereY(1.0f);
             }
@@ -258,10 +258,10 @@ namespace hen::console
                 ImGui::SetKeyboardFocusHere();
             }
         
-            if(ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter, InputCallback))
+            if (ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter, InputCallback))
             {
                 std::string line(InputBuffer);
-                if(!line.empty())
+                if (!line.empty())
                 {
                     Log(std::string("[User] ") + InputBuffer, LOGLEVEL::INFO);
                      
@@ -361,7 +361,7 @@ namespace hen::console
 
     void Shutdown()
     {
-        if(LogFile.is_open())
+        if (LogFile.is_open())
         {
             LogFile.close();
         }
@@ -410,7 +410,7 @@ namespace hen::console
 
         Entries.push_back(entry);   
 
-        if(Entries.size() > MAX_DISPLAYED_LOGS)
+        if (Entries.size() > MAX_DISPLAYED_LOGS)
         {
             Entries.pop_front();
         }

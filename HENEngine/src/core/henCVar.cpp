@@ -7,12 +7,12 @@
 namespace hen::cvar
 {
 
-    CVar ProtectionEnabled("protection_enabled", true);
+    CVar cvar_ProtectionEnabled("protection_enabled", true);
 
     CVar::CVar(const std::string& name, VALUE_TYPE defaultValue, FLAGS flag, std::function<void()> onChange)
         : Name(name), Value(defaultValue), DefaultValue(defaultValue), Flag(flag), OnChange(onChange)
     {
-        if(GetSystem())
+        if (GetSystem())
         {
             GetSystem()->RegisterCVar(this);
         }
@@ -25,7 +25,7 @@ namespace hen::cvar
 
     void CVar::Set(VALUE_TYPE newValue)
     {
-        if((Flag & FLAGS_PROTECTED) && ProtectionEnabled.GetBool())
+        if ((Flag & FLAGS_PROTECTED) && cvar_ProtectionEnabled.GetBool())
         {
             console::Log("[hen::cvar] CVar (" + Name + ") is a protected CVar", console::LOGLEVEL::WARNING);
             return;
@@ -33,7 +33,7 @@ namespace hen::cvar
 
         Value = newValue;
 
-        if(OnChange)
+        if (OnChange)
         {
             OnChange();
         }  

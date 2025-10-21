@@ -21,6 +21,7 @@ namespace importer
 
             aiVector3D transformedPos = transform * pos;
             aiVector3D transformedNormal = normalMatrix * normal;
+            transformedNormal.Normalize();
 
             meshComp.Verticies.emplace_back(transformedPos.x * 0.01f, transformedPos.y * 0.01f, transformedPos.z * 0.01f);
             meshComp.Normals.emplace_back(transformedNormal.x, transformedNormal.y, transformedNormal.z);

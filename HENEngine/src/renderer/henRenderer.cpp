@@ -8,6 +8,7 @@
 #include "vendor/glm/gtc/type_ptr.hpp"
 #include <vendor/glm/gtc/quaternion.hpp>
 #include <vendor/glm/gtx/quaternion.hpp>
+#include "vendor/glm/gtx/string_cast.hpp"
 
 #include "graphics/henGraphics.h"
 #include "core/henArguments.h"
@@ -21,6 +22,7 @@ namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
     static std::unique_ptr<ShaderManager> CurrentShaderManager;
+
     static ShaderHandle PrimitiveShader;
 
     static float CubeVertices[] =
@@ -177,8 +179,6 @@ namespace hen::renderer
     graphics::Texture2D SpecularTexture;
 
     graphics::Shader CubeShader;
-
-    glm::mat4 Projection = glm::mat4(1.0f);
     
     glm::vec3 LightPos(0.0f, 1.0f, 1.0f);
     
@@ -188,12 +188,12 @@ namespace hen::renderer
 
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
-        if(arguments::HasArgument("vulkan"))
+        if (arguments::HasArgument("vulkan"))
         {
             CurrentBackend = BACKEND::VULKAN;
         }
 
-        switch(CurrentBackend)
+        switch (CurrentBackend)
         {
             case BACKEND::NONE:
                 CurrentRHC = nullptr;
@@ -253,8 +253,6 @@ namespace hen::renderer
         int windowWidth, windowHeight;
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-        Projection = glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f);
-
         glm::mat4 model = glm::mat4(1.0f);
 
         CubeShader.Bind();
@@ -262,7 +260,7 @@ namespace hen::renderer
         CubeShader.SetVec3("viewPos", Camera.Position);
         CubeShader.SetMat4("model", model);
         CubeShader.SetMat4("view", Camera.GetViewMatrix());
-        CubeShader.SetMat4("projection", Projection);
+        CubeShader.SetMat4("projection", glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f));
 
         CubeShader.SetVal("material.diffuse", 0);
         CubeShader.SetVal("material.specular", 1);
@@ -345,12 +343,16 @@ namespace hen::renderer
 
         shader->Bind();
 
-        shader->SetVec3("colour", colour);
-        shader->SetMat4("projection", Projection);
-        shader->SetMat4("view", Camera.GetViewMatrix());
-        shader->SetMat4("model", model);
+        int windowWidth, windowHeight;
+        SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-        switch(primitve)
+        shader->SetVec3("uColour", colour);
+        shader->SetMat4("uProjection", glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f));
+        shader->SetMat4("uView", Camera.GetViewMatrix());
+        shader->SetMat4("uModel", model);
+        shader->SetMat3("uNormalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+
+        switch (primitve)
         {
             case PRIMITIVES::CUBE:
             {
@@ -401,10 +403,14 @@ namespace hen::renderer
 
                 shader->Bind();
 
-                shader->SetVec3("colour", glm::vec3(1.0f));
-                shader->SetMat4("projection", Projection);
-                shader->SetMat4("view", Camera.GetViewMatrix());
-                shader->SetMat4("model", transformComp.Transform);
+                int windowWidth, windowHeight;
+                SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
+
+                shader->SetVec3("uColour", glm::vec3(1.0f));
+                shader->SetMat4("uProjection", glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, 0.01f, 1000.0f));
+                shader->SetMat4("uView", Camera.GetViewMatrix());
+                shader->SetMat4("uModel", transformComp.Transform);
+                shader->SetMat3("uNormalMatrix", glm::transpose(glm::inverse(glm::mat3(transformComp.Transform))));
 
                 if (meshComp.VertexArray)
                 {
@@ -414,7 +420,7 @@ namespace hen::renderer
                 }
                 
                 shader->UnBind();
-                
+        
             }
         }
     }
