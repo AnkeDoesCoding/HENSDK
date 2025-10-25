@@ -13,7 +13,7 @@
 
 namespace hen
 {
-    static Uint64 LastTick, CurrentTick = 0;
+    static uint64_t LastTick, CurrentTick = 0;
     static std::unique_ptr<cvar::System> CVarSystem;
     static std::unique_ptr<ui::IMGUIManager> ImGuiManager;
 

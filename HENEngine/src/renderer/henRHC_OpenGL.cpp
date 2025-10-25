@@ -33,7 +33,7 @@ namespace hen
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
+    
         if (arguments::HasArgument("debugcontext"))
         {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -46,6 +46,8 @@ namespace hen
         int loadGL = gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
         HEN_ASSERT(loadGL, "[hen::RHC_OpenGL] Failed to load OpenGL context");
+
+        SDL_GL_SetSwapInterval(0); // create with vysnc off
 
         Initialised = true;
 

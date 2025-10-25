@@ -9,12 +9,12 @@ namespace hen::input
 {
     bool Initialised = false;
 
-    SDL_Window* Window;
+    static SDL_Window* Window;
 
-    KeyboardState Keyboard;
-    MouseState Mouse;
+    static KeyboardState Keyboard;
+    static MouseState Mouse;
 
-    std::vector<SDL_Event> Events;
+    static std::vector<SDL_Event> Events;
 
     struct Input 
 	{
@@ -35,7 +35,7 @@ namespace hen::input
 
 	};
 
-    std::map<Input, int, Input::LessComparer> Inputs;
+    static std::map<Input, int, Input::LessComparer> Inputs;
 
     int ConvertScanCode(const SDL_Scancode& key, const SDL_Keycode& keyCode)
     {
