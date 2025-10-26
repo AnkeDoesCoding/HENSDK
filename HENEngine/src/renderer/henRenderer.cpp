@@ -22,6 +22,7 @@ namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
     static std::unique_ptr<ShaderManager> CurrentShaderManager;
+    static std::unique_ptr<TextureManager> CurrentTextureManager;
 
     static ShaderHandle PrimitiveShader;
 
@@ -175,8 +176,8 @@ namespace hen::renderer
     std::unique_ptr <graphics::VertexBuffer> VB;
 
     unsigned int VAO;
-    graphics::Texture2D DiffuseTexture;
-    graphics::Texture2D SpecularTexture;
+    renderer::TextureHandle DiffuseTexture;
+    renderer::TextureHandle SpecularTexture;
 
     graphics::Shader CubeShader;
     
@@ -218,7 +219,10 @@ namespace hen::renderer
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();
 
-        PrimitiveShader = CurrentShaderManager->CreateOrGet(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+        CurrentTextureManager = std::make_unique<TextureManager>();
+        GetTextureManager() = CurrentTextureManager.get();
+
+        PrimitiveShader = CurrentShaderManager->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
 
         CubeShader.Create(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
 
@@ -236,8 +240,8 @@ namespace hen::renderer
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2); 
 
-        DiffuseTexture.Load(ENGINE_RESOURCE_PATH "textures/container2.png");
-        SpecularTexture.Load(ENGINE_RESOURCE_PATH "textures/container2_specular.png");
+        DiffuseTexture = CurrentTextureManager->Load(ENGINE_RESOURCE_PATH "textures/container2.png");
+        SpecularTexture = CurrentTextureManager->Load(ENGINE_RESOURCE_PATH "textures/container2_specular.png");
 
         Initialised = true;
 
@@ -270,10 +274,13 @@ namespace hen::renderer
         CubeShader.SetVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
         CubeShader.SetVec3("light.position", LightPos);
 
+        graphics::Texture2D* diffuse = CurrentTextureManager->Get(DiffuseTexture);
+        graphics::Texture2D* spec = CurrentTextureManager->Get(SpecularTexture);
+
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, DiffuseTexture.ID);
+        glBindTexture(GL_TEXTURE_2D, diffuse->ID);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, SpecularTexture.ID);
+        glBindTexture(GL_TEXTURE_2D, spec->ID);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -385,11 +392,11 @@ namespace hen::renderer
             {
                 auto& transformComp = entity.GetComponent<hen::level::TransformComponent>();
                 auto& meshComp = entity.GetComponent<hen::level::MeshComponent>();
+                auto& materialComp = entity.GetComponent<hen::level::MaterialComponent>();
                 
-                if (level::GetActiveLevel() && entity.HasComponent<hen::level::MaterialComponent>())
+                if (level::GetActiveLevel())
                 {
-                    auto& materialComp = entity.GetComponent<hen::level::MaterialComponent>();
-
+                   
                     if (materialComp.DiffuseTexture.ID != 0 && materialComp.SpecularTexture.ID != 0)
                     {
                         glActiveTexture(GL_TEXTURE0);
@@ -399,7 +406,7 @@ namespace hen::renderer
                     }
                 }
 
-                auto* shader = CurrentShaderManager->Get(PrimitiveShader);
+                auto* shader = CurrentShaderManager->Get(materialComp.Shader);
 
                 shader->Bind();
 

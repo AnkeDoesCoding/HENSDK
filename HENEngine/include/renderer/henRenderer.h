@@ -5,7 +5,7 @@
 
 #include "vendor/glad/include/glad.h"
 #include "renderer/henRHC.h"
-#include "renderer/henRenderer_ShaderManager.h"
+#include "renderer/henRenderer_ResourceManagers.h"
 #include "level/henLevel.h"
 
 namespace hen::renderer
@@ -36,12 +36,6 @@ namespace hen::renderer
 		static RHC* context = nullptr;
 		return context;
 	}
-
-    inline ShaderManager*& GetShaderManager()
-    {
-        static ShaderManager* shaderManager = nullptr;
-		return shaderManager;
-    }
     
     extern bool Initialised;
     extern BACKEND CurrentBackend;

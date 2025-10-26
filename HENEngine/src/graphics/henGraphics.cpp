@@ -85,16 +85,16 @@ namespace hen::graphics
         else
         {
             console::Log("Failed to load texture", console::LOGLEVEL::ERROR);
-            Free();
+            Destroy();
         }
     }
 
     Texture2D::~Texture2D()
     {
-        Free();
+        Destroy();
     }
 
-    void Texture2D::Free()
+    void Texture2D::Destroy()
     {
         if (Data)
         {

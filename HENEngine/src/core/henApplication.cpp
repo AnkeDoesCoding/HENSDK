@@ -48,30 +48,28 @@ namespace hen
         ImGuiManager->Initialise(window);
 
         input::Initialise(renderer::GetRHC()->GetWindow());
+        
+        Initialised = true;
 
-        if (input::Initialised && renderer::Initialised && console::Initialised)
-        {
-            Initialised = true;
+        std::string infoStr;
+        infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
+        
+        #if PLATFORM_WINDOWS
+            infoStr += " WINDOWS_";
+        #elif PLATFORM_LINUX
+            infoStr += " LINUX_";
+        #endif // !PLATFORM_WINDOWS
 
-            std::string infoStr;
-            infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
-            
-            #if PLATFORM_WINDOWS
-                infoStr += " WINDOWS_";
-            #elif PLATFORM_LINUX
-                infoStr += " LINUX_";
-            #endif // !PLATFORM_WINDOWS
+        #if DEBUG
+            infoStr += "DEBUG";
+        #elif RELEASE
+            infoStr += "RELEASE";
+        #endif // !DEBUG
 
-            #if DEBUG
-                infoStr += "DEBUG";
-            #elif RELEASE
-                infoStr += "RELEASE";
-            #endif // !DEBUG
+        infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
 
-            infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
+        console::Log(infoStr, console::LOGLEVEL::INFO);
 
-            console::Log(infoStr, console::LOGLEVEL::INFO);
-        }
     }
 
     void Application::Shutdown()

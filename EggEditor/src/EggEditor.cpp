@@ -20,6 +20,8 @@ void Editor::Initialise(SDL_Window* window)
     transform.SetScale(glm::vec3(0.5f));
     auto& mesh = Test->AddComponent<hen::level::MeshComponent>();
 
+    Test->AddComponent<hen::level::MaterialComponent>();
+
     importer::ImportModel("res/models/survival_guitar_backpack/scene.gltf", mesh);
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
@@ -56,6 +58,7 @@ void Editor::Shutdown()
 {
     hen::Application::Shutdown();
 
+    free(Test);
     Test = nullptr;
 }
 

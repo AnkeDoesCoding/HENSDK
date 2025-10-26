@@ -9,6 +9,7 @@
 #include <vendor/glm/gtx/quaternion.hpp>
 
 #include "graphics/henGraphics.h"
+#include "renderer/henRenderer_ResourceManagers.h"
 
 #include <string>
 
@@ -194,6 +195,20 @@ namespace hen::level
     {
         graphics::Texture2D DiffuseTexture;
         graphics::Texture2D SpecularTexture;
+
+        renderer::ShaderHandle Shader;
+
+        MaterialComponent()
+        {
+            if (DiffuseTexture.ID != 0 && SpecularTexture.ID != 0)
+            {
+                Shader = renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
+            }
+            else
+            {
+                Shader = renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+            }
+        }
     };
 
     struct CameraComponent

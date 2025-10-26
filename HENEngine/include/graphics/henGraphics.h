@@ -41,9 +41,10 @@ namespace hen::graphics
         unsigned int ID = 0;
 
         void Load(const char* path);
+        void Destroy();
+
         ~Texture2D();
 
-        void Free();
 
     };
 

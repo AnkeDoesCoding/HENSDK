@@ -269,7 +269,7 @@ namespace hen::input
 
         // Dont accumulate this stuff
         Mouse.DeltaWheel = 0;
-        Mouse.DeltaPos = glm::vec2(0.0f, 0.0f);
+        Mouse.DeltaPos = glm::vec2(0.0f);
 
         SDL_GetMouseState(&Mouse.Pos.x, &Mouse.Pos.y);
         
@@ -289,7 +289,7 @@ namespace hen::input
     void ClearDelta()
     {   
         Mouse.DeltaWheel = 0.0f;
-        Mouse.DeltaPos = glm::vec2(0.0f, 0.0f);
+        Mouse.DeltaPos = glm::vec2(0.0f);
     }
 
     const KeyboardState& GetKeyboardState() 
