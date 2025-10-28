@@ -5,9 +5,15 @@
 #include "vendor/imgui/backends/imgui_impl_opengl3.h"
 
 #include "renderer/henRenderer.h"
+#include "core/henCVar.h"
 
 namespace hen::ui
 {
+    cvar::CVar cvar_ScalingFactor("ui_scaling_factor", 1.0f, cvar::FLAGS_ARCHIVE, []()
+    {
+        ImGui::GetIO().FontGlobalScale = ImGui::GetIO().FontGlobalScale * cvar_ScalingFactor.GetFloat();
+    });
+
     void IMGUIManager::Initialise(SDL_Window* window)
     {
         IMGUI_CHECKVERSION();
