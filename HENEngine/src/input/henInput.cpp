@@ -174,7 +174,7 @@ namespace hen::input
     {
         Timer timer;
 
-        HEN_ASSERT(window != nullptr, "[hen::input] Window is nullptr");
+        HEN_ASSERT(window != nullptr, "Window is nullptr");
 
         Window = window;
 

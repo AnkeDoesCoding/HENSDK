@@ -207,11 +207,11 @@ namespace hen::console
         {
             bool result = std::filesystem::create_directory(LogFileDir);
             Initialised = result;
-            HEN_ASSERT(result, "[hen::console] Couldn't create log dir");
+            HEN_ASSERT(result, "Couldn't create log dir");
         }
 
         LogFile = std::ofstream(LogFilePath, std::ios::out); // overwrite any existing file
-        HEN_ASSERT(LogFile.is_open(), "[hen::console] Failed to open log file");
+        HEN_ASSERT(LogFile.is_open(), "Failed to open log file");
 
         ui::GetIMGUIManager()->RegisterDrawCallback([]() {
             if (!Visible || Locked)

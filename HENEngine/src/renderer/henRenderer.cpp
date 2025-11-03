@@ -213,7 +213,7 @@ namespace hen::renderer
                 break;
         }
         
-        HEN_ASSERT(CurrentRHC != nullptr, "[hen::renderer] RHC is nullptr");
+        HEN_ASSERT(CurrentRHC != nullptr, "RHC is nullptr");
 
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();

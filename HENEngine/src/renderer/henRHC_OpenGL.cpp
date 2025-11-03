@@ -45,7 +45,7 @@ namespace hen
 
         int loadGL = gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-        HEN_ASSERT(loadGL, "[hen::RHC_OpenGL] Failed to load OpenGL context");
+        HEN_ASSERT(loadGL, "Failed to load OpenGL context");
 
         SDL_GL_SetSwapInterval(0); // create with vysnc off
 

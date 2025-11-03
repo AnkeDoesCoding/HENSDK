@@ -38,40 +38,43 @@ namespace hen
 
         console::Initialise(); 
 
-        HEN_ASSERT(window != nullptr, "[hen::Application] Window is nullptr");
+        HEN_ASSERT(window != nullptr, "Window is nullptr");
 
         renderer::Initialise(window);
+
+        HEN_ASSERT(renderer::Initialised, "hen::renderer not initialised");
 
         ImGuiManager = std::make_unique<ui::IMGUIManager>();
         ui::GetIMGUIManager() = ImGuiManager.get(); 
 
         ImGuiManager->Initialise(window);
 
+        HEN_ASSERT(ImGuiManager->Initialised, "hen::ui::ImGuiManager not initialised");
+
         input::Initialise(renderer::GetRHC()->GetWindow());
 
-        if (input::Initialised && renderer::Initialised && console::Initialised)
-        {
-            Initialised = true;
+        HEN_ASSERT(input::Initialised, "hen::input not initialised");
 
-            std::string infoStr;
-            infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
+        Initialised = true;
+
+        std::string infoStr;
+        infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
             
-            #if PLATFORM_WINDOWS
-                infoStr += " WINDOWS_";
-            #elif PLATFORM_LINUX
-                infoStr += " LINUX_";
-            #endif // !PLATFORM_WINDOWS
+        #if PLATFORM_WINDOWS
+            infoStr += " WINDOWS_";
+        #elif PLATFORM_LINUX
+            infoStr += " LINUX_";
+        #endif // !PLATFORM_WINDOWS
 
-            #if DEBUG
-                infoStr += "DEBUG";
-            #elif RELEASE
-                infoStr += "RELEASE";
-            #endif // !DEBUG
+        #if DEBUG
+            infoStr += "DEBUG";
+        #elif RELEASE
+            infoStr += "RELEASE";
+        #endif // !DEBUG
 
-            infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
+        infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
 
-            console::Log(infoStr, console::LOGLEVEL::INFO);
-        }
+        console::Log(infoStr, console::LOGLEVEL::INFO);
     }
 
     void Application::Shutdown()
