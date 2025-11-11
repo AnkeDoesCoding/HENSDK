@@ -134,7 +134,7 @@ namespace hen::graphics
     void VertexArray_OpenGL::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
     {
         Bind();
-        HEN_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "[hen::graphics] Vertex buffer has no layout");
+        HEN_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex buffer has no layout");
         vertexBuffer->Bind();
 
 		const auto& layout = vertexBuffer->GetLayout();
@@ -211,7 +211,7 @@ namespace hen::graphics
     void VertexArray_OpenGL::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
     {
         Bind();
-        HEN_ASSERT(indexBuffer != nullptr, "[hen::graphics] Index buffer is nullptr");
+        HEN_ASSERT(indexBuffer != nullptr, "Index buffer is nullptr");
         indexBuffer->Bind();
 
         m_IndexBuffer = indexBuffer;
