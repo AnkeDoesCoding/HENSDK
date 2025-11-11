@@ -108,7 +108,7 @@ namespace hen
 
     void Application::Update(float deltaTime)
     {
-        renderer::Update(deltaTime);
+
     }
 
     void Application::ProcessEvent(const SDL_Event& event)

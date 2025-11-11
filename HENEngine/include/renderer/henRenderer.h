@@ -7,6 +7,7 @@
 #include "renderer/henRHC.h"
 #include "renderer/henRenderer_ResourceManagers.h"
 #include "level/henLevel.h"
+#include "graphics/henGraphics.h"
 
 namespace hen::renderer
 {
@@ -17,17 +18,10 @@ namespace hen::renderer
         VULKAN
     };
 
-    enum class PRIMITIVES
-    {
-        CUBE,
-        SPHERE
-    };
-
     void Initialise(SDL_Window* window);
     void Run();
-    void Update(float deltaTime);
 
-    void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
+    void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
 
     void RenderLevel();
 

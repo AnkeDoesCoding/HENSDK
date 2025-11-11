@@ -193,8 +193,8 @@ namespace hen::level
 
     struct MaterialComponent
     {
-        graphics::Texture2D DiffuseTexture;
-        graphics::Texture2D SpecularTexture;
+        graphics::Texture DiffuseTexture;
+        graphics::Texture SpecularTexture;
 
         renderer::ShaderHandle Shader;
 

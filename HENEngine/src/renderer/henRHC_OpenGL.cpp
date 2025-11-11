@@ -65,6 +65,16 @@ namespace hen
         SDL_GL_SwapWindow(m_Window);
     }
 
+    void RHC_OpenGL::Draw(uint32_t count)
+    {
+        glDrawElements(GL_TRIANGLES, (GLsizei)count, GL_UNSIGNED_INT, nullptr);
+    }
+
+    void RHC_OpenGL::Draw(uint32_t first, uint32_t count)
+    {
+        glDrawArrays(GL_TRIANGLES, first, count);
+    }
+
     void RHC_OpenGL::EnableDepth()
     {
         glEnable(GL_DEPTH_TEST);  

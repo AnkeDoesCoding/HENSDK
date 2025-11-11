@@ -52,16 +52,16 @@ namespace hen::renderer
     class TextureManager
     {
     public:
-        
+
         TextureHandle Load(const char* texPath);
-        graphics::Texture2D* Get(const TextureHandle& handle);
+        graphics::Texture* Get(const TextureHandle& handle);
         void Remove(const TextureHandle& handle); 
 
     private:
 
         struct m_TextureSlot
         {
-            graphics::Texture2D Texture;
+            graphics::Texture Texture;
             bool Alive = false;
             uint32_t Generation = 1;
         };

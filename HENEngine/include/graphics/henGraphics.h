@@ -32,7 +32,13 @@ namespace hen::graphics
         FRAGMENT
     };
 
-    struct Texture2D
+    enum class PRIMITIVES
+    {
+        CUBE,
+        SPHERE
+    };
+
+    struct Texture
     {
         int Width;
         int Height;
@@ -43,7 +49,7 @@ namespace hen::graphics
         void Load(const char* path);
         void Destroy();
 
-        ~Texture2D();
+        ~Texture();
 
 
     };

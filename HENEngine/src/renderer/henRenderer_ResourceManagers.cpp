@@ -133,7 +133,7 @@ namespace hen::renderer
         return TextureHandle{ index, m_Textures[index].Generation };
     }
 
-    graphics::Texture2D* TextureManager::Get(const TextureHandle& handle)
+    graphics::Texture* TextureManager::Get(const TextureHandle& handle)
     {
         if (!handle.IsValid() || handle.Index >= m_Textures.size() || !m_Textures[handle.Index].Alive)
         {

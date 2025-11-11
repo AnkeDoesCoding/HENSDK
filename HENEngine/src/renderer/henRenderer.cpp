@@ -274,8 +274,8 @@ namespace hen::renderer
         CubeShader.SetVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
         CubeShader.SetVec3("light.position", LightPos);
 
-        graphics::Texture2D* diffuse = CurrentTextureManager->Get(DiffuseTexture);
-        graphics::Texture2D* spec = CurrentTextureManager->Get(SpecularTexture);
+        graphics::Texture* diffuse = CurrentTextureManager->Get(DiffuseTexture);
+        graphics::Texture* spec = CurrentTextureManager->Get(SpecularTexture);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuse->ID);
@@ -283,11 +283,11 @@ namespace hen::renderer
         glBindTexture(GL_TEXTURE_2D, spec->ID);
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        CurrentRHC->Draw(0, 36);
 
         CubeShader.UnBind();
 
-        RenderPrimitive(PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
+        RenderPrimitive(graphics::PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.1f), glm::vec3(1.0f));
 
         Camera.SetDirty(level::GetActiveLevel()->Up);
 
@@ -302,12 +302,7 @@ namespace hen::renderer
         CurrentRHC->Present();
     }
 
-    void Update(float deltaTime)
-    {
-
-    }
-
-    void RenderPrimitive(PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
+    void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
     {
         static std::unique_ptr <graphics::VertexArray> cubeVertexArray;
         static std::unique_ptr <graphics::VertexArray> sphereVertexArray;
@@ -361,20 +356,16 @@ namespace hen::renderer
 
         switch (primitve)
         {
-            case PRIMITIVES::CUBE:
-            {
+            case graphics::PRIMITIVES::CUBE:
                 cubeVertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, (GLsizei)cubeVertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+                CurrentRHC->Draw(cubeVertexArray->GetIndexBuffer()->GetCount());
                 cubeVertexArray->UnBind();
                 break;
-            }
-            case PRIMITIVES::SPHERE:
-            {
+            case graphics::PRIMITIVES::SPHERE:
                 sphereVertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, (GLsizei)sphereVertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+                CurrentRHC->Draw(sphereVertexArray->GetIndexBuffer()->GetCount());
                 sphereVertexArray->UnBind();
                 break;
-            }
             default:
                 break;
         }
@@ -386,25 +377,18 @@ namespace hen::renderer
     {
         if (auto level = level::GetActiveLevel())
         {
-            auto view = level->GetView<level::TransformComponent, level::MeshComponent>();
+            auto litView = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
 
-            for (auto entity : view)
+            for (auto entity : litView)
             {
-                auto& transformComp = entity.GetComponent<hen::level::TransformComponent>();
-                auto& meshComp = entity.GetComponent<hen::level::MeshComponent>();
-                auto& materialComp = entity.GetComponent<hen::level::MaterialComponent>();
-                
-                if (level::GetActiveLevel())
-                {
-                   
-                    if (materialComp.DiffuseTexture.ID != 0 && materialComp.SpecularTexture.ID != 0)
-                    {
-                        glActiveTexture(GL_TEXTURE0);
-                        glBindTexture(GL_TEXTURE_2D, materialComp.DiffuseTexture.ID);
-                        glActiveTexture(GL_TEXTURE1);
-                        glBindTexture(GL_TEXTURE_2D, materialComp.SpecularTexture.ID);
-                    }
-                }
+                auto& transformComp = entity.GetComponent<level::TransformComponent>();
+                auto& meshComp = entity.GetComponent<level::MeshComponent>();
+                auto& materialComp = entity.GetComponent<level::MaterialComponent>();
+
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, materialComp.DiffuseTexture.ID);
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, materialComp.SpecularTexture.ID);
 
                 auto* shader = CurrentShaderManager->Get(materialComp.Shader);
 
@@ -422,12 +406,11 @@ namespace hen::renderer
                 if (meshComp.VertexArray)
                 {
                     meshComp.VertexArray->Bind();
-                    glDrawElements(GL_TRIANGLES, (GLsizei)meshComp.IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+                    CurrentRHC->Draw(meshComp.IndexBuffer->GetCount());
                     meshComp.VertexArray->UnBind();
                 }
                 
                 shader->UnBind();
-        
             }
         }
     }

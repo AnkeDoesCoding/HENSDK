@@ -51,7 +51,7 @@ namespace hen::graphics
         return 0;
     }
 
-    void Texture2D::Load(const char* path)
+    void Texture::Load(const char* path)
     {
         glGenTextures(1, &ID);
 
@@ -81,20 +81,23 @@ namespace hen::graphics
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+            Destroy();
+
         }
         else
         {
             console::Log("Failed to load texture", console::LOGLEVEL::ERROR);
+            
             Destroy();
         }
     }
 
-    Texture2D::~Texture2D()
+    Texture::~Texture()
     {
         Destroy();
     }
 
-    void Texture2D::Destroy()
+    void Texture::Destroy()
     {
         if (Data)
         {
