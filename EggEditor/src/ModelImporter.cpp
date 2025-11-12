@@ -6,58 +6,68 @@
 
 namespace importer
 {
-    void ProcessMesh(aiMesh* mesh, const aiScene* scene, hen::level::MeshComponent& meshComp,  const aiMatrix4x4& transform)
+    void ProcessMesh(aiMesh* mesh, hen::level::MeshComponent& meshComp)
     {
         unsigned int vertexOffset = static_cast<unsigned int>(meshComp.Verticies.size());
 
-        aiMatrix3x3 normalMatrix = aiMatrix3x3(transform);
-        normalMatrix.Inverse();
-        normalMatrix.Transpose();
-
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
-            aiVector3D pos = mesh->mVertices[i];
-            aiVector3D normal = mesh->HasNormals() ? mesh->mNormals[i] : aiVector3D(0.0f, 1.0f, 0.0f);
+            const aiVector3D& pos = mesh->mVertices[i];
+            const aiVector3D normal = mesh->HasNormals() ? mesh->mNormals[i] : aiVector3D(0.0f, 1.0f, 0.0f);
 
-            aiVector3D transformedPos = transform * pos;
-            aiVector3D transformedNormal = normalMatrix * normal;
-            transformedNormal.Normalize();
+            meshComp.Verticies.emplace_back(pos.x, pos.y, pos.z);
+            meshComp.Normals.emplace_back(normal.x, normal.y, normal.z);
 
-            meshComp.Verticies.emplace_back(transformedPos.x * 0.01f, transformedPos.y * 0.01f, transformedPos.z * 0.01f);
-            meshComp.Normals.emplace_back(transformedNormal.x, transformedNormal.y, transformedNormal.z);
+            if (mesh->mTextureCoords[0])
+            {
+                const aiVector3D& uv = mesh->mTextureCoords[0][i];
+                meshComp.TextureCoordinates.emplace_back(uv.x, uv.y);
+            }
+            else
+            {
+                meshComp.TextureCoordinates.emplace_back(0.0f, 0.0f);
+            }
         }
 
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)
         {
-            aiFace face = mesh->mFaces[i];
+            const aiFace& face = mesh->mFaces[i];
             for (unsigned int j = 0; j < face.mNumIndices; j++)
             {
                 meshComp.Indicies.push_back(face.mIndices[j] + vertexOffset);
             }
         }
-
+        
     }
 
-    void ProcessNode(aiNode* node, const aiScene* scene, hen::level::MeshComponent& meshComp, const aiMatrix4x4& parentTransform)
+    void ProcessNode(aiNode* node, const aiScene* scene, hen::level::MeshComponent& meshComp)
+    
     {
-        aiMatrix4x4 currentTransform = parentTransform * node->mTransformation;
-
         for (unsigned int i = 0; i < node->mNumMeshes; i++)
         {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            ProcessMesh(mesh, scene, meshComp, currentTransform);
+            ProcessMesh(mesh, meshComp);
         }
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
         {
-            ProcessNode(node->mChildren[i], scene, meshComp, currentTransform);
+            ProcessNode(node->mChildren[i], scene, meshComp);
         }
     }
 
     void ImportModel(std::string path, hen::level::MeshComponent& meshComp)
     {
         Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices); 
+        const aiScene* scene = importer.ReadFile(
+            path,
+            aiProcess_Triangulate |
+            aiProcess_FlipUVs |
+            aiProcess_GenSmoothNormals |
+            aiProcess_JoinIdenticalVertices |
+            aiProcess_PreTransformVertices |
+            aiProcess_ImproveCacheLocality |
+            aiProcess_OptimizeMeshes
+        );
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
         {
@@ -65,8 +75,7 @@ namespace importer
             return;
         }
     
-        aiMatrix4x4 identity;
-        ProcessNode(scene->mRootNode, scene, meshComp, identity);
+        ProcessNode(scene->mRootNode, scene, meshComp);
 
         meshComp.CreateRenderData();
     }

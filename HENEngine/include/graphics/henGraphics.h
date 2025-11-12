@@ -26,12 +26,6 @@ namespace hen::graphics
         BOOL
     };
 
-    enum class SHADER_TYPES
-    {
-        VERTEX,
-        FRAGMENT
-    };
-
     enum class PRIMITIVES
     {
         CUBE,
@@ -50,8 +44,6 @@ namespace hen::graphics
         void Destroy();
 
         ~Texture();
-
-
     };
 
     struct BufferElement

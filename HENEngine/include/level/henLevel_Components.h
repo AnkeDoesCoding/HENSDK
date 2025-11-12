@@ -124,6 +124,7 @@ namespace hen::level
         std::vector<glm::vec3> Verticies;
         std::vector<glm::vec3> Normals;
         std::vector<uint32_t> Indicies;
+        std::vector<glm::vec2> TextureCoordinates;
 
         std::shared_ptr<graphics::VertexArray> VertexArray;
         std::shared_ptr<graphics::VertexBuffer> VertexBuffer;
@@ -132,7 +133,9 @@ namespace hen::level
         graphics::BufferLayout BufferLayout
         {
             {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"},
-            {graphics::SHADER_PRIMITIVES::FLOAT3, "aNormal"}
+            {graphics::SHADER_PRIMITIVES::FLOAT3, "aNormal"},
+            {graphics::SHADER_PRIMITIVES::FLOAT2, "aTexCoord"}
+
         };
 
         unsigned int ID;
@@ -146,7 +149,7 @@ namespace hen::level
             HEN_ASSERT(Verticies.size() == Normals.size(), "Positions and Normals size mismatch!");
 
             std::vector<float> interleavedBuffer;
-            interleavedBuffer.reserve(Verticies.size() * 6);
+            interleavedBuffer.reserve(Verticies.size() * 8);
 
             for (size_t i = 0; i < Verticies.size(); i++)
             {
@@ -157,6 +160,18 @@ namespace hen::level
                 interleavedBuffer.push_back(Normals[i].x);
                 interleavedBuffer.push_back(Normals[i].y);
                 interleavedBuffer.push_back(Normals[i].z);
+
+                if (i < TextureCoordinates.size())
+                {
+                    interleavedBuffer.push_back(TextureCoordinates[i].x);
+                    interleavedBuffer.push_back(TextureCoordinates[i].y);
+                }
+                else
+                {
+                    interleavedBuffer.push_back(0.0f);
+                    interleavedBuffer.push_back(0.0f);
+                }
+
             }
             
             VertexBuffer = graphics::VertexBuffer::Create(interleavedBuffer.size() * sizeof(float), interleavedBuffer.data());
@@ -193,27 +208,21 @@ namespace hen::level
 
     struct MaterialComponent
     {
-        graphics::Texture DiffuseTexture;
-        graphics::Texture SpecularTexture;
+        renderer::TextureHandle DiffuseTexture;
+        renderer::TextureHandle SpecularTexture;
 
         renderer::ShaderHandle Shader;
 
-        MaterialComponent()
-        {
-            if (DiffuseTexture.ID != 0 && SpecularTexture.ID != 0)
-            {
-                Shader = renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
-            }
-            else
-            {
-                Shader = renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
-            }
-        }
+        MaterialComponent() = default;
+
+        MaterialComponent(const MaterialComponent& other) = default;
     };
 
     struct CameraComponent
     {
         float FOV = 90.0f;
+        float NearPlane = 0.3f;
+        float FarPlane = 500.0f;
 
         glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 Rotation = glm::vec3(0.0f, 90.0f, 0.0f);

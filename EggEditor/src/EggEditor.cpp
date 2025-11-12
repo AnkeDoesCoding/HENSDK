@@ -16,13 +16,19 @@ void Editor::Initialise(SDL_Window* window)
 
     Test = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("test"));
     auto& transform = Test->AddComponent<hen::level::TransformComponent>();
-    transform.SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+    transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
     transform.SetScale(glm::vec3(0.5f));
     auto& mesh = Test->AddComponent<hen::level::MeshComponent>();
 
-    Test->AddComponent<hen::level::MaterialComponent>();
-
     importer::ImportModel("res/models/survival_guitar_backpack/scene.gltf", mesh);
+
+    auto& mat = Test->AddComponent<hen::level::MaterialComponent>();
+
+    mat.DiffuseTexture = hen::renderer::GetTextureManager()->Load("res/models/survival_guitar_backpack/textures/Scene_-_Root_baseColor.jpeg");
+    // mat.SpecularTexture = hen::renderer::GetTextureManager()->Load("res/models/survival_guitar_backpack/textures/Scene_-_Root_metallicRoughness.png"); // isnt specular black/white so yeh makes lighting funky
+
+    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
+    
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
     {

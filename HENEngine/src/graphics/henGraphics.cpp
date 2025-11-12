@@ -379,5 +379,4 @@ namespace hen::graphics
         }
     }
 
-    
 }

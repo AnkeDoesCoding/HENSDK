@@ -116,8 +116,6 @@ namespace hen
         int newWidth, newHeight;
         SDL_GetWindowSize(m_Window, &newWidth, &newHeight);
 
-        console::Log(std::to_string(newWidth) + " : " + std::to_string(newHeight));
-
         glViewport(0, 0, newWidth, newHeight);
     }
 
