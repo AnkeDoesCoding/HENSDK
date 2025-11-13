@@ -221,8 +221,8 @@ namespace hen::level
     struct CameraComponent
     {
         float FOV = 90.0f;
-        float NearPlane = 0.3f;
-        float FarPlane = 500.0f;
+        float NearPlane = 2.5f;
+        float FarPlane = 1000.0f;
 
         glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 Rotation = glm::vec3(0.0f, 90.0f, 0.0f);
@@ -243,6 +243,11 @@ namespace hen::level
         glm::mat4 GetViewMatrix()
         {
             return glm::lookAt(Position, Position + Front, Up);
+        }
+        
+        glm::mat4 GetProjection(float x, float y)
+        {
+            return glm::perspective(glm::radians(FOV), x / y, NearPlane, FarPlane);
         }
 
         void SetDirty(const glm::vec3& levelUp)

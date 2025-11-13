@@ -38,10 +38,11 @@ void main()
     
     // specular
     vec3 viewDir = normalize(uViewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), uMaterial.Shininess);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), uMaterial.Shininess);
     vec3 specular = uLight.Specular * spec * vec3(texture(uMaterial.Specular, TexCoords));
         
     vec3 result = ambient + diffuse + specular;
+    
     FragColor = vec4(result, 1.0);
 } 

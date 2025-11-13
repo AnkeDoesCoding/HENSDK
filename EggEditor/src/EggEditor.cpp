@@ -15,9 +15,11 @@ void Editor::Initialise(SDL_Window* window)
     hen::Application::Initialise(window);
 
     Test = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("test"));
-    auto& transform = Test->AddComponent<hen::level::TransformComponent>();
+
+    hen::level::TransformComponent& transform = Test->AddComponent<hen::level::TransformComponent>();
     transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-    transform.SetScale(glm::vec3(0.5f));
+    transform.SetScale(glm::vec3(0.1f));
+
     auto& mesh = Test->AddComponent<hen::level::MeshComponent>();
 
     importer::ImportModel("res/models/survival_guitar_backpack/scene.gltf", mesh);

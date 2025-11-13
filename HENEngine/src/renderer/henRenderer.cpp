@@ -111,6 +111,10 @@ namespace hen::renderer
         25,21,22, 25,22,23, 25,23,24, 25,24,17
     };
 
+    bool Initialised = false;
+    BACKEND CurrentBackend = BACKEND::OPENGL;
+    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 20.0f, 120.0f), glm::vec3(0.0, -90.0f, 0.0f));
+
     cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
     {
         cvar_VSync.GetBool() ? CurrentRHC->EnableVSync() : CurrentRHC->DisableVSync();
@@ -121,9 +125,15 @@ namespace hen::renderer
         Camera.FOV = cvar_FOV.GetFloat();
     });
 
-    bool Initialised = false;
-    BACKEND CurrentBackend = BACKEND::OPENGL;
-    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0, -90.0f, 0.0f));
+    cvar::CVar cvar_NearPlane("r_near_plane", Camera.NearPlane, cvar::FLAGS_ARCHIVE, []() 
+    {
+        Camera.NearPlane = cvar_NearPlane.GetFloat();
+    });
+
+    cvar::CVar cvar_FarPlane("r_far_plane", Camera.FarPlane, cvar::FLAGS_ARCHIVE, []() 
+    {
+        Camera.FarPlane = cvar_FarPlane.GetFloat();
+    });
 
     glm::vec3 LightPos;
     
@@ -160,6 +170,8 @@ namespace hen::renderer
         
         HEN_ASSERT(CurrentRHC != nullptr, "RHC is nullptr");
 
+        CurrentRHC->EnableBackFaceCulling();
+
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();
 
@@ -183,16 +195,16 @@ namespace hen::renderer
 
         RenderLevel();
 
-        float radius = 100.0f;
+        float radius = 15.0f;
         float speed = 1.0f;
             
         float time = (float)SDL_GetTicks() / 1000.0f; // cba to bring back Update(float deltaTime)
             
         LightPos.x = radius * cos(time * speed);
-        LightPos.y = 5.0f;
+        LightPos.y = 0.0f;
         LightPos.z = radius * sin(time * speed);
 
-        RenderPrimitive(graphics::PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f), glm::vec3(1.0f));
+        RenderPrimitive(graphics::PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
 
         CurrentRHC->DisableDepth();
 
@@ -249,7 +261,7 @@ namespace hen::renderer
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
         shader->SetVec3("uColour", colour);
-        shader->SetMat4("uProjection", glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, Camera.NearPlane, Camera.FarPlane));
+        shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
         shader->SetMat4("uView", Camera.GetViewMatrix());
         shader->SetMat4("uModel", model);
 
@@ -258,7 +270,6 @@ namespace hen::renderer
             case graphics::PRIMITIVES::CUBE:
                 cubeVertexArray->Bind();
                 CurrentRHC->Draw(cubeVertexArray->GetIndexBuffer()->GetCount());
-               
                 break;
             case graphics::PRIMITIVES::SPHERE:
                 sphereVertexArray->Bind();
@@ -276,7 +287,6 @@ namespace hen::renderer
 
     void RenderLevel()
     {
-
         if (auto level = level::GetActiveLevel())
         {
             auto litView = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
@@ -306,7 +316,7 @@ namespace hen::renderer
                     int windowWidth, windowHeight;
                     SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-                    shader->SetMat4("uProjection", glm::perspective(glm::radians(Camera.FOV), (float)windowWidth / (float)windowHeight, Camera.NearPlane, Camera.FarPlane));
+                    shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
                     shader->SetMat4("uView", Camera.GetViewMatrix());
                     shader->SetMat4("uModel", transformComp.Transform);
                     shader->SetVec3("uViewPos", Camera.Position);
