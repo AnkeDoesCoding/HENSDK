@@ -25,6 +25,9 @@ namespace hen
         void EnableVSync() override;
         void DisableVSync() override;
 
+        void EnableStencil() override;
+        void DisableStencil() override;
+
         void EnableBackFaceCulling() override;
         void DisableBackFaceCulling() override;
 

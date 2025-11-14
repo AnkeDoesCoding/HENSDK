@@ -6,7 +6,7 @@
 
 namespace importer
 {
-    void ProcessMesh(aiMesh* mesh, hen::level::MeshComponent& meshComp)
+    void ProcessMesh(aiMesh* mesh, const aiScene* scene, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp, std::string path)
     {
         unsigned int vertexOffset = static_cast<unsigned int>(meshComp.Verticies.size());
 
@@ -37,25 +37,45 @@ namespace importer
                 meshComp.Indicies.push_back(face.mIndices[j] + vertexOffset);
             }
         }
+
+        if (mesh->mMaterialIndex >= 0)
+        {
+            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+            for (unsigned int i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
+            {
+                aiString str;
+                material->GetTexture(aiTextureType_DIFFUSE, i, &str);
+
+                std::filesystem::path fullPath = path;
+                fullPath /= str.C_Str(); // append the relative path from the .mtl
+
+                std::string finalPath = fullPath.string();
+
+                hen::console::Log(finalPath);
+
+                materialComp.DiffuseTexture = hen::renderer::GetTextureManager()->Load(finalPath.c_str());
+            }
+        }
         
     }
 
-    void ProcessNode(aiNode* node, const aiScene* scene, hen::level::MeshComponent& meshComp)
+    void ProcessNode(aiNode* node, const aiScene* scene, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp, std::string path)
     
     {
         for (unsigned int i = 0; i < node->mNumMeshes; i++)
         {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            ProcessMesh(mesh, meshComp);
+            ProcessMesh(mesh, scene, meshComp, materialComp, path);
         }
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
         {
-            ProcessNode(node->mChildren[i], scene, meshComp);
+            ProcessNode(node->mChildren[i], scene, meshComp, materialComp, path);
         }
     }
 
-    void ImportModel(std::string path, hen::level::MeshComponent& meshComp)
+    void ImportModel(std::string path, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp)
     {
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(
@@ -74,8 +94,11 @@ namespace importer
             hen::console::Log(std::string("[assimp] ") + importer.GetErrorString(), hen::console::LOGLEVEL::ERROR);
             return;
         }
+
+        std::filesystem::path p = path;
+    std::string modelDir = p.parent_path().string();
     
-        ProcessNode(scene->mRootNode, scene, meshComp);
+        ProcessNode(scene->mRootNode, scene, meshComp, materialComp, modelDir);
 
         meshComp.CreateRenderData();
     }

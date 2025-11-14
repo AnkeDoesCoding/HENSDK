@@ -57,7 +57,7 @@ namespace hen
     void RHC_OpenGL::Clear()
     {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // just clear everything even if it aint enabled
     }
 
     void RHC_OpenGL::Present()
@@ -73,6 +73,7 @@ namespace hen
     void RHC_OpenGL::Draw(uint32_t first, uint32_t count)
     {
         glDrawArrays(GL_TRIANGLES, first, count);
+        
     }
 
     void RHC_OpenGL::EnableDepth()
@@ -93,6 +94,16 @@ namespace hen
     void RHC_OpenGL::DisableVSync()
     {
         SDL_GL_SetSwapInterval(0);
+    }
+
+    void RHC_OpenGL::EnableStencil()
+    {
+        glEnable(GL_STENCIL_TEST);
+    }
+
+    void RHC_OpenGL::DisableStencil()
+    {
+        glDisable(GL_STENCIL_TEST);
     }
 
     void RHC_OpenGL::EnableBackFaceCulling()

@@ -16,21 +16,16 @@ void Editor::Initialise(SDL_Window* window)
 
     Test = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("test"));
 
-    hen::level::TransformComponent& transform = Test->AddComponent<hen::level::TransformComponent>();
-    transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-    transform.SetScale(glm::vec3(0.1f));
-
+    auto& transform = Test->AddComponent<hen::level::TransformComponent>();
+    auto& mat = Test->AddComponent<hen::level::MaterialComponent>();
     auto& mesh = Test->AddComponent<hen::level::MeshComponent>();
 
-    importer::ImportModel("res/models/survival_guitar_backpack/scene.gltf", mesh);
+    transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    transform.SetScale(glm::vec3(0.15f));
 
-    auto& mat = Test->AddComponent<hen::level::MaterialComponent>();
+    importer::ImportModel(ENGINE_RESOURCE_PATH "models/sponza/sponza.obj", mesh, mat);
 
-    mat.DiffuseTexture = hen::renderer::GetTextureManager()->Load("res/models/survival_guitar_backpack/textures/Scene_-_Root_baseColor.jpeg");
-    // mat.SpecularTexture = hen::renderer::GetTextureManager()->Load("res/models/survival_guitar_backpack/textures/Scene_-_Root_metallicRoughness.png"); // isnt specular black/white so yeh makes lighting funky
-
-    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
-    
+    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShader.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/LitShader.glsl");
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
     {

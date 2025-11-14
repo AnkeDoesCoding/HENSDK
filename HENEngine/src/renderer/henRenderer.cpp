@@ -201,7 +201,7 @@ namespace hen::renderer
         float time = (float)SDL_GetTicks() / 1000.0f; // cba to bring back Update(float deltaTime)
             
         LightPos.x = radius * cos(time * speed);
-        LightPos.y = 0.0f;
+        LightPos.y = 5.0f;
         LightPos.z = radius * sin(time * speed);
 
         RenderPrimitive(graphics::PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
