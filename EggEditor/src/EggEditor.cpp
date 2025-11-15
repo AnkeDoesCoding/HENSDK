@@ -23,9 +23,9 @@ void Editor::Initialise(SDL_Window* window)
     transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
     transform.SetScale(glm::vec3(0.15f));
 
-    importer::ImportModel(ENGINE_RESOURCE_PATH "models/sponza/sponza.obj", mesh, mat);
+    importer::ImportModel(ENGINE_RESOURCE_PATH "models/sponza/sponza.obj", mesh);
 
-    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShader.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/LitShader.glsl");
+    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
     {

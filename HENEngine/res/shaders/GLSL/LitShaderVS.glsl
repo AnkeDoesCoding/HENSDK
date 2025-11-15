@@ -13,7 +13,7 @@ uniform mat4 uProjection;
 
 void main()
 {
-    Normal = normalize(mat3(transpose(inverse(uModel))) * aNormal);
+    Normal = mat3(transpose(inverse(uModel))) * aNormal;
 
     TexCoords = aTexCoords;
     

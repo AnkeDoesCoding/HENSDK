@@ -15,8 +15,8 @@ namespace hen
         virtual void Clear() = 0;
         virtual void Present() = 0;
 
-        virtual void Draw(uint32_t count) = 0;
-        virtual void Draw(uint32_t first, uint32_t count) = 0;
+        virtual void DrawElements(uint32_t count, uint32_t offset) = 0;
+        virtual void DrawArrays(uint32_t count, uint32_t offset) = 0;
 
         virtual void EnableDepth() = 0;
         virtual void DisableDepth() = 0;

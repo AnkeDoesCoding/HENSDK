@@ -119,11 +119,23 @@ namespace hen::level
 
     };
 
+    struct MaterialComponent
+    {
+        renderer::TextureHandle DiffuseTexture;
+        renderer::TextureHandle SpecularTexture;
+
+        renderer::ShaderHandle Shader;
+
+        MaterialComponent() = default;
+
+        MaterialComponent(const MaterialComponent& other) = default;
+    };
+
     struct MeshComponent
     {
-        std::vector<glm::vec3> Verticies;
+        std::vector<glm::vec3> Vertices;
         std::vector<glm::vec3> Normals;
-        std::vector<uint32_t> Indicies;
+        std::vector<uint32_t> Indices;
         std::vector<glm::vec2> TextureCoordinates;
 
         std::shared_ptr<graphics::VertexArray> VertexArray;
@@ -138,7 +150,15 @@ namespace hen::level
 
         };
 
-        unsigned int ID;
+        struct SubMesh
+        {
+            uint32_t IndexStart = UINT32_MAX;
+            uint32_t IndexCount = UINT32_MAX;
+
+            MaterialComponent Material;
+        };
+
+        std::vector<SubMesh> SubMeshes;
 
         MeshComponent() = default;
 
@@ -146,16 +166,18 @@ namespace hen::level
 
         void CreateRenderData()
         {
-            HEN_ASSERT(Verticies.size() == Normals.size(), "Positions and Normals size mismatch!");
+            HEN_ASSERT(Vertices.size() == Normals.size(), "Positions and Normals size mismatch");
 
             std::vector<float> interleavedBuffer;
-            interleavedBuffer.reserve(Verticies.size() * 8);
+            interleavedBuffer.reserve(Vertices.size() * 8);
 
-            for (size_t i = 0; i < Verticies.size(); i++)
+            for (size_t i = 0; i < Vertices.size(); i++)
             {
-                interleavedBuffer.push_back(Verticies[i].x);
-                interleavedBuffer.push_back(Verticies[i].y);
-                interleavedBuffer.push_back(Verticies[i].z);
+                interleavedBuffer.push_back(Vertices[i].x);
+                interleavedBuffer.push_back(Vertices[i].y);
+                interleavedBuffer.push_back(Vertices[i].z);
+
+                Normals[i] = glm::normalize(Normals[i]);
 
                 interleavedBuffer.push_back(Normals[i].x);
                 interleavedBuffer.push_back(Normals[i].y);
@@ -177,7 +199,7 @@ namespace hen::level
             VertexBuffer = graphics::VertexBuffer::Create(interleavedBuffer.size() * sizeof(float), interleavedBuffer.data());
             VertexBuffer->SetLayout(BufferLayout);
 
-            IndexBuffer = graphics::IndexBuffer::Create(Indicies.size(), Indicies.data());
+            IndexBuffer = graphics::IndexBuffer::Create(Indices.size(), Indices.data());
 
             VertexArray = graphics::VertexArray::Create();
             VertexArray->AddVertexBuffer(VertexBuffer);
@@ -204,18 +226,6 @@ namespace hen::level
             }
         }
 
-    };
-
-    struct MaterialComponent
-    {
-        renderer::TextureHandle DiffuseTexture;
-        renderer::TextureHandle SpecularTexture;
-
-        renderer::ShaderHandle Shader;
-
-        MaterialComponent() = default;
-
-        MaterialComponent(const MaterialComponent& other) = default;
     };
 
     struct CameraComponent

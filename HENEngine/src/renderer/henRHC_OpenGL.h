@@ -16,8 +16,8 @@ namespace hen
         void Clear() override;
         void Present() override;
 
-        void Draw(uint32_t count) override;
-        void Draw(uint32_t first, uint32_t count) override;
+        void DrawElements(uint32_t count, uint32_t offset) override;
+        void DrawArrays(uint32_t count, uint32_t offset) override;
 
         void EnableDepth() override;
         void DisableDepth() override;

@@ -7,7 +7,7 @@
 
 namespace importer
 {
-    void ImportModel(std::string path, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp);
+    void ImportModel(std::string path, hen::level::MeshComponent& meshComp);
 }
 
 #endif // !_MODELIMPORTER_H_

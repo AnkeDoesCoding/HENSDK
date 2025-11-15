@@ -65,14 +65,14 @@ namespace hen
         SDL_GL_SwapWindow(m_Window);
     }
 
-    void RHC_OpenGL::Draw(uint32_t count)
+    void RHC_OpenGL::DrawElements(uint32_t count, uint32_t offset)
     {
-        glDrawElements(GL_TRIANGLES, (GLsizei)count, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, (GLsizei)count, GL_UNSIGNED_INT, reinterpret_cast<void*>(offset * sizeof(uint32_t)));
     }
 
-    void RHC_OpenGL::Draw(uint32_t first, uint32_t count)
+    void RHC_OpenGL::DrawArrays(uint32_t count, uint32_t offset)
     {
-        glDrawArrays(GL_TRIANGLES, first, count);
+        glDrawArrays(GL_TRIANGLES, offset, count);
         
     }
 

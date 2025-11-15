@@ -113,7 +113,7 @@ namespace hen::renderer
 
     bool Initialised = false;
     BACKEND CurrentBackend = BACKEND::OPENGL;
-    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 20.0f, 120.0f), glm::vec3(0.0, -90.0f, 0.0f));
+    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0, 0.0f, 0.0f));
 
     cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
     {
@@ -135,8 +135,23 @@ namespace hen::renderer
         Camera.FarPlane = cvar_FarPlane.GetFloat();
     });
 
-    glm::vec3 LightPos;
+    glm::vec3 LightPos(0.0f, 5.0f, 0.0f);
+
+    cvar::CVar x("x", LightPos.x, cvar::FLAGS_ARCHIVE, []() 
+    {
+        LightPos.x = x.GetFloat();
+    });
     
+    cvar::CVar y("y", LightPos.y, cvar::FLAGS_ARCHIVE, []() 
+    {
+        LightPos.y = y.GetFloat();
+    });
+
+    cvar::CVar z("z", LightPos.z, cvar::FLAGS_ARCHIVE, []() 
+    {
+        LightPos.z = z.GetFloat();
+    });
+
     void Initialise(SDL_Window* window)
     {
         Timer timer;
@@ -194,15 +209,6 @@ namespace hen::renderer
         Camera.SetDirty(level::GetActiveLevel()->Up);
 
         RenderLevel();
-
-        float radius = 15.0f;
-        float speed = 1.0f;
-            
-        float time = (float)SDL_GetTicks() / 1000.0f; // cba to bring back Update(float deltaTime)
-            
-        LightPos.x = radius * cos(time * speed);
-        LightPos.y = 5.0f;
-        LightPos.z = radius * sin(time * speed);
 
         RenderPrimitive(graphics::PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
 
@@ -269,11 +275,11 @@ namespace hen::renderer
         {
             case graphics::PRIMITIVES::CUBE:
                 cubeVertexArray->Bind();
-                CurrentRHC->Draw(cubeVertexArray->GetIndexBuffer()->GetCount());
+                CurrentRHC->DrawElements(cubeVertexArray->GetIndexBuffer()->GetCount(), 0);
                 break;
             case graphics::PRIMITIVES::SPHERE:
                 sphereVertexArray->Bind();
-                CurrentRHC->Draw(sphereVertexArray->GetIndexBuffer()->GetCount());
+                CurrentRHC->DrawElements(sphereVertexArray->GetIndexBuffer()->GetCount(), 0);
                 break;
             default:
                 break;
@@ -297,51 +303,58 @@ namespace hen::renderer
                 auto& meshComp = entity.GetComponent<level::MeshComponent>();
                 auto& materialComp = entity.GetComponent<level::MaterialComponent>();
 
-                auto* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTexture);
-                auto* specular = CurrentTextureManager->Get(materialComp.SpecularTexture);
+                auto* shader = CurrentShaderManager->Get(materialComp.Shader);
+                shader->Bind();
 
-                if (diffuse && specular)
+                int windowWidth, windowHeight;
+                SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
+
+                if (meshComp.VertexArray)
                 {
-                    glBindTexture(GL_TEXTURE_2D, diffuse->ID);
-                    glActiveTexture(GL_TEXTURE1);
-                    glBindTexture(GL_TEXTURE_2D, specular->ID);
-                }
-                
-                if (materialComp.Shader.IsValid())
-                {
-                    auto* shader = CurrentShaderManager->Get(materialComp.Shader);
+                    meshComp.VertexArray->Bind();
 
-                    shader->Bind();
-
-                    int windowWidth, windowHeight;
-                    SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
-
-                    shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
-                    shader->SetMat4("uView", Camera.GetViewMatrix());
-                    shader->SetMat4("uModel", transformComp.Transform);
-                    shader->SetVec3("uViewPos", Camera.Position);
-
-                    shader->SetVal("uMaterial.Diffuse", 0);
-                    shader->SetVal("uMaterial.Specular", 1);
-                    shader->SetVal("uMaterial.Shininess", 32.0f);
-                    shader->SetVec3("uLight.Ambient",  glm::vec3(0.05f));
-                    shader->SetVec3("uLight.Diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
-                    shader->SetVec3("uLight.Specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
-                    shader->SetVec3("uLight.Position", LightPos);
-
-                    if (meshComp.VertexArray)
+                    for (auto& submesh : meshComp.SubMeshes)
                     {
-                        meshComp.VertexArray->Bind();
-                        CurrentRHC->Draw(meshComp.IndexBuffer->GetCount());
-                        meshComp.VertexArray->UnBind();
+                        auto* diffuse = CurrentTextureManager->Get(submesh.Material.DiffuseTexture);
+                        auto* specular = CurrentTextureManager->Get(submesh.Material.SpecularTexture);
+
+                        if (diffuse)
+                        {
+                            glActiveTexture(GL_TEXTURE0);
+                            glBindTexture(GL_TEXTURE_2D, diffuse->ID);
+                        }
+                    
+                        if (specular)
+                        {
+                            glActiveTexture(GL_TEXTURE1);
+                            glBindTexture(GL_TEXTURE_2D, specular->ID);
+                        }
+                    
+                        shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
+                        shader->SetMat4("uView", Camera.GetViewMatrix());
+                        shader->SetMat4("uModel", transformComp.Transform);
+                        shader->SetVec3("uViewPos", Camera.Position);
+
+                        shader->SetVal("uMaterial.Diffuse", 0);
+                        shader->SetVal("uMaterial.Specular", 1);
+                        shader->SetVal("uMaterial.Shininess", 32.0f);
+
+                        shader->SetVec3("uLight.Ambient",  glm::vec3(0.05f));
+                        shader->SetVec3("uLight.Diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
+                        shader->SetVec3("uLight.Specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
+                        shader->SetVal("uLight.Constant", 1.0f);
+                        shader->SetVal("uLight.Linear", 0.09f);
+                        shader->SetVal("uLight.Quadratic", 0.032f);
+
+                        shader->SetVec3("uLight.Position", LightPos);
+
+                        CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
                     }
 
+                    meshComp.VertexArray->UnBind();
                     shader->UnBind();
                 }
-                else
-                {
-                    console::Log("[hen::renderer] Entity " + entity.GetComponent<hen::level::NameComponent>().Name + " doesn't have a shader", console::LOGLEVEL::WARNING);
-                }       
+
             }
         }
     }
