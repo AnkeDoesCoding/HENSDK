@@ -136,6 +136,7 @@ namespace hen::renderer
     });
 
     glm::vec3 LightPos(0.0f, 5.0f, 0.0f);
+    float LightRange = 500.0f;
 
     cvar::CVar x("x", LightPos.x, cvar::FLAGS_ARCHIVE, []() 
     {
@@ -150,6 +151,11 @@ namespace hen::renderer
     cvar::CVar z("z", LightPos.z, cvar::FLAGS_ARCHIVE, []() 
     {
         LightPos.z = z.GetFloat();
+    });
+
+    cvar::CVar r("r", LightRange, cvar::FLAGS_ARCHIVE, []() 
+    {
+        LightRange = r.GetFloat();
     });
 
     void Initialise(SDL_Window* window)
@@ -174,7 +180,7 @@ namespace hen::renderer
                 GetRHC() = CurrentRHC.get();    
                 CurrentRHC->Initialise();
                 break;
-            case BACKEND::VULKAN:
+            case BACKEND::VULKAN: 
                 CurrentRHC = nullptr; // hehe, set that mf to nullptr as a fuck you
                 console::Log("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
@@ -184,8 +190,6 @@ namespace hen::renderer
         }
         
         HEN_ASSERT(CurrentRHC != nullptr, "RHC is nullptr");
-
-        CurrentRHC->EnableBackFaceCulling();
 
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();
@@ -340,11 +344,15 @@ namespace hen::renderer
                         shader->SetVal("uMaterial.Shininess", 32.0f);
 
                         shader->SetVec3("uLight.Ambient",  glm::vec3(0.05f));
-                        shader->SetVec3("uLight.Diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
+                        shader->SetVec3("uLight.Colour",  glm::vec3(0.5f, 0.5f, 0.5f));
                         shader->SetVec3("uLight.Specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
+                        
+                        float linear = 4.5 / LightRange;
+                        float quadratic = 75 / (LightRange * LightRange);
+
                         shader->SetVal("uLight.Constant", 1.0f);
-                        shader->SetVal("uLight.Linear", 0.09f);
-                        shader->SetVal("uLight.Quadratic", 0.032f);
+                        shader->SetVal("uLight.Linear", linear);
+                        shader->SetVal("uLight.Quadratic", quadratic);
 
                         shader->SetVec3("uLight.Position", LightPos);
 

@@ -8,24 +8,23 @@ static bool MouseLocked = false;
 static float CameraVelocity = 0.0f;
 static float CameraSpeed = 1.0f;
 
-static hen::level::Entity* Test;
+static hen::level::Entity* ModelEnt;
 
 void Editor::Initialise(SDL_Window* window)
 {
     hen::Application::Initialise(window);
 
-    Test = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("test"));
+    ModelEnt = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("model"));
 
-    auto& transform = Test->AddComponent<hen::level::TransformComponent>();
-    auto& mat = Test->AddComponent<hen::level::MaterialComponent>();
-    auto& mesh = Test->AddComponent<hen::level::MeshComponent>();
+    auto& transform = ModelEnt->AddComponent<hen::level::TransformComponent>();
+    auto& mat = ModelEnt->AddComponent<hen::level::MaterialComponent>();
+    auto& mesh = ModelEnt->AddComponent<hen::level::MeshComponent>();
 
-    transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
     transform.SetScale(glm::vec3(0.15f));
 
     importer::ImportModel(ENGINE_RESOURCE_PATH "models/sponza/sponza.obj", mesh);
 
-    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/LitShaderFS.glsl");
+    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/BaseShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/BaseShaderFS.glsl");
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
     {
@@ -36,7 +35,6 @@ void Editor::Initialise(SDL_Window* window)
             ImGui::Text("W,A,S,D - move around");
             ImGui::Text("M - toggle mouse lock");
             ImGui::Text("Tilde - toggle console");
-            ImGui::Text("Esc - shutdown application");
         }
     
         if(ImGui::CollapsingHeader("Stats"))
@@ -61,8 +59,8 @@ void Editor::Shutdown()
 {
     hen::Application::Shutdown();
 
-    free(Test);
-    Test = nullptr;
+    free(ModelEnt);
+    ModelEnt = nullptr;
 }
 
 void Editor::FixedUpdate()

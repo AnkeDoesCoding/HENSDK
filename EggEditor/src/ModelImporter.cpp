@@ -30,7 +30,6 @@ namespace importer
             }
         }
 
-        // Copy indices
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)
         {
             const aiFace& face = mesh->mFaces[i];
@@ -58,14 +57,14 @@ namespace importer
                 material.DiffuseTexture = hen::renderer::GetTextureManager()->Load(fullPath.string().c_str());
             }
         
-            // if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0)
-            // {
-            //     aiString str;
-            //     mat->GetTexture(aiTextureType_SPECULAR, 0, &str);
-            //     std::filesystem::path fullPath = path;
-            //     fullPath /= str.C_Str();
-            //     material.SpecularTexture = hen::renderer::GetTextureManager()->Load(fullPath.string().c_str());
-            // }
+            if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0)
+            {
+                aiString str;
+                mat->GetTexture(aiTextureType_SPECULAR, 0, &str);
+                std::filesystem::path fullPath = path;
+                fullPath /= str.C_Str();
+                material.SpecularTexture = hen::renderer::GetTextureManager()->Load(fullPath.string().c_str());
+            }
         
             submesh.Material = material;
         }
@@ -97,10 +96,6 @@ namespace importer
             path,
             aiProcess_Triangulate |
             aiProcess_FlipUVs |
-            aiProcess_GenSmoothNormals |
-            aiProcess_JoinIdenticalVertices |
-            aiProcess_PreTransformVertices |
-            aiProcess_ImproveCacheLocality |
             aiProcess_OptimizeMeshes
         );
 

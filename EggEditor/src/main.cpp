@@ -36,11 +36,6 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
         EggEditor.ResizeWindow();
     }
 
-    if(hen::input::Press(hen::input::BUTTON::KEYBOARD_BUTTON_ESCAPE))
-    {
-        return SDL_APP_SUCCESS; 
-    }
-
     EggEditor.ProcessEvent(*event);
     return SDL_APP_CONTINUE;
 }
