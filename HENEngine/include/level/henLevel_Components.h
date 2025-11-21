@@ -15,6 +15,12 @@
 
 namespace hen::level
 {
+    enum class LIGHT_TYPES
+    {
+        POINT,
+        SPOT,
+        DIRECTIONAL
+    };
     
     struct NameComponent
     {
@@ -33,7 +39,12 @@ namespace hen::level
 
     struct TransformComponent
     {
-        glm::mat4 Transform = glm::mat4(1.0f);
+        mutable glm::mat4 Transform;
+        glm::vec3 Position;
+        glm::vec3 Rotation;
+        glm::vec3 Scale;
+
+        mutable bool Dirty = true;
 
         TransformComponent() = default;
 
@@ -45,66 +56,55 @@ namespace hen::level
 
         }
 
-        TransformComponent(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+        TransformComponent(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
+            : Position(position), Rotation(rotation), Scale(scale)
         {
-            Transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+            
         }
 
-        glm::vec3 GetRotation()
+        const glm::vec3& GetRotation() const
         {
-            glm::vec3 scale, translation, skew;
-            glm::vec4 perspective;
-            glm::quat rotation;
-
-            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
-
-            return glm::eulerAngles(rotation);
+            return Rotation;
         }
 
-        glm::vec3 GetPosition()
+        const glm::vec3& GetPosition()
         {
-            glm::vec3 scale, translation, skew;
-            glm::vec4 perspective;
-            glm::quat rotation;
-
-            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
-
-            return translation;
+            return Position;
         }
 
-        glm::vec3 GetScale()
+        const glm::vec3& GetScale() const
         {
-            glm::vec3 scale, translation, skew;
-            glm::vec4 perspective;
-            glm::quat rotation;
+            return Scale;
+        }
 
-            glm::decompose(Transform, scale, rotation, translation, skew, perspective);
+        const glm::mat4& GetMatrix() const
+        {
+            if (Dirty)
+            {
+                Transform = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(glm::quat(Rotation)) * glm::scale(glm::mat4(1.0f), Scale);
 
-            return scale;
+                Dirty = false;
+            }
+
+            return Transform;
         }
 
         void SetPosition(const glm::vec3& position)
         {
-            auto rotation = GetRotation();
-            auto scale = GetScale();
-
-            Transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+            Position = position;
+            Dirty = true;
         }
 
         void SetRotation(const glm::vec3& rotation)
         {
-            auto position = GetPosition();
-            auto scale = GetScale();
-
-            Transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+            Rotation = rotation;
+            Dirty = true;
         }
 
         void SetScale(const glm::vec3& scale)
         {
-            auto position = GetPosition();
-            auto rotation = GetRotation();
-
-            Transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+            Scale = scale;
+            Dirty = true;
         }
 
         operator glm::mat4& ()
@@ -228,14 +228,37 @@ namespace hen::level
 
     };
 
+    struct LightComponent
+    {
+        LIGHT_TYPES Type;
+
+        float Range;
+        float Intensity;
+        float InnerCutOff;
+        float OuterCutOff;
+
+        glm::vec3 Colour = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 Ambient = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        LightComponent() = default;
+
+        LightComponent(const LightComponent& other) = default;
+
+        LightComponent(LIGHT_TYPES type, float intensity)
+            : Type(type), Intensity(intensity)
+        {
+
+        }
+    };
+
     struct CameraComponent
     {
         float FOV = 90.0f;
-        float NearPlane = 2.5f;
-        float FarPlane = 1000.0f;
+        float NearPlane = 3.0f;
+        float FarPlane = 1500.0f;
 
         glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 Rotation = glm::vec3(0.0f, 90.0f, 0.0f);
+        glm::vec3 Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 Front;
         glm::vec3 Right;
         glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);

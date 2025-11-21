@@ -21,9 +21,9 @@ namespace hen::renderer
     void Initialise(SDL_Window* window);
     void Run();
 
-    void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
-
+    void PreRender();
     void RenderLevel();
+    void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
 
     inline RHC*& GetRHC()
 	{

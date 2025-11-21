@@ -61,10 +61,24 @@ namespace hen::graphics
         uint32_t m_VertexBufferIndex = 0;
     };
 
+    class UniformBuffer_OpenGL : public UniformBuffer::Backend
+    {
+    public: 
+        UniformBuffer_OpenGL(size_t size, unsigned binding);
+
+        void SetData(const void* data, size_t size, size_t offset) override;
+        size_t GetSize() const override;
+        unsigned GetBinding() override;
+
+    private:
+        unsigned int m_ID;
+        size_t m_Size;
+        unsigned m_Binding;
+    };
+
     class Shader_OpenGL : public Shader::Backend
     {
     public:
-
         Shader_OpenGL(const char* vsPath, const char* fsPath);
 
         void Compile() override;

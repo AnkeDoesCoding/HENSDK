@@ -22,6 +22,8 @@ namespace hen::renderer
     static std::unique_ptr<ShaderManager> CurrentShaderManager;
     static std::unique_ptr<TextureManager> CurrentTextureManager;
 
+    static graphics::UniformBuffer LevelLightsUB;
+
     static ShaderHandle PrimitiveShader;
 
     static float CubeVertices[] =
@@ -111,9 +113,74 @@ namespace hen::renderer
         25,21,22, 25,22,23, 25,23,24, 25,24,17
     };
 
+    struct ShaderDirLight 
+    {
+        glm::vec3 Colour;
+        float Pad0;
+        glm::vec3 Ambient;
+        float Pad1;
+        glm::vec3 Direction;
+        float Pad2;
+
+        float Intensity;
+        float Pad3;
+        float Pad4;
+        float Pad5;  
+    };  
+
+    struct ShaderPointLight
+    {
+        glm::vec3 Colour;
+        float Pad0;
+        glm::vec3 Ambient;
+        float Pad1;
+        glm::vec3 Position; 
+        float Pad2;
+
+        float Intensity;
+        float Constant;
+        float Linear;
+        float Quadratic;
+    };
+
+    struct ShaderSpotLight 
+    {
+        glm::vec3 Colour;
+        float Pad0;
+        glm::vec3 Ambient;
+        float Pad1;
+        glm::vec3 Position;
+        float Pad2;
+        glm::vec3 Direction;
+        float Pad3;
+
+        float InnerCutOff;
+        float OuterCutOff;    
+        float Intensity;
+        float Pad4;
+
+        float Constant;
+        float Linear;
+        float Quadratic;
+        float Pad5;
+    };
+
+    struct ShaderLights
+    {
+        ShaderPointLight PointLights[100];
+        ShaderSpotLight SpotLights[100];
+
+        ShaderDirLight DirLight;
+
+        int NumberOfPointLights;
+        int NumberOfSpotLights;
+
+        int HasDirectionalLight; // has to be a fuckass int because of alignment shit
+    };
+
     bool Initialised = false;
     BACKEND CurrentBackend = BACKEND::OPENGL;
-    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0, 0.0f, 0.0f));
+    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f));
 
     cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
     {
@@ -133,29 +200,6 @@ namespace hen::renderer
     cvar::CVar cvar_FarPlane("r_far_plane", Camera.FarPlane, cvar::FLAGS_ARCHIVE, []() 
     {
         Camera.FarPlane = cvar_FarPlane.GetFloat();
-    });
-
-    glm::vec3 LightPos(0.0f, 5.0f, 0.0f);
-    float LightRange = 500.0f;
-
-    cvar::CVar x("x", LightPos.x, cvar::FLAGS_ARCHIVE, []() 
-    {
-        LightPos.x = x.GetFloat();
-    });
-    
-    cvar::CVar y("y", LightPos.y, cvar::FLAGS_ARCHIVE, []() 
-    {
-        LightPos.y = y.GetFloat();
-    });
-
-    cvar::CVar z("z", LightPos.z, cvar::FLAGS_ARCHIVE, []() 
-    {
-        LightPos.z = z.GetFloat();
-    });
-
-    cvar::CVar r("r", LightRange, cvar::FLAGS_ARCHIVE, []() 
-    {
-        LightRange = r.GetFloat();
     });
 
     void Initialise(SDL_Window* window)
@@ -191,6 +235,8 @@ namespace hen::renderer
         
         HEN_ASSERT(CurrentRHC != nullptr, "RHC is nullptr");
 
+        CurrentRHC->EnableBackFaceCulling();
+
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();
 
@@ -198,6 +244,8 @@ namespace hen::renderer
         GetTextureManager() = CurrentTextureManager.get();
 
         PrimitiveShader = CurrentShaderManager->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+
+        LevelLightsUB.Create(sizeof(ShaderLights), 1);
 
         Initialised = true;
 
@@ -212,9 +260,9 @@ namespace hen::renderer
 
         Camera.SetDirty(level::GetActiveLevel()->Up);
 
-        RenderLevel();
+        PreRender();
 
-        RenderPrimitive(graphics::PRIMITIVES::SPHERE, LightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
+        RenderLevel();
 
         CurrentRHC->DisableDepth();
 
@@ -223,6 +271,154 @@ namespace hen::renderer
         ui::GetIMGUIManager()->EndFrame();
 
         CurrentRHC->Present();
+    }
+
+    void PreRender()
+    {
+        if (auto level = level::GetActiveLevel())
+        {
+            ShaderLights data;
+            data.NumberOfPointLights = 0;
+            data.NumberOfSpotLights = 0;
+            data.HasDirectionalLight = false;
+
+            int pointLightIndex = 0;
+            int spotLightIndex = 0;
+
+            float linear;
+            float quadratic;
+
+            auto lights = level->GetView<level::TransformComponent, level::LightComponent>();
+
+            for (auto light : lights)
+            {
+                auto& transformComp = light.GetComponent<level::TransformComponent>();
+                auto& lightComp = light.GetComponent<level::LightComponent>();
+
+                switch (lightComp.Type)
+                {
+                case level::LIGHT_TYPES::POINT:
+                    if (pointLightIndex >= 100)
+                    {
+                        continue;
+                    }
+
+                    linear    = 4.5f / lightComp.Range;
+                    quadratic = 75.f / (lightComp.Range * lightComp.Range);
+                    
+                    data.PointLights[pointLightIndex].Position  = transformComp.GetPosition();
+                    data.PointLights[pointLightIndex].Colour    = lightComp.Colour;
+                    data.PointLights[pointLightIndex].Ambient   = lightComp.Ambient;
+                    data.PointLights[pointLightIndex].Constant  = 1.0f;
+                    data.PointLights[pointLightIndex].Linear    = linear;
+                    data.PointLights[pointLightIndex].Quadratic = quadratic;
+                    data.PointLights[pointLightIndex].Intensity = lightComp.Intensity;
+                    
+                    pointLightIndex++;
+                    data.NumberOfPointLights++;
+                    break;
+                case level::LIGHT_TYPES::SPOT:
+                    if (spotLightIndex >= 100)
+                    {
+                        continue;
+                    }
+
+                    linear = 4.5 / lightComp.Range;
+                    quadratic = 75 / (lightComp.Range * lightComp.Range);
+                    
+                    data.SpotLights[spotLightIndex].Position = transformComp.GetPosition();
+                    data.SpotLights[spotLightIndex].Direction = transformComp.GetRotation(); 
+                    data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
+                    data.SpotLights[spotLightIndex].Colour = lightComp.Colour;
+                    data.SpotLights[spotLightIndex].InnerCutOff = glm::cos(glm::radians(lightComp.InnerCutOff));
+                    data.SpotLights[spotLightIndex].OuterCutOff = glm::cos(glm::radians(lightComp.OuterCutOff));
+                    data.SpotLights[spotLightIndex].Intensity = lightComp.Intensity;
+                    data.SpotLights[spotLightIndex].Constant = 1.0f;
+                    data.SpotLights[spotLightIndex].Linear = linear;
+                    data.SpotLights[spotLightIndex].Quadratic = quadratic;
+
+                    spotLightIndex++;
+                    data.NumberOfSpotLights++;
+                    break;
+                case level::LIGHT_TYPES::DIRECTIONAL:
+                    if (data.HasDirectionalLight)
+                    {
+                        continue;
+                    }
+
+                    data.DirLight.Ambient = lightComp.Ambient;
+                    data.DirLight.Colour = lightComp.Colour;
+                    data.DirLight.Direction = transformComp.GetRotation();
+                    data.DirLight.Intensity = lightComp.Intensity;
+
+                    data.HasDirectionalLight = true;
+                    break; 
+                default:
+                    break;
+                }
+            }
+
+            LevelLightsUB.SetData(&data, sizeof(ShaderLights));
+        }
+    }
+
+    void RenderLevel()
+    {
+        if (auto level = level::GetActiveLevel())
+        {
+            auto litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
+
+            for (auto entity : litEntities)
+            {
+                auto& transformComp = entity.GetComponent<level::TransformComponent>();
+                auto& meshComp = entity.GetComponent<level::MeshComponent>();
+                auto& materialComp = entity.GetComponent<level::MaterialComponent>();
+
+                auto* shader = CurrentShaderManager->Get(materialComp.Shader);
+                shader->Bind();
+
+                int windowWidth, windowHeight;
+                SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
+
+                if (meshComp.VertexArray)
+                {
+                    meshComp.VertexArray->Bind();
+
+                    for (auto& submesh : meshComp.SubMeshes)
+                    {
+                        auto* diffuse = CurrentTextureManager->Get(submesh.Material.DiffuseTexture);
+                        auto* specular = CurrentTextureManager->Get(submesh.Material.SpecularTexture);
+
+                        if (diffuse)
+                        {
+                            glActiveTexture(GL_TEXTURE0);
+                            glBindTexture(GL_TEXTURE_2D, diffuse->ID);
+                        }
+                    
+                        if (specular)
+                        {
+                            glActiveTexture(GL_TEXTURE1);
+                            glBindTexture(GL_TEXTURE_2D, specular->ID);
+                        }
+                    
+                        shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
+                        shader->SetMat4("uView", Camera.GetViewMatrix());
+                        shader->SetMat4("uModel", transformComp.GetMatrix());
+                        shader->SetVec3("uViewPos", Camera.Position);
+
+                        shader->SetVal("uMaterial.Diffuse", 0);
+                        shader->SetVal("uMaterial.Specular", 1);
+                        shader->SetVal("uMaterial.Shininess", 64.0f);
+
+                        CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
+                    }
+
+                    meshComp.VertexArray->UnBind();
+                    shader->UnBind();
+                }
+
+            }
+        }
     }
 
     void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
@@ -293,77 +489,5 @@ namespace hen::renderer
         sphereVertexArray->UnBind();
 
         shader->UnBind();
-    }
-
-    void RenderLevel()
-    {
-        if (auto level = level::GetActiveLevel())
-        {
-            auto litView = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
-
-            for (auto entity : litView)
-            {
-                auto& transformComp = entity.GetComponent<level::TransformComponent>();
-                auto& meshComp = entity.GetComponent<level::MeshComponent>();
-                auto& materialComp = entity.GetComponent<level::MaterialComponent>();
-
-                auto* shader = CurrentShaderManager->Get(materialComp.Shader);
-                shader->Bind();
-
-                int windowWidth, windowHeight;
-                SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
-
-                if (meshComp.VertexArray)
-                {
-                    meshComp.VertexArray->Bind();
-
-                    for (auto& submesh : meshComp.SubMeshes)
-                    {
-                        auto* diffuse = CurrentTextureManager->Get(submesh.Material.DiffuseTexture);
-                        auto* specular = CurrentTextureManager->Get(submesh.Material.SpecularTexture);
-
-                        if (diffuse)
-                        {
-                            glActiveTexture(GL_TEXTURE0);
-                            glBindTexture(GL_TEXTURE_2D, diffuse->ID);
-                        }
-                    
-                        if (specular)
-                        {
-                            glActiveTexture(GL_TEXTURE1);
-                            glBindTexture(GL_TEXTURE_2D, specular->ID);
-                        }
-                    
-                        shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
-                        shader->SetMat4("uView", Camera.GetViewMatrix());
-                        shader->SetMat4("uModel", transformComp.Transform);
-                        shader->SetVec3("uViewPos", Camera.Position);
-
-                        shader->SetVal("uMaterial.Diffuse", 0);
-                        shader->SetVal("uMaterial.Specular", 1);
-                        shader->SetVal("uMaterial.Shininess", 32.0f);
-
-                        shader->SetVec3("uLight.Ambient",  glm::vec3(0.05f));
-                        shader->SetVec3("uLight.Colour",  glm::vec3(0.5f, 0.5f, 0.5f));
-                        shader->SetVec3("uLight.Specular", glm::vec3(1.0f, 1.0f, 1.0f)); 
-                        
-                        float linear = 4.5 / LightRange;
-                        float quadratic = 75 / (LightRange * LightRange);
-
-                        shader->SetVal("uLight.Constant", 1.0f);
-                        shader->SetVal("uLight.Linear", linear);
-                        shader->SetVal("uLight.Quadratic", quadratic);
-
-                        shader->SetVec3("uLight.Position", LightPos);
-
-                        CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
-                    }
-
-                    meshComp.VertexArray->UnBind();
-                    shader->UnBind();
-                }
-
-            }
-        }
     }
 }

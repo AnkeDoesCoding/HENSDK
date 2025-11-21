@@ -130,14 +130,36 @@ namespace hen::graphics
 		static std::unique_ptr<VertexArray> Create();
 	};
 
+    class UniformBuffer
+    {
+    public:
+        ~UniformBuffer();
+
+        bool IsBackendValid() const;
+
+        void Create(size_t size, unsigned binding);
+        void SetData(const void* data, size_t size, size_t offset = 0);
+        size_t GetSize() const;
+        unsigned GetBinding();
+
+    public:    
+        struct Backend
+        {
+            virtual void SetData(const void* data, size_t size, size_t offset = 0) = 0;
+            virtual size_t GetSize() const = 0;
+            virtual unsigned GetBinding() = 0;
+        };
+        
+    private:
+        std::unique_ptr<Backend> m_BackendImpl;
+    };
+
     class Shader
     {
     public:
-
         Shader() = default;
         Shader(const char* vsPath, const char* fsPath);
-        Shader(Shader&&) noexcept = default; // move constructor
-        Shader& operator=(Shader&&) noexcept = default;
+        Shader(Shader&&) noexcept = default;
         ~Shader();
 
 

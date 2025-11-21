@@ -61,7 +61,7 @@ namespace hen::graphics
             GLenum format;
             if (Components == 1)
             {
-                format = GL_RED;
+                format = GL_R8;
             }
             else if (Components == 3)
             {
@@ -234,6 +234,65 @@ namespace hen::graphics
         }
 
         return nullptr;
+    }
+
+    UniformBuffer::~UniformBuffer()
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl.reset();
+        }
+    }
+
+    bool UniformBuffer::IsBackendValid() const
+    {
+        return m_BackendImpl != nullptr;
+    }
+
+    void UniformBuffer::Create(size_t size, unsigned binding)
+    {
+        switch (renderer::CurrentBackend)
+        {
+            case renderer::BACKEND::NONE:
+                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                m_BackendImpl = nullptr;
+                break;
+            case renderer::BACKEND::OPENGL:
+                m_BackendImpl = std::make_unique<UniformBuffer_OpenGL>(size, binding);
+                break;
+        }
+    }
+
+    void UniformBuffer::SetData(const void* data, size_t size, size_t offset)
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->SetData(data, size, offset);
+        }
+    }
+
+    size_t UniformBuffer::GetSize() const
+    {
+        if (IsBackendValid())
+        {
+            return m_BackendImpl->GetSize();
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    unsigned UniformBuffer::GetBinding()
+    {
+        if (IsBackendValid())
+        {
+            return m_BackendImpl->GetBinding();
+        }
+        else
+        {
+            return -1;
+        }
     }
 
     Shader::Shader(const char* vsPath, const char* fsPath)

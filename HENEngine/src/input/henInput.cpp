@@ -254,8 +254,8 @@ namespace hen::input
                     delta *= -1;
                 }
                 Mouse.DeltaWheel += delta;
-                break;
             }   
+                break;
             // TODO: ADD CONTROLLER SHIT
             default:
                 break;

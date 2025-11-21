@@ -227,6 +227,35 @@ namespace hen::graphics
         return m_IndexBuffer;
     }
 
+    UniformBuffer_OpenGL::UniformBuffer_OpenGL(size_t size, unsigned binding)
+    {
+        m_Size = size;
+        m_Binding = binding;
+        glGenBuffers(1, &m_ID);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_ID);
+        glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_ID);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
+    void UniformBuffer_OpenGL::SetData(const void* data, size_t size, size_t offset)
+    {
+        m_Size = size;
+        glBindBuffer(GL_UNIFORM_BUFFER, m_ID);
+        glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
+    size_t UniformBuffer_OpenGL::GetSize() const
+    {
+        return m_Size;
+    }
+
+    unsigned UniformBuffer_OpenGL::GetBinding()
+    {
+        return m_Binding;
+    }
+
     Shader_OpenGL::Shader_OpenGL(const char* vsPath, const char* fsPath)
         : m_VSPath(vsPath), m_FSPath(fsPath)
     {

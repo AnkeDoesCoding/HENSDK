@@ -9,6 +9,8 @@ static float CameraVelocity = 0.0f;
 static float CameraSpeed = 1.0f;
 
 static hen::level::Entity* ModelEnt;
+static hen::level::Entity* LightEnt;
+static hen::level::Entity* LightEnt2;
 
 void Editor::Initialise(SDL_Window* window)
 {
@@ -25,6 +27,28 @@ void Editor::Initialise(SDL_Window* window)
     importer::ImportModel(ENGINE_RESOURCE_PATH "models/sponza/sponza.obj", mesh);
 
     mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/BaseShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/BaseShaderFS.glsl");
+
+    LightEnt = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("light"));
+
+    auto& transformLight = LightEnt->AddComponent<hen::level::TransformComponent>();
+    auto& light = LightEnt->AddComponent<hen::level::LightComponent>();
+
+    transformLight.SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+
+    light.Range = 100.0f;
+    light.Intensity = 1.0f;
+    light.Type = hen::level::LIGHT_TYPES::POINT;
+
+    LightEnt2 = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("light2"));
+
+    auto& transformLight2 = LightEnt2->AddComponent<hen::level::TransformComponent>();
+    auto& light2 = LightEnt2->AddComponent<hen::level::LightComponent>();
+
+    light2.Range = 400.0f;
+    light2.Intensity = 1.0f;
+    light2.InnerCutOff = 20.0f;
+    light2.OuterCutOff = 30.0f;
+    light2.Type = hen::level::LIGHT_TYPES::SPOT;
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
     {
@@ -60,7 +84,8 @@ void Editor::Shutdown()
     hen::Application::Shutdown();
 
     free(ModelEnt);
-    ModelEnt = nullptr;
+    free(LightEnt);
+    free(LightEnt2);
 }
 
 void Editor::FixedUpdate()
@@ -123,4 +148,7 @@ void Editor::Update(float deltaTime)
         }
     }
     
+    LightEnt2->GetComponent<hen::level::TransformComponent>().SetPosition(Cam.Position);
+    LightEnt2->GetComponent<hen::level::TransformComponent>().SetRotation(Cam.Front);
+
 }
