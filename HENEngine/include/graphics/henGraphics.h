@@ -32,6 +32,13 @@ namespace hen::graphics
         SPHERE
     };
 
+    enum class SHADER_TYPES
+    {
+        PROGRAM,
+        VERTEX,
+        FRAGMENT
+    };
+
     struct Texture
     {
         int Width;
@@ -187,7 +194,6 @@ namespace hen::graphics
         void Destroy();
 
     public:
-        
         struct Backend
         {
             virtual void Compile() = 0;

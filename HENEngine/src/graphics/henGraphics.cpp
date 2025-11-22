@@ -45,10 +45,11 @@ namespace hen::graphics
         case SHADER_PRIMITIVES::BOOL:
             return 4;
             break;
+        default:
+            HEN_ASSERT(false, "Failed to get primitive size");
+            return 0;
+            break;
         }
-
-        console::Log("[hen::graphics] Failed to get primitive size", console::LOGLEVEL::ERROR);
-        return 0;
     }
 
     void Texture::Load(const char* path)
@@ -149,10 +150,11 @@ namespace hen::graphics
             case SHADER_PRIMITIVES::BOOL:
                 return 1;
                 break;
+            default:
+                HEN_ASSERT(false, "Couldn't get component count");
+                return 0;
+                break;
         }
-
-        console::Log("[hen::graphics] Couldn't get component count", console::LOGLEVEL::ERROR);
-        return 0;
     }
 
     BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements) 
@@ -199,9 +201,10 @@ namespace hen::graphics
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<VertexBuffer_OpenGL>(size, vertices);
                 break;
+            default:
+                return nullptr;
+                break;
         }
-
-        return nullptr;
     }
 
     std::unique_ptr<IndexBuffer> IndexBuffer::Create(uint32_t size, uint32_t* count)
@@ -215,9 +218,10 @@ namespace hen::graphics
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<IndexBuffer_OpenGL>(size, count);
                 break;
+            default:
+            return nullptr;
+                break;
         }
-
-        return nullptr;
     }
 
     std::unique_ptr<VertexArray> VertexArray::Create()
@@ -231,9 +235,10 @@ namespace hen::graphics
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<VertexArray_OpenGL>();
                 break;
+            default:
+                return nullptr;
+                break;
         }
-
-        return nullptr;
     }
 
     UniformBuffer::~UniformBuffer()
@@ -259,6 +264,9 @@ namespace hen::graphics
                 break;
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<UniformBuffer_OpenGL>(size, binding);
+                break;
+            default:
+                m_BackendImpl = nullptr;
                 break;
         }
     }
@@ -426,6 +434,9 @@ namespace hen::graphics
                 break;
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
+                break;
+            default:
+                m_BackendImpl = nullptr;
                 break;
         }
     }

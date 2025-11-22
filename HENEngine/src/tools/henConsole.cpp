@@ -383,7 +383,7 @@ namespace hen::console
         Locked = lock;
     }
 
-    void Log(const std::string &message, LOGLEVEL level) 
+    void Log(const std::string& message, LOGLEVEL level) 
     {
         std::lock_guard<std::mutex> lock(Mutex);
         std::string levelText;

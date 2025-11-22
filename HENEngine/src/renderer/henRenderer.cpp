@@ -262,7 +262,7 @@ namespace hen::renderer
 
         PreRender();
 
-        RenderLevel();
+        Render();
 
         CurrentRHC->DisableDepth();
 
@@ -348,7 +348,7 @@ namespace hen::renderer
 
                     data.DirLight.Ambient = lightComp.Ambient;
                     data.DirLight.Colour = lightComp.Colour;
-                    data.DirLight.Direction = transformComp.GetRotation();
+                    data.DirLight.Direction = transformComp.GetForwardVector();
                     data.DirLight.Intensity = lightComp.Intensity;
 
                     data.HasDirectionalLight = true;
@@ -362,7 +362,7 @@ namespace hen::renderer
         }
     }
 
-    void RenderLevel()
+    void Render()
     {
 
         if (auto level = level::GetActiveLevel())

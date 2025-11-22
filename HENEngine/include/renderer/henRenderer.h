@@ -22,7 +22,7 @@ namespace hen::renderer
     void Run();
 
     void PreRender();
-    void RenderLevel();
+    void Render();
     void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour);
 
     inline RHC*& GetRHC()

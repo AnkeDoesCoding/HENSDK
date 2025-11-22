@@ -5,11 +5,11 @@
 
 namespace hen::version
 {
-    constexpr int MAJOR = 0;
-    constexpr int MINOR = 8;
-    constexpr int REVISION = 42;
+    constexpr int Major = 0;
+    constexpr int Minor = 8;
+    constexpr int Revision = 43;
 
-    const std::string VERSION = std::to_string(MAJOR) + "." + std::to_string(MINOR) + "." + std::to_string(REVISION);
+    const std::string Version = std::to_string(Major) + "." + std::to_string(Minor) + "." + std::to_string(Revision);
 }
 
 #endif // !_HENVERSION_H_

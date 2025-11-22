@@ -100,7 +100,7 @@ namespace hen::graphics
         void SetMat4(const std::string &name, const glm::mat4 &mat) const override;
 
     private:
-        void CheckForCompileErrors(unsigned int shader, std::string type);
+        void CheckForCompileErrors(unsigned int shader, SHADER_TYPES type);
 
     private:
         unsigned int m_ID;

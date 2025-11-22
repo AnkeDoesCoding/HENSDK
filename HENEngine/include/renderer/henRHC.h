@@ -8,7 +8,6 @@ namespace hen
     class RHC
     {
     public:
-
         virtual ~RHC() = default;
 
         virtual void Initialise() = 0;

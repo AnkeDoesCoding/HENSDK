@@ -14,8 +14,8 @@
 namespace hen
 {
     static uint64_t LastTick, CurrentTick = 0;
-    static std::unique_ptr<cvar::System> CVarSystem;
-    static std::unique_ptr<ui::IMGUIManager> ImGuiManager;
+    static std::unique_ptr<cvar::System> CurrentCVarSystem;
+    static std::unique_ptr<ui::IMGUIManager> CurrentImGuiManager;
 
     level::Level test;
 
@@ -33,8 +33,8 @@ namespace hen
     {
         Timer timer;
 
-        CVarSystem = std::make_unique<cvar::System>(); // this motherfucker is important as fuck
-        cvar::GetSystem() = CVarSystem.get();    
+        CurrentCVarSystem = std::make_unique<cvar::System>(); // this motherfucker is important as fuck
+        cvar::GetSystem() = CurrentCVarSystem.get();    
 
         console::Initialise(); 
 
@@ -44,12 +44,12 @@ namespace hen
 
         HEN_ASSERT(renderer::Initialised, "hen::renderer not initialised");
 
-        ImGuiManager = std::make_unique<ui::IMGUIManager>();
-        ui::GetIMGUIManager() = ImGuiManager.get(); 
+        CurrentImGuiManager = std::make_unique<ui::IMGUIManager>();
+        ui::GetIMGUIManager() = CurrentImGuiManager.get(); 
 
-        ImGuiManager->Initialise(window);
+        CurrentImGuiManager->Initialise(window);
 
-        HEN_ASSERT(ImGuiManager->Initialised, "hen::ui::ImGuiManager not initialised");
+        HEN_ASSERT(CurrentImGuiManager->Initialised, "hen::ui::ImGuiManager not initialised");
 
         input::Initialise(renderer::GetRHC()->GetWindow());
         
@@ -60,7 +60,7 @@ namespace hen
         Initialised = true;
 
         std::string infoStr;
-        infoStr += "[hen::Application] Initialised with HEN Engine " + version::VERSION;
+        infoStr += "[hen::Application] Initialised with HEN Engine " + version::Version;
             
         #if PLATFORM_WINDOWS
             infoStr += " WINDOWS_";
@@ -121,7 +121,7 @@ namespace hen
     void Application::ProcessEvent(const SDL_Event& event)
     {
         input::ProcessEvent(event);
-        ImGuiManager->ProcessEvent(event);
+        CurrentImGuiManager->ProcessEvent(event);
     }
 
     void Application::ResizeWindow()

@@ -30,13 +30,11 @@ namespace hen::renderer
     class ShaderManager
     {
     public:
-
         ShaderHandle Load(const char* vsPath, const char* fsPath);
         graphics::Shader* Get(const ShaderHandle& handle);
         void Remove(const ShaderHandle& handle);
     
     private:
-
         struct m_ShaderSlot
         {
             graphics::Shader Shader;
@@ -52,13 +50,11 @@ namespace hen::renderer
     class TextureManager
     {
     public:
-
         TextureHandle Load(const char* texPath);
         graphics::Texture* Get(const TextureHandle& handle);
         void Remove(const TextureHandle& handle); 
 
     private:
-
         struct m_TextureSlot
         {
             graphics::Texture Texture;

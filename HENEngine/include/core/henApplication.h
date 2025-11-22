@@ -26,7 +26,6 @@ namespace hen
         void ResizeWindow();
 
     public:
-        
         bool Initialised = false;
     };
 }

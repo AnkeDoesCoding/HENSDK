@@ -194,8 +194,8 @@ namespace hen::input
                 {
                     Keyboard.Buttons[converted] = true;
                 }
-            }
                 break;
+            }
             case SDL_EVENT_KEY_UP:
             {
                 int converted = ConvertScanCode(event.key.scancode, event.key.key);
@@ -206,8 +206,8 @@ namespace hen::input
                     input.button = static_cast<BUTTON>(converted);
                     Inputs.erase(input);
                 }
-            }
                 break;
+            }
             case SDL_EVENT_TEXT_EDITING:     
             case SDL_EVENT_TEXT_INPUT:    
             case SDL_EVENT_KEYMAP_CHANGED:
@@ -254,8 +254,8 @@ namespace hen::input
                     delta *= -1;
                 }
                 Mouse.DeltaWheel += delta;
-            }   
                 break;
+            }   
             // TODO: ADD CONTROLLER SHIT
             default:
                 break;

@@ -142,6 +142,7 @@ namespace hen::level
         private:
             typename UNDERLYING_VIEW::iterator m_It;
             Level* m_Level;
+
         };
 
         Iterator begin() 
@@ -168,6 +169,7 @@ namespace hen::level
     private:
         UNDERLYING_VIEW m_View;
         Level* m_Level = nullptr;
+        
     };
 
    Level* GetActiveLevel();

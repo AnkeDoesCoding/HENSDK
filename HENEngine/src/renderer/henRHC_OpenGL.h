@@ -8,7 +8,6 @@ namespace hen
     class RHC_OpenGL : public RHC
     {
     public:
-
         RHC_OpenGL(SDL_Window* window);
         ~RHC_OpenGL() override;
 
@@ -35,11 +34,9 @@ namespace hen
         void ResizeWindow() override;
         
     public:
-
         bool Initialised =  false;
 
     private:
-
         SDL_Window* m_Window;
     };
 
