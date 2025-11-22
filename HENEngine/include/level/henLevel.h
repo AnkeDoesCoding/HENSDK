@@ -45,6 +45,7 @@ namespace hen::level
     class Entity
     {
     public:
+        Entity() = default;
         Entity(const Entity& other);
         Entity(entt::entity handle, Level* level);
 
@@ -85,6 +86,16 @@ namespace hen::level
         operator entt::entity() const 
         { 
             return m_Handle; 
+        }
+
+        bool operator==(const Entity& other) const
+        {
+            return m_Handle == other.m_Handle && m_Level == other.m_Level;
+        }
+    
+        bool operator!=(const Entity& other) const
+        {
+            return !(*this == other);
         }
 
     private:

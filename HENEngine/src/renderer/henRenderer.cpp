@@ -286,7 +286,7 @@ namespace hen::renderer
             int spotLightIndex = 0;
 
             float linear;
-            float quadratic;
+            float quadratic; 
 
             auto lights = level->GetView<level::TransformComponent, level::LightComponent>();
 
@@ -327,7 +327,7 @@ namespace hen::renderer
                     quadratic = 75 / (lightComp.Range * lightComp.Range);
                     
                     data.SpotLights[spotLightIndex].Position = transformComp.GetPosition();
-                    data.SpotLights[spotLightIndex].Direction = transformComp.GetRotation(); 
+                    data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
                     data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
                     data.SpotLights[spotLightIndex].Colour = lightComp.Colour;
                     data.SpotLights[spotLightIndex].InnerCutOff = glm::cos(glm::radians(lightComp.InnerCutOff));
@@ -364,6 +364,7 @@ namespace hen::renderer
 
     void RenderLevel()
     {
+
         if (auto level = level::GetActiveLevel())
         {
             auto litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();

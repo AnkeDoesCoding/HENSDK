@@ -89,6 +89,34 @@ namespace hen::level
             return Transform;
         }
 
+        glm::vec3 GetForwardVector() const
+        {
+            float pitch = Rotation.x;
+            float yaw   = Rotation.y;
+
+            glm::vec3 forward;
+            forward.x = cos(yaw) * cos(pitch);
+            forward.y = sin(pitch);
+            forward.z = sin(yaw) * cos(pitch);
+
+            return glm::normalize(forward);
+        }
+
+        glm::vec3 GetUpVector() const
+        {
+            glm::vec3 levelUp = glm::vec3(0.0f, 1.0f, 0.0f);
+            glm::vec3 forward = GetForwardVector();
+            glm::vec3 right   = glm::normalize(glm::cross(forward, levelUp));
+            return glm::normalize(glm::cross(right, forward));
+        }
+
+        glm::vec3 GetRightVector() const
+        {
+            glm::vec3 levelUp = glm::vec3(0.0f, 1.0f, 0.0f);
+            glm::vec3 forward = GetForwardVector();
+            return glm::normalize(glm::cross(forward, levelUp));
+        }
+
         void SetPosition(const glm::vec3& position)
         {
             Position = position;

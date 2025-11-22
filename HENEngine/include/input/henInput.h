@@ -105,10 +105,10 @@ namespace hen::input
 		glm::vec2 Pos = glm::vec2(0.0f, 0.0f);
 		glm::vec2 DeltaPos = glm::vec2(0.0f, 0.0f);
 		float DeltaWheel = 0.0f;
-		float Pressure = 1.0f;
 		bool LMB = false;
 		bool MMB = false;
 		bool RMB = false;
+		bool Locked = false;
 	};
 
 	void Initialise(SDL_Window* window);

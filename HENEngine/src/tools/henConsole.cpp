@@ -269,6 +269,12 @@ namespace hen::console
                     {
                         //Dont execute because this is a command for letting [User] write something into log                        
                     }
+                    else if (line.find("quit") != std::string::npos)
+                    {
+                        SDL_Event event;
+                        event.type = SDL_EVENT_QUIT;
+                        SDL_PushEvent(&event);
+                    }
                     else
                     {
                         if (CommandHistory.empty() || CommandHistory.back() != InputBuffer)

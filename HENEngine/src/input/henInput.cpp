@@ -271,7 +271,11 @@ namespace hen::input
         Mouse.DeltaWheel = 0;
         Mouse.DeltaPos = glm::vec2(0.0f);
 
-        SDL_GetMouseState(&Mouse.Pos.x, &Mouse.Pos.y);
+        Uint32 m = SDL_GetMouseState(&Mouse.Pos.x, &Mouse.Pos.y);
+
+        Mouse.LMB = (m & SDL_BUTTON_LMASK) != 0;
+        Mouse.RMB = (m & SDL_BUTTON_RMASK) != 0;
+        Mouse.MMB = (m & SDL_BUTTON_MMASK) != 0;
         
         for(auto& event : Events)
         {
@@ -325,11 +329,13 @@ namespace hen::input
     void LockMouse()
     {
         SDL_SetWindowRelativeMouseMode(Window, true);
+        Mouse.Locked = true;
     }
 
     void UnLockMouse()
     {
         SDL_SetWindowRelativeMouseMode(Window, false);
+        Mouse.Locked = false;
     }
 
     bool Down(BUTTON button)

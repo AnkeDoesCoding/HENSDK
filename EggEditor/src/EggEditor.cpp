@@ -4,13 +4,14 @@
 
 static hen::level::CameraComponent& Cam = hen::renderer::Camera;
 static float MouseSensitivity = 4.0f;
-static bool MouseLocked = false;
 static float CameraVelocity = 0.0f;
 static float CameraSpeed = 1.0f;
 
 static hen::level::Entity* ModelEnt;
 static hen::level::Entity* LightEnt;
 static hen::level::Entity* LightEnt2;
+
+static hen::level::Entity selectedEntity;
 
 void Editor::Initialise(SDL_Window* window)
 {
@@ -33,7 +34,7 @@ void Editor::Initialise(SDL_Window* window)
     auto& transformLight = LightEnt->AddComponent<hen::level::TransformComponent>();
     auto& light = LightEnt->AddComponent<hen::level::LightComponent>();
 
-    transformLight.SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+    transformLight.SetPosition(glm::vec3(0.0f, 10.0f, 0.0f));
 
     light.Range = 100.0f;
     light.Intensity = 1.0f;
@@ -52,30 +53,126 @@ void Editor::Initialise(SDL_Window* window)
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([]() 
     {
-        ImGui::Begin("Info");
-        
-        if(ImGui::CollapsingHeader("Controls"))
+        ImGui::Begin("Level");
+
+        if (auto level = hen::level::GetActiveLevel())
         {
-            ImGui::Text("W,A,S,D - move around");
-            ImGui::Text("M - toggle mouse lock");
-            ImGui::Text("Tilde - toggle console");
+            auto view = level->GetView<hen::level::NameComponent>(); // every entity has a name component
+
+
+            for (auto entityHandle : view)
+            {
+                hen::level::Entity entity(entityHandle, level);
+
+                bool isSelected = (selectedEntity == entity);
+
+
+                std::string label = entity.GetComponent<hen::level::NameComponent>().Name;
+
+                if (ImGui::Selectable(label.c_str(), isSelected))
+                {
+                    selectedEntity = entity;
+                }
+            }
         }
-    
-        if(ImGui::CollapsingHeader("Stats"))
-        {
-            ImGui::Text("FPS:  %.1f", ImGui::GetIO().Framerate);
-            ImGui::Text("MS:  %.3f", 1000.0f / ImGui::GetIO().Framerate);
-        }
-    
-        if(ImGui::CollapsingHeader("Camera"))
-        {
-            ImGui::Text("Speed:  %.1f", CameraSpeed);
-            ImGui::Text("FOV:  %.0f", Cam.FOV);
-            ImGui::Text("Yaw:  %.3f", Cam.Rotation.y);
-            ImGui::Text("Pitch:  %.1f", Cam.Rotation.x);
-            ImGui::Text("Position:  %.4f, %.4f, %.4f", Cam.Position.x, Cam.Position.y, Cam.Position.z);
-        }
+
         ImGui::End();
+
+        ImGui::Begin("Components");
+
+        if (selectedEntity)
+        {
+            if (selectedEntity.HasComponent<hen::level::TransformComponent>())
+            {
+                auto& transform = selectedEntity.GetComponent<hen::level::TransformComponent>();
+
+                glm::vec3 rotationDeg = glm::degrees(transform.Rotation);  
+
+                ImGui::Text("Transform");
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                ImGui::DragFloat3("Position", &transform.Position.x, 0.1f);
+                ImGui::DragFloat3("Rotation", &rotationDeg.x, 0.5f);
+                ImGui::DragFloat3("Scale", &transform.Scale.x, 0.1f);
+
+                transform.SetRotation(glm::radians(rotationDeg));
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+            }
+        
+            if (selectedEntity.HasComponent<hen::level::MeshComponent>())
+            {
+                auto& mesh = selectedEntity.GetComponent<hen::level::MeshComponent>();
+                
+                ImGui::Text("Mesh");
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                std::string verticesText = "Vertices: " + std::to_string(mesh.Vertices.size());
+                std::string normalsText = "Normals: " + std::to_string(mesh.Normals.size());
+                std::string indicesText = "Indices: " + std::to_string(mesh.Indices.size());
+                std::string submeshText = "Submeshes: " + std::to_string(mesh.SubMeshes.size());
+
+                ImGui::Text("%s", verticesText.c_str());
+                ImGui::Text("%s", normalsText.c_str());
+                ImGui::Text("%s", indicesText.c_str());
+                ImGui::Text("%s", submeshText.c_str());
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+            }
+        
+            if (selectedEntity.HasComponent<hen::level::LightComponent>())
+            {
+                auto& light = selectedEntity.GetComponent<hen::level::LightComponent>();
+
+                ImGui::Text("Light");
+
+                const char* lightTypes[] = { "Point", "Spot", "Directional" };
+                int currentType = static_cast<int>(light.Type);
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                if (ImGui::Combo("Type", &currentType, lightTypes, IM_ARRAYSIZE(lightTypes)))
+                {
+                    light.Type = static_cast<hen::level::LIGHT_TYPES>(currentType);
+                }
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                ImGui::DragFloat("Range", &light.Range, 0.1f, 0.0f);
+                ImGui::DragFloat("Intensity", &light.Intensity, 0.1f, 0.0f);
+                ImGui::ColorPicker3("Colour", &light.Colour.x);
+
+                if (light.Type == hen::level::LIGHT_TYPES::SPOT)
+                {
+                    ImGui::Spacing();
+                    ImGui::Spacing();
+
+                    ImGui::DragFloat("Inner Cut Off", &light.InnerCutOff, 0.1f, 0.0f);
+                    ImGui::DragFloat("Outer Cut Off", &light.OuterCutOff, 0.1f, 0.0f);
+                }
+
+                
+            }
+        }
+
+        ImGui::End();
+        
     });
 }
 
@@ -104,7 +201,7 @@ void Editor::Update(float deltaTime)
     glm::vec2 originalMouse = glm::vec2(0.0f, 0.0f);
     glm::vec2 currentMouse = hen::input::GetPointerPos();
 
-    if(MouseLocked && !hen::console::Visible)
+    if(hen::input::GetMouseState().Locked && !hen::console::Visible)
     {
         xDiff = hen::input::GetMouseState().DeltaPos.x;
         yDiff = hen::input::GetMouseState().DeltaPos.y;
@@ -141,14 +238,19 @@ void Editor::Update(float deltaTime)
         {
             Cam.Position += Cam.Right * CameraVelocity;            
         }
-        if(hen::input::Press(hen::input::BUTTON('M')))
+        if(hen::input::Down(hen::input::BUTTON(hen::input::MOUSE_BUTTON_RIGHT)))
         {
-            MouseLocked = !MouseLocked;
-            MouseLocked ? hen::input::LockMouse() : hen::input::UnLockMouse();
+            hen::input::LockMouse();
+        }
+        else
+        {
+            hen::input::UnLockMouse();
         }
     }
-    
+
+    glm::vec3 rot(asin(Cam.Front.y), atan2(Cam.Front.z, Cam.Front.x), 0.0f);
+
     LightEnt2->GetComponent<hen::level::TransformComponent>().SetPosition(Cam.Position);
-    LightEnt2->GetComponent<hen::level::TransformComponent>().SetRotation(Cam.Front);
+    LightEnt2->GetComponent<hen::level::TransformComponent>().SetRotation(rot);
 
 }
