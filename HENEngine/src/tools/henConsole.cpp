@@ -20,11 +20,6 @@ namespace hen::console
     bool Visible = false;
     bool Locked = false;
 
-    static std::string LogFileName = "console.txt";
-    static std::filesystem::path LogFileDir = "./";
-    static std::filesystem::path LogFilePath = LogFileDir / LogFileName;
-    static std::ofstream LogFile{};
-
     struct LogEntry
     {
         std::string Message;
@@ -32,11 +27,18 @@ namespace hen::console
         LOGLEVEL Level;
     };
 
+    static std::ofstream LogFile{};
     static std::deque<LogEntry> Entries;
+
     static std::mutex Mutex; // yeah bitch this shi gonna be thread safe, if i managed to do it right
+
     static char InputBuffer[1024] = "";
+
     static std::vector<std::string> CommandHistory;
+    static std::vector<std::string> AutocompleteMatches;
+    static std::vector<std::string> AutocompleteDisplay;
     static int HistoryIndex = -1;
+    static int AutoIndex = -1;
 
     static std::string GetCurrentTime()
     {
@@ -45,54 +47,6 @@ namespace hen::console
         std::ostringstream timeSString;
         timeSString << std::put_time(&time, TIME_FORMAT);
         return timeSString.str();
-    }
-
-    static int InputCallback(ImGuiInputTextCallbackData* data)
-    {
-        if (data->EventChar == '~' || data->EventChar == '`')
-        {
-            return 1;
-        }
-
-        if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory)
-        {
-            if (data->EventKey == ImGuiKey_UpArrow)
-            {
-                if (HistoryIndex == -1 && !CommandHistory.empty())
-                {
-                    HistoryIndex = (int)CommandHistory.size() - 1;
-                }
-                else if (HistoryIndex > 0)
-                {
-                    HistoryIndex--;
-                }
-
-                if (HistoryIndex >= 0 && HistoryIndex < (int)CommandHistory.size())
-                {
-                    data->DeleteChars(0, data->BufTextLen);
-                    data->InsertChars(0, CommandHistory[HistoryIndex].c_str());
-                }
-            }
-            else if (data->EventKey == ImGuiKey_DownArrow)
-            {
-                if (HistoryIndex != -1)
-                {
-                    HistoryIndex++;
-                    if (HistoryIndex >= (int)CommandHistory.size())
-                    {
-                        HistoryIndex = -1;
-                        data->DeleteChars(0, data->BufTextLen);
-                    }
-                    else
-                    {
-                        data->DeleteChars(0, data->BufTextLen);
-                        data->InsertChars(0, CommandHistory[HistoryIndex].c_str());
-                    }
-                }
-            }
-        }
-
-        return 0;
     }
 
     static bool ParseBool(const std::string& inputString)
@@ -201,19 +155,102 @@ namespace hen::console
         console::Log("[hen::console] Unknown CVar: " + cvarName, console::LOGLEVEL::WARNING);
     }
 
+    static int InputCallback(ImGuiInputTextCallbackData* data)
+    {
+        if (data->EventChar == '~' || data->EventChar == '`')
+        {
+            return 1;
+        }
+
+        if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory)
+        {
+            if (AutocompleteMatches.empty())
+            {
+                if (data->EventKey == ImGuiKey_UpArrow)
+                {
+                    if (HistoryIndex == -1 && !CommandHistory.empty())
+                    {
+                        HistoryIndex = (int)CommandHistory.size() - 1;
+                    }
+                    else if (HistoryIndex > 0)
+                    {
+                        HistoryIndex--;
+                    }
+
+                    if (HistoryIndex >= 0 && HistoryIndex < (int)CommandHistory.size())
+                    {
+                        data->DeleteChars(0, data->BufTextLen);
+                        data->InsertChars(0, CommandHistory[HistoryIndex].c_str());
+                    }
+                }
+                else if (data->EventKey == ImGuiKey_DownArrow)
+                {
+                    if (HistoryIndex != -1)
+                    {
+                        HistoryIndex++;
+                        if (HistoryIndex >= (int)CommandHistory.size())
+                        {
+                            HistoryIndex = -1;
+                            data->DeleteChars(0, data->BufTextLen);
+                        }
+                        else
+                        {
+                            data->DeleteChars(0, data->BufTextLen);
+                            data->InsertChars(0, CommandHistory[HistoryIndex].c_str());
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (data->EventKey == ImGuiKey_DownArrow)
+                {
+                    AutoIndex++;
+                    if (AutoIndex >= (int)AutocompleteMatches.size())
+                        AutoIndex = 0;
+                    return 1;
+                }
+                else if (data->EventKey == ImGuiKey_UpArrow)
+                {
+                    AutoIndex--;
+                    if (AutoIndex < 0)
+                        AutoIndex = (int)AutocompleteMatches.size() - 1;
+                    return 1;
+                }
+            }
+        }
+
+        switch (data->EventFlag)
+        {
+            case ImGuiInputTextFlags_CallbackCompletion:
+            {
+                if (AutoIndex >= 0 && AutoIndex < (int)AutocompleteMatches.size())
+                {
+                    const std::string& pick = AutocompleteMatches[AutoIndex];
+                    data->DeleteChars(0, data->BufTextLen);
+                    data->InsertChars(0, pick.c_str());
+                }
+                break;
+            }
+        }
+
+        return 0;
+    }
+
     void Initialise()
     {
-        if (!std::filesystem::is_directory(LogFileDir))
+        if (!std::filesystem::is_directory("./"))
         {
-            bool result = std::filesystem::create_directory(LogFileDir);
+            bool result = std::filesystem::create_directory("./");
             Initialised = result;
             HEN_ASSERT(result, "Couldn't create log dir");
         }
 
-        LogFile = std::ofstream(LogFilePath, std::ios::out); // overwrite any existing file
+        LogFile = std::ofstream("./console.txt", std::ios::out); // overwrite any existing file
         HEN_ASSERT(LogFile.is_open(), "Failed to open log file");
 
-        ui::GetIMGUIManager()->RegisterDrawCallback([]() {
+        ui::GetIMGUIManager()->RegisterDrawCallback([]() 
+        {
             if (!Visible || Locked)
             {
                 return;
@@ -257,14 +294,16 @@ namespace hen::console
             {
                 ImGui::SetKeyboardFocusHere();
             }
+
+            ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter | ImGuiInputTextFlags_CallbackCompletion;
         
-            if (ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter, InputCallback))
+            if (ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), flags, InputCallback))
             {
                 std::string line(InputBuffer);
                 if (!line.empty())
                 {
                     Log(std::string("[User] ") + InputBuffer, LOGLEVEL::INFO);
-                     
+                    
                     if (line.find("log ") != std::string::npos)
                     {
                         //Dont execute because this is a command for letting [User] write something into log                        
@@ -286,7 +325,6 @@ namespace hen::console
 
                         Execute(line);
                     }
-
                 
                     InputBuffer[0] = '\0';
                 
@@ -297,65 +335,82 @@ namespace hen::console
             ImGui::PopItemWidth();
         
             ImDrawList* drawList = ImGui::GetWindowDrawList();
-        
+
             std::string currentInput(InputBuffer);
             if (!currentInput.empty())
             {
                 cvar::System& system = *cvar::GetSystem();
                 std::vector<std::string> allCVarNames = system.GetAllCVarNames();
-                std::vector<std::string> matches;
             
-                matches.clear();
+                AutocompleteMatches.clear();
+                AutocompleteDisplay.clear();
             
                 for (auto& name : allCVarNames)
                 {
-                    if (name.find(currentInput) == 0)
+                    if (name.find(currentInput) == 0 && system.GetCVar(name))
                     {
-                        if (hen::cvar::CVar* cvar = system.GetCVar(name))
+                        std::string valueStr;
+                    
+                        std::visit([&](auto&& val)
                         {
-                            std::string valueStr;
-                        
-                            std::visit([&](auto&& val)
+                            using T = std::decay_t<decltype(val)>;
+                            if constexpr (std::is_same_v<T, bool>)
                             {
-                                using T = std::decay_t<decltype(val)>;
-                                if constexpr (std::is_same_v<T, bool>)
-                                    valueStr = (val ? "true" : "false");
-                                else if constexpr (std::is_same_v<T, std::string>)
-                                    valueStr = val;
-                                else
-                                    valueStr = std::to_string(val);
-                            }, cvar->Value);
-                        
-                            matches.push_back(name + " = " + valueStr);
-                        }
+                                valueStr = (val ? "true" : "false");
+                            }
+                            else if constexpr (std::is_same_v<T, std::string>)
+                            {
+                                valueStr = val;
+                            }
+                            else
+                            {
+                                valueStr = std::to_string(val);
+                            }
+                        }, system.GetCVar(name)->Value);
+                    
+                        AutocompleteMatches.push_back(name);
+                        AutocompleteDisplay.push_back(name + " " + valueStr);
                     }
                 }
             
-                if (!matches.empty())
+                if (!AutocompleteMatches.empty())
                 {
-                
                     float lineHeight = ImGui::GetTextLineHeightWithSpacing();
-                    float overlayHeight = matches.size() * lineHeight;
+                    float overlayHeight = AutocompleteDisplay.size() * lineHeight;
                     float maxWidth = 0.0f;
                 
-                    for (auto& m : matches)
+                    for (auto& m : AutocompleteDisplay)
                     {
                         float w = ImGui::CalcTextSize(m.c_str()).x;
-                        if (w > maxWidth) maxWidth = w;
+                        if (w > maxWidth) 
+                        {
+                            maxWidth = w;
+                        }
                     }
                 
                     ImVec2 inputMin = ImGui::GetItemRectMin();
                     ImVec2 pos = ImVec2(inputMin.x, inputMin.y - overlayHeight);
-                    ImVec2 size = ImVec2(maxWidth + 8.0f, overlayHeight);
+                    ImVec2 size = ImVec2(maxWidth + 12.0f, overlayHeight);
                 
                     ImU32 bgColour = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
+                    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 4.0f);
                 
-                    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 0.0f);
-                
-                    for (size_t i = 0; i < matches.size(); i++)
+                    for (size_t i = 0; i < AutocompleteDisplay.size(); i++)
                     {
-                        drawList->AddText(ImVec2(pos.x + 4.0f, pos.y + 2.0f + i * lineHeight), IM_COL32(255, 255, 255, 255), matches[i].c_str());
+                        ImVec2 itemMin(pos.x, pos.y + i * lineHeight);
+                        ImVec2 itemMax(pos.x + size.x, pos.y + (i+1) * lineHeight);
+                    
+                        if ((int)i == AutoIndex)
+                        {
+                            drawList->AddRectFilled(itemMin, itemMax, IM_COL32(100,100,120,200));
+                        }
+                    
+                        drawList->AddText(ImVec2(itemMin.x + 4.0f, itemMin.y + 2.0f), IM_COL32(255,255,255,255), AutocompleteDisplay[i].c_str());
                     }
+                }
+                else
+                {
+                    AutoIndex = -1;
                 }
             }
         

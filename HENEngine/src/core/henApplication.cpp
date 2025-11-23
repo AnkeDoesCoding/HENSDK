@@ -14,8 +14,17 @@
 namespace hen
 {
     static uint64_t LastTick, CurrentTick = 0;
+    static SDL_Window* Window;
     static std::unique_ptr<cvar::System> CurrentCVarSystem;
     static std::unique_ptr<ui::IMGUIManager> CurrentImGuiManager;
+
+    cvar::CVar cvar_fullscreen("a_fullscreen", false, hen::cvar::FLAGS_ARCHIVE, []()
+    {
+        if (Window)
+        {
+            SDL_SetWindowFullscreen(Window, cvar_fullscreen.GetBool());
+        }
+    });
 
     level::Level test;
 
@@ -39,6 +48,8 @@ namespace hen
         console::Initialise(); 
 
         HEN_ASSERT(window != nullptr, "Window is nullptr");
+
+        Window = window;
 
         renderer::Initialise(window);
 

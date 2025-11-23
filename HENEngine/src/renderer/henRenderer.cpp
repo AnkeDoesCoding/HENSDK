@@ -24,6 +24,12 @@ namespace hen::renderer
 
     static graphics::UniformBuffer LevelLightsUB;
 
+    static std::shared_ptr<graphics::VertexBuffer> PrimitiveCubeVB;
+    static std::shared_ptr<graphics::IndexBuffer> PrimitiveCubeIB;
+    
+    static std::shared_ptr<graphics::VertexBuffer> PrimitiveSphereVB;
+    static std::shared_ptr<graphics::IndexBuffer> PrimitiveSphereIB;
+
     static ShaderHandle PrimitiveShader;
 
     static float CubeVertices[] =
@@ -109,8 +115,8 @@ namespace hen::renderer
         11,19,12, 12,19,20, 12,20,13, 13,20,21,
         13,21,14, 14,21,22, 14,22,15, 15,22,23,
         15,23,16, 16,23,24, 16,24,9, 9,24,17,
-        25,17,18, 25,18,19, 25,19,20, 25,20,21,
-        25,21,22, 25,22,23, 25,23,24, 25,24,17
+        25,18,17, 25,19,18, 25,20,19, 25,21,20,
+        25,22,21, 25,23,22, 25,24,23, 25,17,24
     };
 
     struct ShaderDirLight 
@@ -247,6 +253,12 @@ namespace hen::renderer
 
         LevelLightsUB.Create(sizeof(ShaderLights), 1);
 
+        PrimitiveCubeVB = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
+        PrimitiveCubeIB = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
+        
+        PrimitiveSphereVB = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
+        PrimitiveSphereIB = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
+
         Initialised = true;
 
         console::Log("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
@@ -314,6 +326,8 @@ namespace hen::renderer
                     data.PointLights[pointLightIndex].Quadratic = quadratic;
                     data.PointLights[pointLightIndex].Intensity = lightComp.Intensity;
                     
+                    RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
+
                     pointLightIndex++;
                     data.NumberOfPointLights++;
                     break;
@@ -336,6 +350,9 @@ namespace hen::renderer
                     data.SpotLights[spotLightIndex].Constant = 1.0f;
                     data.SpotLights[spotLightIndex].Linear = linear;
                     data.SpotLights[spotLightIndex].Quadratic = quadratic;
+
+                    RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
+
 
                     spotLightIndex++;
                     data.NumberOfSpotLights++;
@@ -424,14 +441,8 @@ namespace hen::renderer
 
     void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
     {
-        static std::unique_ptr <graphics::VertexArray> cubeVertexArray;
-        static std::unique_ptr <graphics::VertexArray> sphereVertexArray;
-
-        static std::shared_ptr<graphics::VertexBuffer> cubeVB = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
-        static std::shared_ptr<graphics::IndexBuffer> cubeIB = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
-
-        static std::shared_ptr<graphics::VertexBuffer> sphereVB = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
-        static std::shared_ptr<graphics::IndexBuffer> sphereIB = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
+        static std::unique_ptr <graphics::VertexArray> cubeVA;
+        static std::unique_ptr <graphics::VertexArray> sphereVA;
 
         static graphics::BufferLayout layout = 
         {
@@ -443,15 +454,15 @@ namespace hen::renderer
         
         if (!initialised)
         {
-            cubeVertexArray = graphics::VertexArray::Create();
-            cubeVB->SetLayout(layout);
-            cubeVertexArray->AddVertexBuffer(cubeVB);
-            cubeVertexArray->SetIndexBuffer(cubeIB);
+            cubeVA = graphics::VertexArray::Create();
+            PrimitiveCubeVB->SetLayout(layout);
+            cubeVA->AddVertexBuffer(PrimitiveCubeVB);
+            cubeVA->SetIndexBuffer(PrimitiveCubeIB);
 
-            sphereVertexArray = graphics::VertexArray::Create();
-            sphereVB->SetLayout(layout);
-            sphereVertexArray->AddVertexBuffer(sphereVB);
-            sphereVertexArray->SetIndexBuffer(sphereIB);
+            sphereVA = graphics::VertexArray::Create();
+            PrimitiveSphereVB->SetLayout(layout);
+            sphereVA->AddVertexBuffer(PrimitiveSphereVB);
+            sphereVA->SetIndexBuffer(PrimitiveSphereIB);
 
             initialised = true;
         }
@@ -475,19 +486,19 @@ namespace hen::renderer
         switch (primitve)
         {
             case graphics::PRIMITIVES::CUBE:
-                cubeVertexArray->Bind();
-                CurrentRHC->DrawElements(cubeVertexArray->GetIndexBuffer()->GetCount(), 0);
+                cubeVA->Bind();
+                CurrentRHC->DrawElements(cubeVA->GetIndexBuffer()->GetCount(), 0);
                 break;
             case graphics::PRIMITIVES::SPHERE:
-                sphereVertexArray->Bind();
-                CurrentRHC->DrawElements(sphereVertexArray->GetIndexBuffer()->GetCount(), 0);
+                sphereVA->Bind();
+                CurrentRHC->DrawElements(sphereVA->GetIndexBuffer()->GetCount(), 0);
                 break;
             default:
                 break;
         }
 
-        cubeVertexArray->UnBind();
-        sphereVertexArray->UnBind();
+        cubeVA->UnBind();
+        sphereVA->UnBind();
 
         shader->UnBind();
     }
