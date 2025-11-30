@@ -249,7 +249,7 @@ namespace hen::renderer
         CurrentTextureManager = std::make_unique<TextureManager>();
         GetTextureManager() = CurrentTextureManager.get();
 
-        PrimitiveShader = CurrentShaderManager->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderVS.glsl",ENGINE_RESOURCE_PATH "shaders/GLSL/PrimitiveShaderFS.glsl");
+        PrimitiveShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/PrimitiveShaderVS.glsl", "res/engine/shaders/GLSL/PrimitiveShaderFS.glsl");
 
         LevelLightsUB.Create(sizeof(ShaderLights), 1);
 
@@ -309,69 +309,69 @@ namespace hen::renderer
 
                 switch (lightComp.Type)
                 {
-                case level::LIGHT_TYPES::POINT:
-                    if (pointLightIndex >= 100)
-                    {
-                        continue;
-                    }
-
-                    linear    = 4.5f / lightComp.Range;
-                    quadratic = 75.f / (lightComp.Range * lightComp.Range);
+                    case level::LIGHT_TYPES::POINT:
+                        if (pointLightIndex >= 100)
+                        {
+                            continue;
+                        }
                     
-                    data.PointLights[pointLightIndex].Position  = transformComp.GetPosition();
-                    data.PointLights[pointLightIndex].Colour    = lightComp.Colour;
-                    data.PointLights[pointLightIndex].Ambient   = lightComp.Ambient;
-                    data.PointLights[pointLightIndex].Constant  = 1.0f;
-                    data.PointLights[pointLightIndex].Linear    = linear;
-                    data.PointLights[pointLightIndex].Quadratic = quadratic;
-                    data.PointLights[pointLightIndex].Intensity = lightComp.Intensity;
+                            linear    = 4.5f / lightComp.Range;
+                            quadratic = 75.f / (lightComp.Range * lightComp.Range);
+                        
+                        data.PointLights[pointLightIndex].Position  = transformComp.GetPosition();
+                        data.PointLights[pointLightIndex].Colour    = lightComp.Colour;
+                        data.PointLights[pointLightIndex].Ambient   = lightComp.Ambient;
+                        data.PointLights[pointLightIndex].Constant  = 1.0f;
+                        data.PointLights[pointLightIndex].Linear    = linear;
+                        data.PointLights[pointLightIndex].Quadratic = quadratic;
+                        data.PointLights[pointLightIndex].Intensity = lightComp.Intensity;
+                        
+                        RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
                     
-                    RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
-
-                    pointLightIndex++;
-                    data.NumberOfPointLights++;
-                    break;
-                case level::LIGHT_TYPES::SPOT:
-                    if (spotLightIndex >= 100)
-                    {
-                        continue;
-                    }
-
-                    linear = 4.5 / lightComp.Range;
-                    quadratic = 75 / (lightComp.Range * lightComp.Range);
+                            pointLightIndex++;
+                            data.NumberOfPointLights++;
+                        break;
+                    case level::LIGHT_TYPES::SPOT:
+                        if (spotLightIndex >= 100)
+                        {
+                            continue;
+                        }
                     
-                    data.SpotLights[spotLightIndex].Position = transformComp.GetPosition();
-                    data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
-                    data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
-                    data.SpotLights[spotLightIndex].Colour = lightComp.Colour;
-                    data.SpotLights[spotLightIndex].InnerCutOff = glm::cos(glm::radians(lightComp.InnerCutOff));
-                    data.SpotLights[spotLightIndex].OuterCutOff = glm::cos(glm::radians(lightComp.OuterCutOff));
-                    data.SpotLights[spotLightIndex].Intensity = lightComp.Intensity;
-                    data.SpotLights[spotLightIndex].Constant = 1.0f;
-                    data.SpotLights[spotLightIndex].Linear = linear;
-                    data.SpotLights[spotLightIndex].Quadratic = quadratic;
-
-                    RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
-
-
-                    spotLightIndex++;
-                    data.NumberOfSpotLights++;
-                    break;
-                case level::LIGHT_TYPES::DIRECTIONAL:
-                    if (data.HasDirectionalLight)
-                    {
-                        continue;
-                    }
-
-                    data.DirLight.Ambient = lightComp.Ambient;
-                    data.DirLight.Colour = lightComp.Colour;
-                    data.DirLight.Direction = transformComp.GetForwardVector();
-                    data.DirLight.Intensity = lightComp.Intensity;
-
-                    data.HasDirectionalLight = true;
-                    break; 
-                default:
-                    break;
+                            linear = 4.5 / lightComp.Range;
+                            quadratic = 75 / (lightComp.Range * lightComp.Range);
+                        
+                        data.SpotLights[spotLightIndex].Position = transformComp.GetPosition();
+                        data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
+                        data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
+                        data.SpotLights[spotLightIndex].Colour = lightComp.Colour;
+                        data.SpotLights[spotLightIndex].InnerCutOff = glm::cos(glm::radians(lightComp.InnerCutOff));
+                        data.SpotLights[spotLightIndex].OuterCutOff = glm::cos(glm::radians(lightComp.OuterCutOff));
+                        data.SpotLights[spotLightIndex].Intensity = lightComp.Intensity;
+                        data.SpotLights[spotLightIndex].Constant = 1.0f;
+                        data.SpotLights[spotLightIndex].Linear = linear;
+                        data.SpotLights[spotLightIndex].Quadratic = quadratic;
+                    
+                            RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
+                    
+                    
+                            spotLightIndex++;
+                            data.NumberOfSpotLights++;
+                        break;
+                    case level::LIGHT_TYPES::DIRECTIONAL:
+                        if (data.HasDirectionalLight)
+                        {
+                            continue;
+                        }
+                    
+                            data.DirLight.Ambient = lightComp.Ambient;
+                            data.DirLight.Colour = lightComp.Colour;
+                        data.DirLight.Direction = transformComp.GetForwardVector();
+                        data.DirLight.Intensity = lightComp.Intensity;
+                    
+                            data.HasDirectionalLight = true;
+                            break; 
+                    default:
+                        break;
                 }
             }
 

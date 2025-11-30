@@ -25,9 +25,9 @@ void Editor::Initialise(SDL_Window* window)
 
     transform.SetScale(glm::vec3(0.15f));
 
-    importer::ImportModel(ENGINE_RESOURCE_PATH "models/sponza/sponza.obj", mesh);
+    importer::ImportModel("res/models/sponza/sponza.obj", mesh);
 
-    mat.Shader = hen::renderer::GetShaderManager()->Load(ENGINE_RESOURCE_PATH "shaders/GLSL/BaseShaderVS.glsl", ENGINE_RESOURCE_PATH "shaders/GLSL/BaseShaderFS.glsl");
+    mat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
     LightEnt = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("light"));
 
@@ -94,8 +94,29 @@ void Editor::Initialise(SDL_Window* window)
                 ImGui::Spacing();
 
                 ImGui::DragFloat3("Position", &transform.Position.x, 0.1f);
+
+                ImGui::SameLine();
+                if (ImGui::Button("Reset##pos"))
+                {
+                    transform.Position = glm::vec3(0.0f);
+                }
+
                 ImGui::DragFloat3("Rotation", &rotationDeg.x, 0.5f);
+
+                ImGui::SameLine();
+                if (ImGui::Button("Reset##rot"))
+                {
+                    transform.Rotation = glm::vec3(0.0f);
+                    rotationDeg = glm::degrees(transform.Rotation);  
+                }
+
                 ImGui::DragFloat3("Scale", &transform.Scale.x, 0.1f);
+
+                ImGui::SameLine();
+                if (ImGui::Button("Reset##scale"))
+                {
+                    transform.Scale = glm::vec3(1.0f);
+                }
 
                 transform.SetRotation(glm::radians(rotationDeg));
 

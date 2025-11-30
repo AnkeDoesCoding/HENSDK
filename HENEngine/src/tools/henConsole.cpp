@@ -34,11 +34,9 @@ namespace hen::console
 
     static char InputBuffer[1024] = "";
 
-    static std::vector<std::string> CommandHistory;
     static std::vector<std::string> AutocompleteMatches;
     static std::vector<std::string> AutocompleteDisplay;
-    static int HistoryIndex = -1;
-    static int AutoIndex = -1;
+    static int AutoCompleteIndex = -1;
 
     static std::string GetCurrentTime()
     {
@@ -157,81 +155,41 @@ namespace hen::console
 
     static int InputCallback(ImGuiInputTextCallbackData* data)
     {
-        if (data->EventChar == '~' || data->EventChar == '`')
+        if(data->EventChar == '~' || data->EventChar == '`')
         {
             return 1;
-        }
-
-        if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory)
-        {
-            if (AutocompleteMatches.empty())
-            {
-                if (data->EventKey == ImGuiKey_UpArrow)
-                {
-                    if (HistoryIndex == -1 && !CommandHistory.empty())
-                    {
-                        HistoryIndex = (int)CommandHistory.size() - 1;
-                    }
-                    else if (HistoryIndex > 0)
-                    {
-                        HistoryIndex--;
-                    }
-
-                    if (HistoryIndex >= 0 && HistoryIndex < (int)CommandHistory.size())
-                    {
-                        data->DeleteChars(0, data->BufTextLen);
-                        data->InsertChars(0, CommandHistory[HistoryIndex].c_str());
-                    }
-                }
-                else if (data->EventKey == ImGuiKey_DownArrow)
-                {
-                    if (HistoryIndex != -1)
-                    {
-                        HistoryIndex++;
-                        if (HistoryIndex >= (int)CommandHistory.size())
-                        {
-                            HistoryIndex = -1;
-                            data->DeleteChars(0, data->BufTextLen);
-                        }
-                        else
-                        {
-                            data->DeleteChars(0, data->BufTextLen);
-                            data->InsertChars(0, CommandHistory[HistoryIndex].c_str());
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (data->EventKey == ImGuiKey_DownArrow)
-                {
-                    AutoIndex++;
-                    if (AutoIndex >= (int)AutocompleteMatches.size())
-                        AutoIndex = 0;
-                    return 1;
-                }
-                else if (data->EventKey == ImGuiKey_UpArrow)
-                {
-                    AutoIndex--;
-                    if (AutoIndex < 0)
-                        AutoIndex = (int)AutocompleteMatches.size() - 1;
-                    return 1;
-                }
-            }
-        }
-
+        } 
+         
         switch (data->EventFlag)
         {
             case ImGuiInputTextFlags_CallbackCompletion:
-            {
-                if (AutoIndex >= 0 && AutoIndex < (int)AutocompleteMatches.size())
+                if (AutoCompleteIndex >= 0 && AutoCompleteIndex < (int)AutocompleteMatches.size())
                 {
-                    const std::string& pick = AutocompleteMatches[AutoIndex];
+                    const std::string& pick = AutocompleteMatches[AutoCompleteIndex];
                     data->DeleteChars(0, data->BufTextLen);
                     data->InsertChars(0, pick.c_str());
                 }
                 break;
-            }
+            case ImGuiInputTextFlags_CallbackHistory:
+                if (data->EventKey == ImGuiKey_DownArrow)
+                {
+                    AutoCompleteIndex++;
+                    if (AutoCompleteIndex >= (int)AutocompleteMatches.size())
+                    {
+                        AutoCompleteIndex = 0;
+                    }
+                    return 1;
+                }
+                else if (data->EventKey == ImGuiKey_UpArrow)
+                {
+                    AutoCompleteIndex--;
+                    if (AutoCompleteIndex < 0)
+                    {
+                        AutoCompleteIndex = (int)AutocompleteMatches.size() - 1;
+                    }
+                    return 1;
+                }
+                break;
         }
 
         return 0;
@@ -295,33 +253,43 @@ namespace hen::console
                 ImGui::SetKeyboardFocusHere();
             }
 
-            ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter | ImGuiInputTextFlags_CallbackCompletion;
+            ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackCharFilter;
         
             if (ImGui::InputText(" ", InputBuffer, IM_ARRAYSIZE(InputBuffer), flags, InputCallback))
             {
                 std::string line(InputBuffer);
                 if (!line.empty())
                 {
-                    Log(std::string("[User] ") + InputBuffer, LOGLEVEL::INFO);
-                    
-                    if (line.find("log ") != std::string::npos)
+                    if (line.find("log") != std::string::npos)
                     {
-                        //Dont execute because this is a command for letting [User] write something into log                        
+                        //Dont execute because this is a command for letting [User] write something into log 
+
+                        const std::string toRemove = "log ";
+                        size_t pos = line.find(toRemove);
+                        if (pos != std::string::npos)
+                        {
+                            line.erase(pos, toRemove.length());
+                        }
+
+                        Log("[User] " + line, LOGLEVEL::INFO);
+
+                    }
+                    else if (line.find("list") != std::string::npos)
+                    {
+                        Log("[User] " + line, LOGLEVEL::INFO);
+                        Log(cvar::GetSystem()->ListCVars());
                     }
                     else if (line.find("quit") != std::string::npos)
                     {
+                        Log("[User] " + line, LOGLEVEL::INFO);
+
                         SDL_Event event;
                         event.type = SDL_EVENT_QUIT;
                         SDL_PushEvent(&event);
                     }
                     else
                     {
-                        if (CommandHistory.empty() || CommandHistory.back() != InputBuffer)
-                        {
-                            CommandHistory.push_back(InputBuffer);
-                        }
-                    
-                        HistoryIndex = -1;
+                        Log("[User] " + line, LOGLEVEL::INFO);
 
                         Execute(line);
                     }
@@ -393,14 +361,14 @@ namespace hen::console
                     ImVec2 size = ImVec2(maxWidth + 12.0f, overlayHeight);
                 
                     ImU32 bgColour = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
-                    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 4.0f);
+                    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 0.0f);
                 
                     for (size_t i = 0; i < AutocompleteDisplay.size(); i++)
                     {
                         ImVec2 itemMin(pos.x, pos.y + i * lineHeight);
                         ImVec2 itemMax(pos.x + size.x, pos.y + (i+1) * lineHeight);
                     
-                        if ((int)i == AutoIndex)
+                        if ((int)i == AutoCompleteIndex)
                         {
                             drawList->AddRectFilled(itemMin, itemMax, IM_COL32(100,100,120,200));
                         }
@@ -410,7 +378,7 @@ namespace hen::console
                 }
                 else
                 {
-                    AutoIndex = -1;
+                    AutoCompleteIndex = -1;
                 }
             }
         

@@ -86,18 +86,53 @@ namespace hen::cvar
 
     std::string System::ListCVars() const
     {
-        std::stringstream sString;
-
-        size_t count = 0;
-        size_t total = CVars.size();
-
-        for (auto it = CVars.begin(); it != CVars.end(); ++it) 
+        // sort cvars alphabetically
+        std::vector<std::string> keys;
+        keys.reserve(CVars.size());
+        for (auto &pair : CVars)
         {
-            sString << it->first << " = ";
+            keys.push_back(pair.first);
+        }
+        std::sort(keys.begin(), keys.end());
+
+        auto getPrefix = [](const std::string& key) -> std::string 
+        {
+            size_t pos = key.find('_');
+            if (pos == std::string::npos)
+            {
+                return key;
+            }
+            return key.substr(0, pos);
+        };
+
+        std::stringstream sString;
+        std::string lastPrefix;
+
+        for (size_t i = 0; i < keys.size(); i++)
+        {
+            const std::string& key = keys[i];
+            const auto& cvar = CVars.at(key);
+
+            std::string prefix = getPrefix(key);
+
+            // add dividers after each prefix (r_, a_, etc.)
+            if (prefix != lastPrefix)
+            {
+                if (!lastPrefix.empty())
+                {
+                    sString << "\n";
+                }
+
+                sString << "---- " << prefix << " ----\n\n";
+                lastPrefix = prefix;
+            }
+
+            sString << key << " = ";
 
             std::visit([&](auto&& val)
             {
                 using T = std::decay_t<decltype(val)>;
+
                 if constexpr (std::is_same_v<T, bool>)
                 {
                     sString << (val ? "true" : "false");
@@ -110,13 +145,14 @@ namespace hen::cvar
                 {
                     sString << std::to_string(val);
                 }
-            }, it->second->Value);
+            }, cvar->Value);
 
-            if (std::next(it) != CVars.end()) 
+            if (i + 1 < keys.size())
             {
                 sString << "\n";
             }
         }
+
         return sString.str();
     }
 

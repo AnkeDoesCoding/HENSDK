@@ -8,17 +8,18 @@
 
 <br>
 
-HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so it is recommended that you don't use this for a full-feature game.
+HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so it is recommended that you don't use this for a full-feature game or for any game really.
+
+### Supported Platforms
+
+* Windows
+* Debian based Linux distros
 
 ## Showcase
 
 <img src = "res/SponzaPicture1.png">
 
 ## Building
-
-### Supported Platforms
-
-HEN SDK supports Windows and Ubuntu Linux.
 
 ### Prerequisiteries
 
@@ -35,9 +36,8 @@ You will need a compiler for your platform:
 You will also need the following:
 * [CMake](https://github.com/Kitware/CMake) <br>
 * [Git](https://git-scm.com/downloads)
-* `libgl-dev` (if your on Linux)
+* Linux development libraries (if you're on linux)
 
 ### Configuring and Compiling
 
-Once you have everything that is needed, you should be able to clone the repository and open it up in VSCode. <br> 
-From VSCode, you can select the configuration preset, configure and compile the SDK.
+WIP
