@@ -188,7 +188,11 @@ void Editor::Initialise(SDL_Window* window)
                     ImGui::DragFloat("Outer Cut Off", &light.OuterCutOff, 0.1f, 0.0f);
                 }
 
-                
+                ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+                ImGui::Spacing();
             }
         }
 

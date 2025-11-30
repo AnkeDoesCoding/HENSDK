@@ -18,6 +18,7 @@ HEN SDK is a small WIP SDK for 3D games. It is currently a learning project so i
 ## Showcase
 
 <img src = "res/SponzaPicture1.png">
+<img src = "res/EditorPicture1.png">
 
 ## Building
 
@@ -36,7 +37,7 @@ You will need a compiler for your platform:
 You will also need the following:
 * [CMake](https://github.com/Kitware/CMake) <br>
 * [Git](https://git-scm.com/downloads)
-* Linux development libraries (if you're on linux)
+* Linux development libraries
 
 ### Configuring and Compiling
 
