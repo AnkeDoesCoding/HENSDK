@@ -3,6 +3,7 @@
 #include "tools/henConsole.h"
 
 #include <sstream>
+#include <algorithm>
 
 namespace hen::cvar
 {
