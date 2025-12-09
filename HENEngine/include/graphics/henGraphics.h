@@ -47,7 +47,9 @@ namespace hen::graphics
         unsigned char* Data;
         unsigned int ID = 0;
 
-        void Load(const char* path);
+        void Load(const char* path); // Load from a path
+        void Load(const unsigned char* data, int size, int width, int height, int components); // Load from memory
+
         void Destroy();
 
         ~Texture();

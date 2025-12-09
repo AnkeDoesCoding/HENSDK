@@ -54,12 +54,13 @@ namespace hen::graphics
 
     void Texture::Load(const char* path)
     {
-        glGenTextures(1, &ID);
-
         Data = stbi_load(path, &Width, &Height, &Components, 0);
         if (Data)
         {
+            glGenTextures(1, &ID);
+
             GLenum format;
+
             if (Components == 1)
             {
                 format = GL_R8;
@@ -82,8 +83,6 @@ namespace hen::graphics
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            Destroy();
-
         }
         else
         {
@@ -91,6 +90,36 @@ namespace hen::graphics
             
             Destroy();
         }
+    }
+
+    void Texture::Load(const unsigned char* data, int size, int width, int height, int components)
+    {
+        glGenTextures(1, &ID);
+
+        GLenum format;
+
+        if (components == 1)
+        {
+            format = GL_R8;
+        }
+        else if (components == 3)
+        {
+            format = GL_RGB;
+        }
+        else if (components == 4)
+        {
+            format = GL_RGBA;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, ID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     }
 
     Texture::~Texture()

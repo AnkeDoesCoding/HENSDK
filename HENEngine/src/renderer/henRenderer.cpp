@@ -368,8 +368,8 @@ namespace hen::renderer
                         data.DirLight.Direction = transformComp.GetForwardVector();
                         data.DirLight.Intensity = lightComp.Intensity;
                     
-                            data.HasDirectionalLight = true;
-                            break; 
+                        data.HasDirectionalLight = true;
+                        break; 
                     default:
                         break;
                 }

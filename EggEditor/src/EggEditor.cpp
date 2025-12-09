@@ -25,7 +25,7 @@ void Editor::Initialise(SDL_Window* window)
 
     transform.SetScale(glm::vec3(0.15f));
 
-    importer::ImportModel("res/models/sponza/sponza.obj", mesh);
+    importer::ImportModel("res/models/sponza/sponza.glb", mesh);
 
     mat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
