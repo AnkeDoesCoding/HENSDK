@@ -17,6 +17,34 @@ namespace hen::renderer
         return std::hash<std::string>{}(a);
     }
 
+    uint64_t HashTexture(const unsigned char* data, int size, int width, int height, int components)
+    {
+        uint64_t hash = 1469598103934665603ULL; // thanks chat gpt :)
+
+        auto hashByte = [&](uint64_t v)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                hash ^= (v & 0xFF);
+                hash *= 1099511628211ULL; // thanks again chat gpt :)
+                v >>= 8;
+            }
+        };
+
+        hashByte(width);
+        hashByte(height);
+        hashByte(components);
+        hashByte(size);
+
+        for (int i = 0; i < size; i++)
+        {
+            hash ^= data[i];
+            hash *= 1099511628211ULL;
+        }
+
+        return hash;
+    }
+
     ShaderHandle ShaderManager::Load(const char* vsPath, const char* fsPath)
     {
         size_t key = HashStrings(vsPath, fsPath);
@@ -119,6 +147,42 @@ namespace hen::renderer
             index = static_cast<uint32_t>(m_Textures.size());
             m_Textures.emplace_back();                         
             m_Textures[index].Texture.Load(texPath);  
+            m_Textures[index].Alive = true;
+            m_Textures[index].Generation = 1;
+        }
+
+        m_PathToIndex[key] = index;
+
+        return TextureHandle{ index, m_Textures[index].Generation };
+    }
+
+    TextureHandle TextureManager::Load(const unsigned char* data, int size, int width, int height, int components)
+    {
+        size_t key = HashTexture(data, size, width, height, components);
+
+        auto it = m_PathToIndex.find(key);
+        if (it != m_PathToIndex.end())
+        {
+            uint32_t index = it->second;
+            return TextureHandle{ index, m_Textures[index].Generation };
+        }
+
+        uint32_t index;
+        if (!m_FreeList.empty())
+        {
+            index = m_FreeList.back();
+            m_FreeList.pop_back();
+
+            m_Textures[index].Texture.Destroy();                
+            m_Textures[index].Texture.Load(data, size, width, height, components); 
+            m_Textures[index].Alive = true;
+            m_Textures[index].Generation++;
+        }
+        else
+        {
+            index = static_cast<uint32_t>(m_Textures.size());
+            m_Textures.emplace_back();                         
+            m_Textures[index].Texture.Load(data, size, width, height, components);  
             m_Textures[index].Alive = true;
             m_Textures[index].Generation = 1;
         }

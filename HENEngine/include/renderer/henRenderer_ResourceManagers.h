@@ -51,6 +51,8 @@ namespace hen::renderer
     {
     public:
         TextureHandle Load(const char* texPath);
+        TextureHandle Load(const unsigned char* data, int size, int width, int height, int components);
+
         graphics::Texture* Get(const TextureHandle& handle);
         void Remove(const TextureHandle& handle); 
 
