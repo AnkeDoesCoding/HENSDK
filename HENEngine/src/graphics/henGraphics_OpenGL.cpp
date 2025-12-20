@@ -295,7 +295,7 @@ namespace hen::graphics
         }
         catch(std::ifstream::failure& e)
         {
-            console::Log("[hen::Shader] Shader source file not successfully read: " + std::string(infoLog) , console::LOGLEVEL::ERROR);
+            HEN_ERROR("[hen::Shader] Shader source file not successfully read: " + std::string(infoLog));
         }
 
         const char* vsCode = vsSource.c_str();
@@ -397,7 +397,7 @@ namespace hen::graphics
                 std::string msg = "[hen::Shader] Fragment shader compilation failed: \n";
                 msg += infoLog;
 
-                console::Log(msg, console::LOGLEVEL::ERROR);
+                HEN_ERROR(msg);
             }
             break;
         case SHADER_TYPES::VERTEX:
@@ -409,7 +409,7 @@ namespace hen::graphics
                 std::string msg = "[hen::Shader] Vertex shader compilation failed: \n";
                 msg += infoLog;
 
-                console::Log(msg, console::LOGLEVEL::ERROR);
+                HEN_ERROR(msg);
             }
             break;
         case SHADER_TYPES::PROGRAM:
@@ -421,7 +421,7 @@ namespace hen::graphics
                 std::string msg = "[hen::Shader] Shader program compilation failed: \n";
                 msg += infoLog;
                 
-                console::Log(msg, console::LOGLEVEL::ERROR);
+                HEN_ERROR(msg);
             }
             break;
         default:

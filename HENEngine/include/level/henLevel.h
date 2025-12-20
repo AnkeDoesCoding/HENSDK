@@ -49,9 +49,16 @@ namespace hen::level
         Entity(const Entity& other);
         Entity(entt::entity handle, Level* level);
 
+        bool IsValid() const
+        {
+            return m_Handle != entt::null && m_Level != nullptr && m_Level->m_Registry.valid(m_Handle);
+        }
+
+
         template<typename Component>
         bool HasComponent() const
         {
+            HEN_ASSERT(IsValid(), "Entity isn't valid");
             return m_Level->m_Registry.valid(m_Handle) && m_Level->m_Registry.all_of<Component>(m_Handle);
         }      
 
@@ -72,7 +79,6 @@ namespace hen::level
         template<typename Component>
         void RemoveComponent()
         {
-            
             HEN_ASSERT(HasComponent<Component>(), "Entity doesn't have this component");
             
             m_Level->m_Registry.remove<Component>(m_Handle);
@@ -80,7 +86,7 @@ namespace hen::level
 
         operator bool() const
         {
-            return m_Handle != entt::null;
+            return IsValid();
         }
 
         operator entt::entity() const 

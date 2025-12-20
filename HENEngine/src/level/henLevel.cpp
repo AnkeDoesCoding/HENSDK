@@ -30,6 +30,13 @@ namespace hen::level
 
     Entity Level::CreateEntity(const std::string& name)
     {
+        if (!GetActiveLevel())
+        {
+            HEN_ERROR("[hen::level] Attempted to create entity '" + name + "' but no level found");
+
+            return Entity{};
+        }
+
         Entity entity = {m_Registry.create(), this};
 
         entity.AddComponent<NameComponent>(name.empty() ? "unknown" : name);

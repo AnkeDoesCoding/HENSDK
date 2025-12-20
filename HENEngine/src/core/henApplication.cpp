@@ -26,8 +26,6 @@ namespace hen
         }
     });
 
-    level::Level test;
-
     Application::Application()
     {
 
@@ -87,12 +85,12 @@ namespace hen
 
         infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
 
-        console::Log(infoStr, console::LOGLEVEL::INFO);
+        HEN_LOG(infoStr);
     }
 
     void Application::Shutdown()
     {
-        console::Log("[hen::Application] Shutting down...");
+        HEN_LOG("[hen::Application] Shutting down...");
         console::Shutdown();
 
         ui::GetIMGUIManager()->Shutdown();

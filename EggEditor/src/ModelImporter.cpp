@@ -203,12 +203,12 @@ namespace importer
 
         if (!warn.empty())
         {
-            hen::console::Log("[gltf] " + warn, hen::console::LOGLEVEL::WARNING);
+            HEN_WARN("[gltf] " + warn);
         }
 
         if (!ok)
         {
-            hen::console::Log("[gltf] " + err, hen::console::LOGLEVEL::ERROR);
+            HEN_ERROR("[gltf] " + err);
             return;
         }
 
@@ -259,14 +259,14 @@ namespace importer
 
                 if (!hasPositions)
                 {
-                    hen::console::Log("[gltf] primitive missing POSITION", hen::console::LOGLEVEL::ERROR);
+                    HEN_ERROR("[gltf] primitive missing POSITION");
                     continue;
                 }
 
                 const tinygltf::Accessor& accPos = model.accessors[prim.attributes.at("POSITION")];
                 if (!ReadAccessorAsFloats(pos, model, accPos))
                 {
-                    hen::console::Log("[gltf] failed to read POSITION accessor", hen::console::LOGLEVEL::ERROR);
+                    HEN_ERROR("[gltf] failed to read POSITION accessor");
                     continue;
                 }
 
@@ -356,7 +356,7 @@ namespace importer
                     const tinygltf::Accessor& accIdx = model.accessors[prim.indices];
                     if (accIdx.count == 0)
                     {
-                        hen::console::Log("[gltf] primitive has empty index accessor", hen::console::LOGLEVEL::WARNING);
+                        HEN_WARN("[gltf] primitive has empty index accessor");
                         subMesh.IndexCount = 0;
                     }
                     else
@@ -389,7 +389,7 @@ namespace importer
                                     break;
                                 }
                                 default:
-                                    hen::console::Log("[gltf] unsupported index component type", hen::console::LOGLEVEL::ERROR);
+                                    HEN_ERROR("[gltf] unsupported index component type");
                                     break;
                             }
                             meshComp.Indices.push_back(vertexStart + idx);
@@ -417,7 +417,7 @@ namespace importer
 
         meshComp.CreateRenderData();
 
-        hen::console::Log("[importer] mesh import took " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[importer] mesh import took " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
     
 }

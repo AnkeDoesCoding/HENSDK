@@ -6,9 +6,6 @@
 #include "core/henTimer.h"
 #include "tools/henConsole.h"
 
-#include <cassert>
-#include <cmath>
-
 namespace hen
 {
     RHC_OpenGL::RHC_OpenGL(SDL_Window* window)
@@ -37,7 +34,7 @@ namespace hen
         if (arguments::HasArgument("debugcontext"))
         {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-            console::Log("[hen::RHC_OpenGL] OpenGL context will be created in debug mode");
+            HEN_LOG("[hen::RHC_OpenGL] OpenGL context will be created in debug mode");
         }
 
         SDL_GLContext context = SDL_GL_CreateContext(m_Window);
@@ -51,7 +48,7 @@ namespace hen
 
         Initialised = true;
 
-        console::Log("[hen::RHC_OpenGL] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::RHC_OpenGL] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
     void RHC_OpenGL::Clear()

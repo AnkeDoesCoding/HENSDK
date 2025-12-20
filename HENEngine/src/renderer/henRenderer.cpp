@@ -223,7 +223,7 @@ namespace hen::renderer
         {
             case BACKEND::NONE:
                 CurrentRHC = nullptr;
-                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
                 break;
             case BACKEND::OPENGL:
                 CurrentRHC = std::make_unique<RHC_OpenGL>(window);
@@ -232,10 +232,10 @@ namespace hen::renderer
                 break;
             case BACKEND::VULKAN: 
                 CurrentRHC = nullptr; // hehe, set that mf to nullptr as a fuck you
-                console::Log("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
+                HEN_ERROR("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
                 CurrentRHC = nullptr;
-                console::Log("[hen::renderer] BACKEND::????? how the fuck did we get here?");
+                HEN_ERROR("[hen::renderer] BACKEND::????? how the fuck did we get here?");
                 break;
         }
         
@@ -261,7 +261,7 @@ namespace hen::renderer
 
         Initialised = true;
 
-        console::Log("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
     void Run()
@@ -315,8 +315,8 @@ namespace hen::renderer
                             continue;
                         }
                     
-                            linear    = 4.5f / lightComp.Range;
-                            quadratic = 75.f / (lightComp.Range * lightComp.Range);
+                        linear    = 4.5f / lightComp.Range;
+                        quadratic = 75.f / (lightComp.Range * lightComp.Range);
                         
                         data.PointLights[pointLightIndex].Position  = transformComp.GetPosition();
                         data.PointLights[pointLightIndex].Colour    = lightComp.Colour;
@@ -328,8 +328,8 @@ namespace hen::renderer
                         
                         RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
                     
-                            pointLightIndex++;
-                            data.NumberOfPointLights++;
+                        pointLightIndex++;
+                        data.NumberOfPointLights++;
                         break;
                     case level::LIGHT_TYPES::SPOT:
                         if (spotLightIndex >= 100)
@@ -337,8 +337,8 @@ namespace hen::renderer
                             continue;
                         }
                     
-                            linear = 4.5 / lightComp.Range;
-                            quadratic = 75 / (lightComp.Range * lightComp.Range);
+                        linear = 4.5 / lightComp.Range;
+                        quadratic = 75 / (lightComp.Range * lightComp.Range);
                         
                         data.SpotLights[spotLightIndex].Position = transformComp.GetPosition();
                         data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
@@ -351,11 +351,11 @@ namespace hen::renderer
                         data.SpotLights[spotLightIndex].Linear = linear;
                         data.SpotLights[spotLightIndex].Quadratic = quadratic;
                     
-                            RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
+                        RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
                     
                     
-                            spotLightIndex++;
-                            data.NumberOfSpotLights++;
+                        spotLightIndex++;
+                        data.NumberOfSpotLights++;
                         break;
                     case level::LIGHT_TYPES::DIRECTIONAL:
                         if (data.HasDirectionalLight)
@@ -363,8 +363,8 @@ namespace hen::renderer
                             continue;
                         }
                     
-                            data.DirLight.Ambient = lightComp.Ambient;
-                            data.DirLight.Colour = lightComp.Colour;
+                        data.DirLight.Ambient = lightComp.Ambient;
+                        data.DirLight.Colour = lightComp.Colour;
                         data.DirLight.Direction = transformComp.GetForwardVector();
                         data.DirLight.Intensity = lightComp.Intensity;
                     

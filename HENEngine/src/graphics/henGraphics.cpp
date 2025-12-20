@@ -86,7 +86,7 @@ namespace hen::graphics
         }
         else
         {
-            console::Log("Failed to load texture", console::LOGLEVEL::ERROR);
+            HEN_ERROR("Failed to load texture");
             
             Destroy();
         }
@@ -224,7 +224,7 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
                 return nullptr;
                 break;
             case renderer::BACKEND::OPENGL:
@@ -241,7 +241,7 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
                 return nullptr;
                 break;
             case renderer::BACKEND::OPENGL:
@@ -258,7 +258,7 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
                 return nullptr;
                 break;
             case renderer::BACKEND::OPENGL:
@@ -288,7 +288,7 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
                 m_BackendImpl = nullptr;
                 break;
             case renderer::BACKEND::OPENGL:
@@ -458,7 +458,7 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
-                console::Log("[hen::renderer] BACKEND::NONE doesn't exist", console::LOGLEVEL::ERROR);
+                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
                 m_BackendImpl = nullptr;
                 break;
             case renderer::BACKEND::OPENGL:

@@ -28,7 +28,7 @@ namespace hen::cvar
     {
         if ((Flag & FLAGS_PROTECTED) && cvar_ProtectionEnabled.GetBool())
         {
-            console::Log("[hen::cvar] CVar " + Name + " is a protected CVar", console::LOGLEVEL::WARNING);
+            HEN_WARN("[hen::cvar] CVar " + Name + " is a protected CVar");
             return;
         }
 

@@ -180,7 +180,7 @@ namespace hen::input
 
         Initialised = true;
 
-        console::Log("[hen::input] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::input] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
     void HandleSDLEvent(SDL_Event& event)

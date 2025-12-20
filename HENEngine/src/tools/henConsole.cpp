@@ -58,7 +58,7 @@ namespace hen::console
             return false;
         }
 
-        console::Log("[hen::console] Invalid bool string: " + inputString, console::LOGLEVEL::WARNING);
+        HEN_WARN("[hen::console] Invalid bool string: " + inputString);
         return false;
     }
 
@@ -69,15 +69,15 @@ namespace hen::console
             using T = std::decay_t<decltype(val)>;
             if constexpr (std::is_same_v<T, std::string>)
             {
-                console::Log("[hen::console] " + cvar->Name + " = " + val);
+                HEN_LOG("[hen::console] " + cvar->Name + " = " + val);
             }
             else if constexpr (std::is_same_v<T, bool>)
             {
-                console::Log("[hen::console] " + cvar->Name + " = " + std::string(val ? "true" : "false"));
+                HEN_LOG("[hen::console] " + cvar->Name + " = " + std::string(val ? "true" : "false"));
             }
             else
             {
-                console::Log("[hen::console] " + cvar->Name + " = " + std::to_string(val));
+                HEN_LOG("[hen::console] " + cvar->Name + " = " + std::to_string(val));
             }
         }, cvar->Value);
     }
@@ -110,7 +110,7 @@ namespace hen::console
             {
                 if ((cvar->Flag & cvar::FLAGS_PROTECTED) && cvar::cvar_ProtectionEnabled.GetBool())
                 {
-                    console::Log("[hen::console] Protection is enabled, type protection_enabled 0 to disable it", console::LOGLEVEL::WARNING);
+                    HEN_WARN("[hen::console] Protection is enabled, type protection_enabled 0 to disable it");
                     return;
                 }
 
@@ -141,7 +141,7 @@ namespace hen::console
                 }
                 catch (...) 
                 {
-                    console::Log("[hen::console] Invalid type for " + cvar->Name, console::LOGLEVEL::WARNING);
+                    HEN_ERROR("[hen::console] Invalid type for " + cvar->Name);
                     return;
                 }
 
@@ -150,7 +150,7 @@ namespace hen::console
             return;
         }
 
-        console::Log("[hen::console] Unknown CVar: " + cvarName, console::LOGLEVEL::WARNING);
+        HEN_WARN("[hen::console] Unknown CVar: " + cvarName);
     }
 
     static int InputCallback(ImGuiInputTextCallbackData* data)
@@ -231,7 +231,10 @@ namespace hen::console
                     color = ImVec4(1,1,0,1);
                     break;
                 case LOGLEVEL::ERROR:
-                    color = ImVec4(1,0,0,1);
+                case LOGLEVEL::ASSERT:
+                    color = ImVec4(1,0,0,1);                    
+                    break;
+                default:
                     break;
                 }
             
@@ -424,6 +427,10 @@ namespace hen::console
             break;
         case LOGLEVEL::ERROR:
             levelText = "ERROR: ";
+            textColour = "\x1b[31m";
+            break;
+        case LOGLEVEL::ASSERT:
+            levelText = "ASSERTION FAILED: ";
             textColour = "\x1b[31m";
             break;
         default:

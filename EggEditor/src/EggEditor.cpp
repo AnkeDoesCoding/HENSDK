@@ -7,6 +7,8 @@ static float MouseSensitivity = 4.0f;
 static float CameraVelocity = 0.0f;
 static float CameraSpeed = 1.0f;
 
+static hen::level::Level testLevel;
+
 static hen::level::Entity* ModelEnt;
 static hen::level::Entity* LightEnt;
 static hen::level::Entity* LightEnt2;

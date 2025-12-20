@@ -5,7 +5,11 @@
 #include <filesystem>
 #include <cassert>
 
-#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg) + " (FILE: " + __FILE__ + ") (LINE: " + std::to_string(__LINE__) + ")", hen::console::LOGLEVEL::ERROR), hen::console::Shutdown(), assert(cond)))
+#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg) + " ( FILE: " + __FILE__ + " || LINE: " + std::to_string(__LINE__) + " )", hen::console::LOGLEVEL::ASSERT), hen::console::Shutdown(), assert(cond)))
+
+#define HEN_LOG(msg) hen::console::Log(msg, hen::console::LOGLEVEL::INFO)
+#define HEN_WARN(msg) hen::console::Log(msg, hen::console::LOGLEVEL::WARNING)
+#define HEN_ERROR(msg) hen::console::Log(msg, hen::console::LOGLEVEL::ERROR)
 
 #if DEBUG
     #if PLATFORM_WINDOWS
@@ -32,7 +36,8 @@ namespace hen::console
     {
         INFO,
         WARNING,
-        ERROR
+        ERROR,
+        ASSERT
     };
 
     void Initialise();
