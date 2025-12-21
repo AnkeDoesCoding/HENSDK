@@ -125,18 +125,36 @@ namespace hen::graphics
     class VertexArray
 	{
 	public:
-		virtual ~VertexArray() = default;
+		~VertexArray();
 
-		virtual void Bind() const = 0;
-		virtual void UnBind() const = 0;
+        bool IsBackendValid() const;
 
-		virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) = 0;
-		virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) = 0;
+		void Bind() const;
+		void UnBind() const;
 
-		virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const = 0;
-		virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const = 0;
+		void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer);
+		void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer);
 
-		static std::unique_ptr<VertexArray> Create();
+		const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const;
+		const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const;
+
+		void Create();
+
+    public:
+        struct Backend
+        {
+            virtual void Bind() const = 0;
+		    virtual void UnBind() const = 0;
+
+		    virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) = 0;
+		    virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) = 0;
+
+		    virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const = 0;
+		    virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const = 0;
+        };
+
+    private:
+        std::unique_ptr<Backend> m_BackendImpl;
 	};
 
     class UniformBuffer
@@ -170,7 +188,6 @@ namespace hen::graphics
         Shader(const char* vsPath, const char* fsPath);
         Shader(Shader&&) noexcept = default;
         ~Shader();
-
 
         bool IsBackendValid() const;    
 

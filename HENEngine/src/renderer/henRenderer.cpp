@@ -398,9 +398,9 @@ namespace hen::renderer
                 int windowWidth, windowHeight;
                 SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-                if (meshComp.VertexArray)
+                if (meshComp.VertexArray.IsBackendValid())
                 {
-                    meshComp.VertexArray->Bind();
+                    meshComp.VertexArray.Bind();
 
                     for (auto& submesh : meshComp.SubMeshes)
                     {
@@ -431,7 +431,7 @@ namespace hen::renderer
                         CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
                     }
 
-                    meshComp.VertexArray->UnBind();
+                    meshComp.VertexArray.UnBind();
                     shader->UnBind();
                 }
 
@@ -441,8 +441,8 @@ namespace hen::renderer
 
     void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
     {
-        static std::unique_ptr <graphics::VertexArray> cubeVA;
-        static std::unique_ptr <graphics::VertexArray> sphereVA;
+        static graphics::VertexArray cubeVA;
+        static graphics::VertexArray sphereVA;
 
         static graphics::BufferLayout layout = 
         {
@@ -454,15 +454,15 @@ namespace hen::renderer
         
         if (!initialised)
         {
-            cubeVA = graphics::VertexArray::Create();
+            cubeVA.Create();
             PrimitiveCubeVB->SetLayout(layout);
-            cubeVA->AddVertexBuffer(PrimitiveCubeVB);
-            cubeVA->SetIndexBuffer(PrimitiveCubeIB);
+            cubeVA.AddVertexBuffer(PrimitiveCubeVB);
+            cubeVA.SetIndexBuffer(PrimitiveCubeIB);
 
-            sphereVA = graphics::VertexArray::Create();
+            sphereVA.Create();
             PrimitiveSphereVB->SetLayout(layout);
-            sphereVA->AddVertexBuffer(PrimitiveSphereVB);
-            sphereVA->SetIndexBuffer(PrimitiveSphereIB);
+            sphereVA.AddVertexBuffer(PrimitiveSphereVB);
+            sphereVA.SetIndexBuffer(PrimitiveSphereIB);
 
             initialised = true;
         }
@@ -486,19 +486,19 @@ namespace hen::renderer
         switch (primitve)
         {
             case graphics::PRIMITIVES::CUBE:
-                cubeVA->Bind();
-                CurrentRHC->DrawElements(cubeVA->GetIndexBuffer()->GetCount(), 0);
+                cubeVA.Bind();
+                CurrentRHC->DrawElements(cubeVA.GetIndexBuffer()->GetCount(), 0);
                 break;
             case graphics::PRIMITIVES::SPHERE:
-                sphereVA->Bind();
-                CurrentRHC->DrawElements(sphereVA->GetIndexBuffer()->GetCount(), 0);
+                sphereVA.Bind();
+                CurrentRHC->DrawElements(sphereVA.GetIndexBuffer()->GetCount(), 0);
                 break;
             default:
                 break;
         }
 
-        cubeVA->UnBind();
-        sphereVA->UnBind();
+        cubeVA.UnBind();
+        sphereVA.UnBind();
 
         shader->UnBind();
     }

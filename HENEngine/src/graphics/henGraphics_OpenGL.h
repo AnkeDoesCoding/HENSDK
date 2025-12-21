@@ -39,11 +39,11 @@ namespace hen::graphics
         uint32_t m_Count;
     };
 
-    class VertexArray_OpenGL : public VertexArray
+    class VertexArray_OpenGL : public VertexArray::Backend
     {
     public:
         VertexArray_OpenGL();
-        ~VertexArray_OpenGL() override;
+        ~VertexArray_OpenGL();
 
 		void Bind() const override;
 		void UnBind() const override;

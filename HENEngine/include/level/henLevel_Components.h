@@ -166,7 +166,7 @@ namespace hen::level
         std::vector<uint32_t> Indices;
         std::vector<glm::vec2> TextureCoordinates;
 
-        std::shared_ptr<graphics::VertexArray> VertexArray;
+        graphics::VertexArray VertexArray;
         std::shared_ptr<graphics::VertexBuffer> VertexBuffer;
         std::shared_ptr<graphics::IndexBuffer> IndexBuffer;
 
@@ -229,18 +229,17 @@ namespace hen::level
 
             IndexBuffer = graphics::IndexBuffer::Create(Indices.size(), Indices.data());
 
-            VertexArray = graphics::VertexArray::Create();
-            VertexArray->AddVertexBuffer(VertexBuffer);
-            VertexArray->SetIndexBuffer(IndexBuffer);
+            VertexArray.Create();
+            VertexArray.AddVertexBuffer(VertexBuffer);
+            VertexArray.SetIndexBuffer(IndexBuffer);
 
         }
 
         void DeleteRenderData()
         {
-            if (VertexArray)
+            if (VertexArray.IsBackendValid())
             {
-                VertexArray->UnBind();
-                VertexArray.reset();
+                VertexArray.UnBind();
             }
         
             if (VertexBuffer)

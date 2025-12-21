@@ -253,19 +253,88 @@ namespace hen::graphics
         }
     }
 
-    std::unique_ptr<VertexArray> VertexArray::Create()
+    VertexArray::~VertexArray()
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl.reset();
+        }
+    }
+
+    bool VertexArray::IsBackendValid() const
+    {
+        return m_BackendImpl != nullptr;
+    }
+
+    void VertexArray::Bind() const
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->Bind();
+        }
+    }
+
+    void VertexArray::UnBind() const
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->UnBind();
+        }
+    }
+
+    void VertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->AddVertexBuffer(vertexBuffer);
+        }
+    }
+
+    void VertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->SetIndexBuffer(indexBuffer);
+        }
+    }
+
+    const std::vector<std::shared_ptr<VertexBuffer>>& VertexArray::GetVertexBuffers() const
+    {
+        static const std::vector<std::shared_ptr<VertexBuffer>> empty;
+
+        if (IsBackendValid())
+        {
+            return m_BackendImpl->GetVertexBuffers();
+        }
+
+        return empty;
+    }
+
+    const std::shared_ptr<IndexBuffer>& VertexArray::GetIndexBuffer() const
+    {
+        static const std::shared_ptr<IndexBuffer> empty;
+
+        if (IsBackendValid())
+        {
+            return m_BackendImpl->GetIndexBuffer();
+        }
+
+        return empty;
+    }
+
+    void VertexArray::Create()
     {
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKEND::NONE:
                 HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                return nullptr;
+                m_BackendImpl = nullptr;
                 break;
             case renderer::BACKEND::OPENGL:
-                return std::make_unique<VertexArray_OpenGL>();
+                m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
                 break;
             default:
-                return nullptr;
+                m_BackendImpl = nullptr;
                 break;
         }
     }
@@ -314,10 +383,8 @@ namespace hen::graphics
         {
             return m_BackendImpl->GetSize();
         }
-        else
-        {
-            return 0;
-        }
+        
+        return 0;
     }
 
     unsigned UniformBuffer::GetBinding()
@@ -326,10 +393,8 @@ namespace hen::graphics
         {
             return m_BackendImpl->GetBinding();
         }
-        else
-        {
-            return -1;
-        }
+
+        return -1;
     }
 
     Shader::Shader(const char* vsPath, const char* fsPath)
