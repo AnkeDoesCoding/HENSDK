@@ -253,14 +253,6 @@ namespace hen::graphics
         }
     }
 
-    VertexArray::~VertexArray()
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl.reset();
-        }
-    }
-
     bool VertexArray::IsBackendValid() const
     {
         return m_BackendImpl != nullptr;
@@ -328,22 +320,12 @@ namespace hen::graphics
         {
             case renderer::BACKEND::NONE:
                 HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                m_BackendImpl = nullptr;
                 break;
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
                 break;
             default:
-                m_BackendImpl = nullptr;
                 break;
-        }
-    }
-
-    UniformBuffer::~UniformBuffer()
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl.reset();
         }
     }
 
@@ -400,11 +382,6 @@ namespace hen::graphics
     Shader::Shader(const char* vsPath, const char* fsPath)
     {
         Create(vsPath, fsPath);
-    }
-
-    Shader::~Shader()
-    {
-        Destroy();
     }
 
     bool Shader::IsBackendValid() const

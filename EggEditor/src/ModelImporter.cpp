@@ -198,7 +198,7 @@ namespace importer
         }
         else
         {
-            ok = loader.LoadASCIIFromFile(&model, &err, &warn, path), true;
+            ok = loader.LoadASCIIFromFile(&model, &err, &warn, path, true);
         }
 
         if (!warn.empty())

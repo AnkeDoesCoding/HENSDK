@@ -2,8 +2,6 @@
 #define _HENLEVEL_COMPONENTS_H_
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include "vendor/glm/glm.hpp"
-#include "vendor/glm/gtc/matrix_transform.hpp"
 #include <vendor/glm/gtx/matrix_decompose.hpp>
 #include <vendor/glm/gtc/quaternion.hpp>
 #include <vendor/glm/gtx/quaternion.hpp>
@@ -27,9 +25,7 @@ namespace hen::level
         std::string Name = "unknown";
 
         NameComponent() = default;
-
-        NameComponent(const NameComponent& other) = default;
-
+        
         NameComponent(const std::string& name)
             : Name(name)
         {
@@ -47,8 +43,6 @@ namespace hen::level
         mutable bool Dirty = true;
 
         TransformComponent() = default;
-
-        TransformComponent(const TransformComponent& other) = default;
 
         TransformComponent(const glm::mat4& transform)
             : Transform(transform)
@@ -190,8 +184,6 @@ namespace hen::level
 
         MeshComponent() = default;
 
-        MeshComponent(const MeshComponent& other) = default;
-
         void CreateRenderData()
         {
             HEN_ASSERT(Vertices.size() == Normals.size(), "Positions and Normals size mismatch");
@@ -269,8 +261,6 @@ namespace hen::level
 
         LightComponent() = default;
 
-        LightComponent(const LightComponent& other) = default;
-
         LightComponent(LIGHT_TYPES type, float intensity)
             : Type(type), Intensity(intensity)
         {
@@ -291,8 +281,6 @@ namespace hen::level
         glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
 
         CameraComponent() = default;
-
-        CameraComponent(const CameraComponent& other) = default;
 
         CameraComponent(const float& fov, const glm::vec3& position, const glm::vec3& rotation)
             : FOV(fov), Position(position), Rotation(rotation)

@@ -2,7 +2,6 @@
 #define _HENGRAPHICS_H_
 
 #include "vendor/glm/glm.hpp"
-#include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/stb/include/stb_image.h" // #define STB_IMAGE_IMPLEMENTATION is in henGraphics.cpp
 
 #include <string>
@@ -119,8 +118,6 @@ namespace hen::graphics
     class VertexArray
 	{
 	public:
-		~VertexArray();
-
         bool IsBackendValid() const;
 
 		void Bind() const;
@@ -137,6 +134,8 @@ namespace hen::graphics
     public:
         struct Backend
         {
+            virtual ~Backend() = default;
+
             virtual void Bind() const = 0;
 		    virtual void UnBind() const = 0;
 
@@ -154,8 +153,6 @@ namespace hen::graphics
     class UniformBuffer
     {
     public:
-        ~UniformBuffer();
-
         bool IsBackendValid() const;
 
         void Create(size_t size, unsigned binding);
@@ -166,6 +163,8 @@ namespace hen::graphics
     public:    
         struct Backend
         {
+            virtual ~Backend() = default;
+
             virtual void SetData(const void* data, size_t size, size_t offset = 0) = 0;
             virtual size_t GetSize() const = 0;
             virtual unsigned GetBinding() = 0;
@@ -181,7 +180,6 @@ namespace hen::graphics
         Shader() = default;
         Shader(const char* vsPath, const char* fsPath);
         Shader(Shader&&) noexcept = default;
-        ~Shader();
 
         bool IsBackendValid() const;    
 
@@ -209,6 +207,8 @@ namespace hen::graphics
     public:
         struct Backend
         {
+            virtual ~Backend() = default;
+
             virtual void Compile() = 0;
             virtual void Bind() = 0;
             virtual void UnBind() = 0;
