@@ -37,14 +37,7 @@ namespace hen
 
     void Application::Initialise(SDL_Window* window)
     {
-        Timer timer;
-
-        CurrentCVarSystem = std::make_unique<cvar::System>(); // this motherfucker is important as fuck
-        cvar::GetSystem() = CurrentCVarSystem.get();    
-
-        CurrentCVarSystem->Initialise();
-
-        HEN_ASSERT(CurrentCVarSystem->Initialised, "hen::cvar::System not initialised");
+        Timer timer;   
 
         console::Initialise(); 
 
@@ -52,9 +45,11 @@ namespace hen
 
         Window = window;
 
+
         renderer::Initialise(window);
 
         HEN_ASSERT(renderer::Initialised, "hen::renderer not initialised");
+
 
         CurrentImGuiManager = std::make_unique<ui::IMGUIManager>();
         ui::GetIMGUIManager() = CurrentImGuiManager.get(); 
@@ -63,11 +58,19 @@ namespace hen
 
         HEN_ASSERT(CurrentImGuiManager->Initialised, "hen::ui::ImGuiManager not initialised");
 
+
         input::Initialise(renderer::GetRHC()->GetWindow());
-        
-        Initialised = true;
 
         HEN_ASSERT(input::Initialised, "hen::input not initialised");
+
+
+        CurrentCVarSystem = std::make_unique<cvar::System>(); // this motherfucker is important as fuck
+        cvar::GetSystem() = CurrentCVarSystem.get(); 
+
+        CurrentCVarSystem->Initialise();
+
+        HEN_ASSERT(CurrentCVarSystem->Initialised, "hen::cvar::System not initialised");
+        
 
         Initialised = true;
 

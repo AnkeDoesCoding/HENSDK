@@ -234,7 +234,6 @@ namespace hen::config
 
         if (!file.is_open())
         {
-            HEN_WARN("[hen::config] Config file '" + name + "' doesn't exist");
             return;
         }
 
