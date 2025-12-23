@@ -108,6 +108,7 @@ namespace hen::renderer
     cvar::CVar cvar_FOV("r_fov", Camera.FOV, cvar::FLAGS_ARCHIVE, []()
     {
         Camera.FOV = cvar_FOV.GetFloat();
+
     });
 
     cvar::CVar cvar_NearPlane("r_near_plane", Camera.NearPlane, cvar::FLAGS_ARCHIVE, []() 
@@ -181,7 +182,10 @@ namespace hen::renderer
 
         CurrentRHC->EnableDepth();
 
-        Camera.SetDirty(level::GetActiveLevel()->Up);
+        if (auto level = level::GetActiveLevel())
+        {
+            Camera.SetDirty(level->Up);
+        }
 
         PreRender();
 

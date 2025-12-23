@@ -1,7 +1,6 @@
 #include "core/henApplication.h"
 
 #include "core/henVersion.h"
-#include "core/henTimer.h"
 #include "core/henCVar.h"
 #include "input/henInput.h"
 #include "level/henLevel.h"
@@ -17,12 +16,12 @@ namespace hen
     static SDL_Window* Window;
     static std::unique_ptr<cvar::System> CurrentCVarSystem;
     static std::unique_ptr<ui::IMGUIManager> CurrentImGuiManager;
-
-    cvar::CVar cvar_fullscreen("a_fullscreen", false, hen::cvar::FLAGS_ARCHIVE, []()
+    
+    cvar::CVar cvar_Fullscreen("a_fullscreen", false, hen::cvar::FLAGS_ARCHIVE, []()
     {
         if (Window)
         {
-            SDL_SetWindowFullscreen(Window, cvar_fullscreen.GetBool());
+            SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
         }
     });
 
@@ -42,6 +41,10 @@ namespace hen
 
         CurrentCVarSystem = std::make_unique<cvar::System>(); // this motherfucker is important as fuck
         cvar::GetSystem() = CurrentCVarSystem.get();    
+
+        CurrentCVarSystem->Initialise();
+
+        HEN_ASSERT(CurrentCVarSystem->Initialised, "hen::cvar::System not initialised");
 
         console::Initialise(); 
 
@@ -85,15 +88,19 @@ namespace hen
 
         infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
 
+        SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
+
         HEN_LOG(infoStr);
     }
 
     void Application::Shutdown()
     {
         HEN_LOG("[hen::Application] Shutting down...");
-        console::Shutdown();
 
         ui::GetIMGUIManager()->Shutdown();
+        cvar::GetSystem()->Shutdown();
+
+        console::Shutdown();
     }
 
     void Application::Run()

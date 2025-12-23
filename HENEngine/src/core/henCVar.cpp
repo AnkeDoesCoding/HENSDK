@@ -7,8 +7,38 @@
 
 namespace hen::cvar
 {
+    static config::File CVarConfig;
 
     CVar cvar_ProtectionEnabled("protection_enabled", true);
+
+    static void SplitCVarName(const std::string& name, std::string& outSection, std::string& outKey)
+    {
+        size_t pos = name.find('_');
+
+        if (pos == std::string::npos)
+        {
+            outSection = "default";
+            outKey = name;
+            return;
+        }
+
+        outSection = name.substr(0, pos);
+        outKey = name.substr(pos + 1);
+    }
+
+    static bool ParseBool(const std::string& inputString)
+    {
+        if (inputString == "true" )
+        {
+            return true;
+        }
+        if (inputString == "false")
+        {
+            return false;
+        }
+
+        return false;
+    }
 
     CVar::CVar(const std::string& name, VALUE_TYPE defaultValue, FLAGS flag, std::function<void()> onChange)
         : Name(name), Value(defaultValue), DefaultValue(defaultValue), Flag(flag), OnChange(onChange)
@@ -38,6 +68,8 @@ namespace hen::cvar
         {
             OnChange();
         }  
+
+        
     }
 
     int CVar::GetInt() const
@@ -66,9 +98,83 @@ namespace hen::cvar
         return list;
     }
 
-    System::System()
+    void System::Initialise()
     {
         RegisterPendingCVars();
+
+        config::Parse(CVarConfig, "cvars.ini");
+
+        for (const auto& section : CVarConfig.Sections)
+        {
+            for (const auto& key : section.Keys)
+            {
+                std::string cvarName = section.Name + "_" + key.Name;
+
+                if (CVar* cvar = GetCVar(cvarName))
+                {
+                    std::visit([&](auto&& val) \
+                    {
+                        using T = std::decay_t<decltype(val)>;
+        
+                    if constexpr (std::is_same_v<T, int>)
+                    {
+                        cvar->Set(std::stoi(key.Value));
+                    }
+                    else if constexpr (std::is_same_v<T, float>)
+                    {
+                        cvar->Set(std::stof(key.Value));
+                    }
+                    else if constexpr (std::is_same_v<T, bool>)
+                    {
+                        cvar->Set(ParseBool(key.Value));
+                    }
+                    else if constexpr (std::is_same_v<T, std::string>)
+                    {
+                        cvar->Set(key.Value);
+                    }
+                    }, cvar->Value);
+                }
+            }
+        }
+
+        Initialised = true;
+    }
+
+    void System::Shutdown()
+    {
+        for (auto& [name, cvar] : CVars)
+        {
+            if ((cvar->Flag & FLAGS_ARCHIVE))
+            {
+                std::string section;
+                std::string key;
+            
+                SplitCVarName(cvar->Name, section, key);
+            
+                std::string valueStr;
+            
+                std::visit([&](auto&& val)
+                {
+                    using T = std::decay_t<decltype(val)>;
+                    if constexpr (std::is_same_v<T, bool>)
+                    {
+                        valueStr = (val ? "true" : "false");
+                    }
+                    else if constexpr (std::is_same_v<T, std::string>)
+                    {
+                        valueStr = val;
+                    }
+                    else
+                    {
+                        valueStr = std::to_string(val);
+                    }
+                }, cvar->Value);
+            
+                CVarConfig.SetKeyValue(section, key, valueStr);
+            }
+        }
+
+        config::Commit(CVarConfig, "cvars.ini");
     }
 
     void System::RegisterCVar(CVar* cvar)

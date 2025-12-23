@@ -8,7 +8,6 @@
 #include <ctime>
 #include <deque>
 #include <vector>
-#include <sstream>
 
 #define TIME_FORMAT "%H:%M:%S"
 #define MAX_DISPLAYED_LOGS 20000

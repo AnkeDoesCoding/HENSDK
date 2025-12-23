@@ -1,6 +1,8 @@
 #ifndef _HENCVAR_H_
 #define _HENCVAR_H_
 
+#include "tools/henConfig.h"
+
 #include <string>
 #include <functional>
 #include <unordered_map>
@@ -10,7 +12,6 @@
 
 namespace hen::cvar
 {
-
     enum FLAGS
     {
         FLAGS_NONE = 0,
@@ -50,7 +51,9 @@ namespace hen::cvar
     class System
     {
     public:
-        System();
+        
+        void Initialise();
+        void Shutdown();
 
         void RegisterCVar(CVar* cvar);
         void RegisterPendingCVars();
@@ -64,6 +67,7 @@ namespace hen::cvar
     public:
         std::unordered_map<std::string, CVar*> CVars;
 
+        bool Initialised = false;
     };
 
     inline System*& GetSystem()
