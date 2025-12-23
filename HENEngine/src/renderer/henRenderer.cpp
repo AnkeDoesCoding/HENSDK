@@ -25,99 +25,11 @@ namespace hen::renderer
     static graphics::UniformBuffer LevelLightsUB;
 
     static std::shared_ptr<graphics::VertexBuffer> PrimitiveCubeVB;
-    static std::shared_ptr<graphics::IndexBuffer> PrimitiveCubeIB;
-    
+    static std::shared_ptr<graphics::IndexBuffer> PrimitiveCubeIB;  
     static std::shared_ptr<graphics::VertexBuffer> PrimitiveSphereVB;
     static std::shared_ptr<graphics::IndexBuffer> PrimitiveSphereIB;
 
     static ShaderHandle PrimitiveShader;
-
-    static float CubeVertices[] =
-    {
-        // vertices           // normals
-        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
-         0.5f, -0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
-         0.5f,  0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f,-1.0f,
-        -0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f,-1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,   0.0f,-1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,   0.0f,-1.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,   0.0f,-1.0f, 0.0f
-    };
-
-    static unsigned int CubeIndices[] = 
-    {
-        0, 1, 2,  2, 3, 0,
-        4, 5, 6,  6, 7, 4,
-        8, 9,10,  10,11,8,
-        12,13,14, 14,15,12,
-        16,17,18, 18,19,16,
-        20,21,22, 22,23,20
-    };
-
-    static float SphereVertices[] =
-    {
-        // vertices                // normals
-         0.0f,    1.0f,    0.0f,    0.0f,    1.0f,    0.0f,
-         0.0f,    0.707f,  0.707f,  0.0f,    0.707f,  0.707f,
-         0.5f,    0.707f,  0.5f,    0.5f,    0.707f,  0.5f,
-         0.707f,  0.707f,  0.0f,    0.707f,  0.707f,  0.0f,
-         0.5f,    0.707f, -0.5f,    0.5f,    0.707f, -0.5f,
-         0.0f,    0.707f, -0.707f,  0.0f,    0.707f, -0.707f,
-        -0.5f,    0.707f, -0.5f,   -0.5f,    0.707f, -0.5f,
-        -0.707f,  0.707f,  0.0f,   -0.707f,  0.707f,  0.0f,
-        -0.5f,    0.707f,  0.5f,   -0.5f,    0.707f,  0.5f,
-         0.0f,    0.0f,    1.0f,    0.0f,    0.0f,    1.0f,
-         0.707f,  0.0f,    0.707f,  0.707f,  0.0f,    0.707f,
-         1.0f,    0.0f,    0.0f,    1.0f,    0.0f,    0.0f,
-         0.707f,  0.0f,   -0.707f,  0.707f,  0.0f,   -0.707f,
-         0.0f,    0.0f,   -1.0f,    0.0f,    0.0f,   -1.0f,
-        -0.707f,  0.0f,   -0.707f, -0.707f,  0.0f,   -0.707f,
-        -1.0f,    0.0f,    0.0f,   -1.0f,    0.0f,    0.0f,
-        -0.707f,  0.0f,    0.707f, -0.707f,  0.0f,    0.707f,
-         0.0f,   -0.707f,  0.707f,  0.0f,   -0.707f,  0.707f,
-         0.5f,   -0.707f,  0.5f,    0.5f,   -0.707f,  0.5f,
-         0.707f, -0.707f,  0.0f,    0.707f, -0.707f,  0.0f,
-         0.5f,   -0.707f, -0.5f,    0.5f,   -0.707f, -0.5f,
-         0.0f,   -0.707f, -0.707f,  0.0f,   -0.707f, -0.707f,
-        -0.5f,   -0.707f, -0.5f,   -0.5f,   -0.707f, -0.5f,
-        -0.707f, -0.707f,  0.0f,   -0.707f, -0.707f,  0.0f,
-        -0.5f,   -0.707f,  0.5f,   -0.5f,   -0.707f,  0.5f,
-         0.0f,   -1.0f,    0.0f,    0.0f,   -1.0f,    0.0f
-    };
-
-
-    static unsigned int SphereIndices[] = 
-    {
-        0,1,2, 0,2,3, 0,3,4, 0,4,5,
-        0,5,6, 0,6,7, 0,7,8, 0,8,1,
-        1,9,2, 2,9,10, 2,10,3, 3,10,11,
-        3,11,4, 4,11,12, 4,12,5, 5,12,13,
-        5,13,6, 6,13,14, 6,14,7, 7,14,15,
-        7,15,8, 8,15,16, 8,16,1, 1,16,9,
-        9,17,10, 10,17,18, 10,18,11, 11,18,19,
-        11,19,12, 12,19,20, 12,20,13, 13,20,21,
-        13,21,14, 14,21,22, 14,22,15, 15,22,23,
-        15,23,16, 16,23,24, 16,24,9, 9,24,17,
-        25,18,17, 25,19,18, 25,20,19, 25,21,20,
-        25,22,21, 25,23,22, 25,24,23, 25,17,24
-    };
 
     struct ShaderDirLight 
     {
@@ -253,11 +165,10 @@ namespace hen::renderer
 
         LevelLightsUB.Create(sizeof(ShaderLights), 1);
 
-        PrimitiveCubeVB = graphics::VertexBuffer::Create(sizeof(CubeVertices), CubeVertices);
-        PrimitiveCubeIB = graphics::IndexBuffer::Create(sizeof(CubeIndices), CubeIndices);
-        
-        PrimitiveSphereVB = graphics::VertexBuffer::Create(sizeof(SphereVertices), SphereVertices);
-        PrimitiveSphereIB = graphics::IndexBuffer::Create(sizeof(SphereIndices), SphereIndices);
+        PrimitiveCubeVB = graphics::VertexBuffer::Create(sizeof(level::primitives::cube::Vertices), level::primitives::cube::Vertices);
+        PrimitiveCubeIB = graphics::IndexBuffer::Create(sizeof(level::primitives::cube::Indices), level::primitives::cube::Indices);
+        PrimitiveSphereVB = graphics::VertexBuffer::Create(sizeof(level::primitives::sphere::Vertices), level::primitives::sphere::Vertices);
+        PrimitiveSphereIB = graphics::IndexBuffer::Create(sizeof(level::primitives::sphere::Indices), level::primitives::sphere::Indices);
 
         Initialised = true;
 
@@ -326,7 +237,7 @@ namespace hen::renderer
                         data.PointLights[pointLightIndex].Quadratic = quadratic;
                         data.PointLights[pointLightIndex].Intensity = lightComp.Intensity;
                         
-                        RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
+                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
                     
                         pointLightIndex++;
                         data.NumberOfPointLights++;
@@ -351,8 +262,7 @@ namespace hen::renderer
                         data.SpotLights[spotLightIndex].Linear = linear;
                         data.SpotLights[spotLightIndex].Quadratic = quadratic;
                     
-                        RenderPrimitive(graphics::PRIMITIVES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), glm::vec3(1.0f));
-                    
+                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
                     
                         spotLightIndex++;
                         data.NumberOfSpotLights++;
@@ -439,7 +349,7 @@ namespace hen::renderer
         }
     }
 
-    void RenderPrimitive(graphics::PRIMITIVES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
+    void RenderPrimitive(level::PRIMITIVE_TYPES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
     {
         static graphics::VertexArray cubeVA;
         static graphics::VertexArray sphereVA;
@@ -485,11 +395,11 @@ namespace hen::renderer
 
         switch (primitve)
         {
-            case graphics::PRIMITIVES::CUBE:
+            case level::PRIMITIVE_TYPES::CUBE:
                 cubeVA.Bind();
                 CurrentRHC->DrawElements(cubeVA.GetIndexBuffer()->GetCount(), 0);
                 break;
-            case graphics::PRIMITIVES::SPHERE:
+            case level::PRIMITIVE_TYPES::SPHERE:
                 sphereVA.Bind();
                 CurrentRHC->DrawElements(sphereVA.GetIndexBuffer()->GetCount(), 0);
                 break;

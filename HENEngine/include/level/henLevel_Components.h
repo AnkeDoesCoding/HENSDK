@@ -42,7 +42,7 @@ namespace hen::level
         mutable glm::mat4 Transform;
         glm::vec3 Position;
         glm::vec3 Rotation;
-        glm::vec3 Scale;
+        glm::vec3 Scale = glm::vec3(1.0f, 1.0f, 1.0f);
 
         mutable bool Dirty = true;
 

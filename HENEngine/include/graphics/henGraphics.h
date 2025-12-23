@@ -26,12 +26,6 @@ namespace hen::graphics
         BOOL
     };
 
-    enum class PRIMITIVES
-    {
-        CUBE,
-        SPHERE
-    };
-
     enum class SHADER_TYPES
     {
         PROGRAM,

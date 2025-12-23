@@ -9,7 +9,6 @@
 #include <deque>
 #include <vector>
 #include <sstream>
-#include <mutex>
 
 #define TIME_FORMAT "%H:%M:%S"
 #define MAX_DISPLAYED_LOGS 20000
@@ -29,8 +28,6 @@ namespace hen::console
 
     static std::ofstream LogFile{};
     static std::deque<LogEntry> Entries;
-
-    static std::mutex Mutex; // yeah bitch this shi gonna be thread safe, if i managed to do it right
 
     static char InputBuffer[1024] = "";
 
@@ -411,7 +408,6 @@ namespace hen::console
 
     void Log(const std::string& message, LOGLEVEL level) 
     {
-        std::lock_guard<std::mutex> lock(Mutex);
         std::string levelText;
         std::string textColour;
     

@@ -5,11 +5,18 @@
 
 #include "tools/henConsole.h"
 #include "level/henLevel_Components.h"
+#include "level/henLevel_Primitives.h"
 
 #define UNDERLYING_VIEW decltype(std::declval<entt::registry>().view<Components...>())
 
 namespace hen::level
 {
+    enum class PRIMITIVE_TYPES
+    {
+        CUBE,
+        SPHERE
+    };
+
     class Entity;
 
     template<typename... Components>
