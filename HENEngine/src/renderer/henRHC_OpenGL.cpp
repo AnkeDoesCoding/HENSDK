@@ -6,6 +6,8 @@
 #include "core/henTimer.h"
 #include "tools/henConsole.h"
 
+#include <cmath>
+
 namespace hen
 {
     RHC_OpenGL::RHC_OpenGL(SDL_Window* window)
