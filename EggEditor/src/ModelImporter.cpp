@@ -408,7 +408,8 @@ namespace importer
 
                     LoadTextureFromIndex(model, modelDir, material.pbrMetallicRoughness.baseColorTexture.index, materialComp.DiffuseTexture);
 
-                    subMesh.Material = materialComp;
+                    meshComp.Materials.push_back(materialComp);
+                    subMesh.MaterialIndex = (uint32_t)(meshComp.Materials.size()-1);
                 }
 
                 meshComp.SubMeshes.push_back(subMesh);

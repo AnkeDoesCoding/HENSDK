@@ -318,8 +318,8 @@ namespace hen::renderer
 
                     for (auto& submesh : meshComp.SubMeshes)
                     {
-                        auto* diffuse = CurrentTextureManager->Get(submesh.Material.DiffuseTexture);
-                        auto* specular = CurrentTextureManager->Get(submesh.Material.SpecularTexture);
+                        auto* diffuse = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].DiffuseTexture);
+                        auto* specular = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].SpecularTexture);
 
                         if (diffuse)
                         {

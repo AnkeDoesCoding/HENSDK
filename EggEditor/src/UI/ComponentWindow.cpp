@@ -67,11 +67,13 @@ void ComponentWindow::Initialise()
                 std::string normalsText = "Normals: " + std::to_string(mesh.Normals.size());
                 std::string indicesText = "Indices: " + std::to_string(mesh.Indices.size());
                 std::string submeshText = "Submeshes: " + std::to_string(mesh.SubMeshes.size());
+                std::string materialText = "Materials: " + std::to_string(mesh.Materials.size());
 
                 ImGui::Text("%s", verticesText.c_str());
                 ImGui::Text("%s", normalsText.c_str());
                 ImGui::Text("%s", indicesText.c_str());
                 ImGui::Text("%s", submeshText.c_str());
+                ImGui::Text("%s", materialText.c_str());
 
                 ImGui::Spacing();
                 ImGui::Spacing();

@@ -176,11 +176,11 @@ namespace hen::level
         {
             uint32_t IndexStart = UINT32_MAX;
             uint32_t IndexCount = UINT32_MAX;
-
-            MaterialComponent Material;
+            uint32_t MaterialIndex = UINT32_MAX;
         };
 
         std::vector<SubMesh> SubMeshes;
+        std::vector<MaterialComponent> Materials;
 
         MeshComponent() = default;
 
