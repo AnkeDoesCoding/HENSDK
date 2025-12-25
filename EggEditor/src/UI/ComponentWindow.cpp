@@ -12,7 +12,7 @@ void ComponentWindow::Initialise()
             {
                 auto& transform = SelectedEntity.GetComponent<hen::level::TransformComponent>();
 
-                glm::vec3 rotationDeg = glm::degrees(transform.Rotation);  
+                hen::math::Vec3 rotationDeg = hen::math::Degrees(transform.Rotation);  
 
                 ImGui::Text("Transform");
 
@@ -24,7 +24,7 @@ void ComponentWindow::Initialise()
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##pos"))
                 {
-                    transform.Position = glm::vec3(0.0f);
+                    transform.Position = hen::math::Vec3(0.0f);
                 }
 
                 ImGui::DragFloat3("Rotation", &rotationDeg.x, 0.5f);
@@ -32,8 +32,8 @@ void ComponentWindow::Initialise()
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##rot"))
                 {
-                    transform.Rotation = glm::vec3(0.0f);
-                    rotationDeg = glm::degrees(transform.Rotation);  
+                    transform.Rotation = hen::math::Vec3(0.0f);
+                    rotationDeg = hen::math::Degrees(transform.Rotation);  
                 }
 
                 ImGui::DragFloat3("Scale", &transform.Scale.x, 0.1f);
@@ -41,10 +41,10 @@ void ComponentWindow::Initialise()
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##scale"))
                 {
-                    transform.Scale = glm::vec3(1.0f);
+                    transform.Scale = hen::math::Vec3(1.0f);
                 }
 
-                transform.SetRotation(glm::radians(rotationDeg));
+                transform.SetRotation(hen::math::Radians(rotationDeg));
 
                 ImGui::Spacing();
                 ImGui::Spacing();

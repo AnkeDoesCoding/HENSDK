@@ -1,15 +1,15 @@
 #ifndef _HENGRAPHICS_H_
 #define _HENGRAPHICS_H_
 
-#include "vendor/glm/glm.hpp"
 #include "vendor/stb/include/stb_image.h" // #define STB_IMAGE_IMPLEMENTATION is in henGraphics.cpp
+
+#include "core/henMath.h"
 
 #include <string>
 #include <memory>
 
 namespace hen::graphics
 {
-
     enum class SHADER_PRIMITIVES
     {
         FLOAT,
@@ -193,13 +193,13 @@ namespace hen::graphics
         void SetVal(const std::string& name, int val) const;
         void SetVal(const std::string& name, float val) const;
 
-        void SetVec2(const std::string &name, const glm::vec2 &value) const;
-        void SetVec3(const std::string &name, const glm::vec3 &value) const;
-        void SetVec4(const std::string &name, const glm::vec4 &value) const;
+        void SetVec2(const std::string &name, const math::Vec2 &value) const;
+        void SetVec3(const std::string &name, const math::Vec3 &value) const;
+        void SetVec4(const std::string &name, const math::Vec4 &value) const;
 
-        void SetMat2(const std::string &name, const glm::mat2 &mat) const;
-        void SetMat3(const std::string &name, const glm::mat3 &mat) const;
-        void SetMat4(const std::string &name, const glm::mat4 &mat) const;
+        void SetMat2(const std::string &name, const math::Matrix2 &mat) const;
+        void SetMat3(const std::string &name, const math::Matrix3 &mat) const;
+        void SetMat4(const std::string &name, const math::Matrix4 &mat) const;
 
         void Create(const char* vsPath, const char* fsPath);
         void Destroy();
@@ -219,13 +219,13 @@ namespace hen::graphics
             virtual void SetVal(const std::string& name, int val) const = 0;
             virtual void SetVal(const std::string& name, float val) const = 0;
 
-            virtual void SetVec2(const std::string &name, const glm::vec2 &value) const = 0;
-            virtual void SetVec3(const std::string &name, const glm::vec3 &value) const = 0;
-            virtual void SetVec4(const std::string &name, const glm::vec4 &value) const = 0;
+            virtual void SetVec2(const std::string &name, const math::Vec2 &value) const = 0;
+            virtual void SetVec3(const std::string &name, const math::Vec3 &value) const = 0;
+            virtual void SetVec4(const std::string &name, const math::Vec4 &value) const = 0;
 
-            virtual void SetMat2(const std::string &name, const glm::mat2 &mat) const = 0;
-            virtual void SetMat3(const std::string &name, const glm::mat3 &mat) const = 0;
-            virtual void SetMat4(const std::string &name, const glm::mat4 &mat) const = 0;
+            virtual void SetMat2(const std::string &name, const math::Matrix2 &mat) const = 0;
+            virtual void SetMat3(const std::string &name, const math::Matrix3 &mat) const = 0;
+            virtual void SetMat4(const std::string &name, const math::Matrix4 &mat) const = 0;
         };   
 
     private:

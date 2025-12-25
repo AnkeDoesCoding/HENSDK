@@ -447,7 +447,7 @@ namespace hen::graphics
         }
     }
 
-    void Shader::SetVec2(const std::string &name, const glm::vec2 &value) const
+    void Shader::SetVec2(const std::string &name, const math::Vec2 &value) const
     {
         if (IsBackendValid())
         {
@@ -455,7 +455,7 @@ namespace hen::graphics
         }
     }
 
-    void Shader::SetVec3(const std::string &name, const glm::vec3 &value) const
+    void Shader::SetVec3(const std::string &name, const math::Vec3 &value) const
     {
         if (IsBackendValid())
         {
@@ -463,7 +463,7 @@ namespace hen::graphics
         }
     }
 
-    void Shader::SetVec4(const std::string &name, const glm::vec4 &value) const
+    void Shader::SetVec4(const std::string &name, const math::Vec4 &value) const
     {
         if (IsBackendValid())
         {
@@ -471,7 +471,7 @@ namespace hen::graphics
         }
     }
 
-    void Shader::SetMat2(const std::string &name, const glm::mat2 &mat) const
+    void Shader::SetMat2(const std::string &name, const math::Matrix2 &mat) const
     {   
         if (IsBackendValid())
         {
@@ -479,7 +479,7 @@ namespace hen::graphics
         }
     }
 
-    void Shader::SetMat3(const std::string &name, const glm::mat3 &mat) const
+    void Shader::SetMat3(const std::string &name, const math::Matrix3 &mat) const
     {
         if (IsBackendValid())
         {
@@ -487,7 +487,7 @@ namespace hen::graphics
         }
     }
 
-    void Shader::SetMat4(const std::string &name, const glm::mat4 &mat) const
+    void Shader::SetMat4(const std::string &name, const math::Matrix4 &mat) const
     {
         if (IsBackendValid())
         {

@@ -3,7 +3,7 @@
 
 #include "SDL3/SDL.h"
 
-#include "vendor/glm/glm.hpp"
+#include "core/henMath.h"
 
 namespace hen::input
 {
@@ -102,8 +102,8 @@ namespace hen::input
 
     struct MouseState
 	{
-		glm::vec2 Pos = glm::vec2(0.0f, 0.0f);
-		glm::vec2 DeltaPos = glm::vec2(0.0f, 0.0f);
+		math::Vec2 Pos = math::Vec2(0.0f, 0.0f);
+		math::Vec2 DeltaPos = math::Vec2(0.0f, 0.0f);
 		float DeltaWheel = 0.0f;
 		bool LMB = false;
 		bool MMB = false;
@@ -119,7 +119,7 @@ namespace hen::input
     const KeyboardState& GetKeyboardState();
     const MouseState& GetMouseState();
 
-	glm::vec2 GetPointerPos();
+	math::Vec2 GetPointerPos();
 	void SetPointerPos(float newX, float newY);
 	void HidePointer();
 	void ShowPointer();

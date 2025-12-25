@@ -1,11 +1,7 @@
 #ifndef _HENLEVEL_COMPONENTS_H_
 #define _HENLEVEL_COMPONENTS_H_
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <vendor/glm/gtx/matrix_decompose.hpp>
-#include <vendor/glm/gtc/quaternion.hpp>
-#include <vendor/glm/gtx/quaternion.hpp>
-
+#include "core/henMath.h"
 #include "graphics/henGraphics.h"
 #include "renderer/henRenderer_ResourceManagers.h"
 
@@ -35,47 +31,47 @@ namespace hen::level
 
     struct TransformComponent
     {
-        mutable glm::mat4 Transform;
-        glm::vec3 Position;
-        glm::vec3 Rotation;
-        glm::vec3 Scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        mutable math::Matrix4 Transform;
+        math::Vec3 Position;
+        math::Vec3 Rotation;
+        math::Vec3 Scale = math::Vec3(1.0f, 1.0f, 1.0f);
 
         mutable bool Dirty = true;
 
         TransformComponent() = default;
 
-        TransformComponent(const glm::mat4& transform)
+        TransformComponent(const math::Matrix4& transform)
             : Transform(transform)
         {
 
         }
 
-        TransformComponent(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
+        TransformComponent(const math::Vec3& position, const math::Vec3& rotation, const math::Vec3& scale)
             : Position(position), Rotation(rotation), Scale(scale)
         {
             
         }
 
-        const glm::vec3& GetRotation() const
+        const math::Vec3& GetRotation() const
         {
             return Rotation;
         }
 
-        const glm::vec3& GetPosition()
+        const math::Vec3& GetPosition()
         {
             return Position;
         }
 
-        const glm::vec3& GetScale() const
+        const math::Vec3& GetScale() const
         {
             return Scale;
         }
 
-        const glm::mat4& GetMatrix() const
+        const math::Matrix4& GetMatrix() const
         {
             if (Dirty)
             {
-                Transform = glm::translate(glm::mat4(1.0f), Position) * glm::toMat4(glm::quat(Rotation)) * glm::scale(glm::mat4(1.0f), Scale);
+                Transform = math::Translate(math::Matrix4(1.0f), Position) * math::ToMatrix4(math::Quat(Rotation)) * math::Scale(math::Matrix4(1.0f), Scale);
 
                 Dirty = false;
             }
@@ -83,58 +79,58 @@ namespace hen::level
             return Transform;
         }
 
-        glm::vec3 GetForwardVector() const
+        math::Vec3 GetForwardVector() const
         {
             float pitch = Rotation.x;
             float yaw   = Rotation.y;
 
-            glm::vec3 forward;
+            math::Vec3 forward;
             forward.x = cos(yaw) * cos(pitch);
             forward.y = sin(pitch);
             forward.z = sin(yaw) * cos(pitch);
 
-            return glm::normalize(forward);
+            return math::Normalise(forward);
         }
 
-        glm::vec3 GetUpVector() const
+        math::Vec3 GetUpVector() const
         {
-            glm::vec3 levelUp = glm::vec3(0.0f, 1.0f, 0.0f);
-            glm::vec3 forward = GetForwardVector();
-            glm::vec3 right   = glm::normalize(glm::cross(forward, levelUp));
-            return glm::normalize(glm::cross(right, forward));
+            math::Vec3 levelUp = math::Vec3(0.0f, 1.0f, 0.0f);
+            math::Vec3 forward = GetForwardVector();
+            math::Vec3 right   = math::Normalise(math::Cross(forward, levelUp));
+            return math::Normalise(math::Cross(right, forward));
         }
 
-        glm::vec3 GetRightVector() const
+        math::Vec3 GetRightVector() const
         {
-            glm::vec3 levelUp = glm::vec3(0.0f, 1.0f, 0.0f);
-            glm::vec3 forward = GetForwardVector();
-            return glm::normalize(glm::cross(forward, levelUp));
+            math::Vec3 levelUp = math::Vec3(0.0f, 1.0f, 0.0f);
+            math::Vec3 forward = GetForwardVector();
+            return math::Normalise(math::Cross(forward, levelUp));
         }
 
-        void SetPosition(const glm::vec3& position)
+        void SetPosition(const math::Vec3& position)
         {
             Position = position;
             Dirty = true;
         }
 
-        void SetRotation(const glm::vec3& rotation)
+        void SetRotation(const math::Vec3& rotation)
         {
             Rotation = rotation;
             Dirty = true;
         }
 
-        void SetScale(const glm::vec3& scale)
+        void SetScale(const math::Vec3& scale)
         {
             Scale = scale;
             Dirty = true;
         }
 
-        operator glm::mat4& ()
+        operator math::Matrix4& ()
         {
             return Transform;
         }
 
-        operator const glm::mat4& () const
+        operator const math::Matrix4& () const
         {
             return Transform;
         }
@@ -155,10 +151,10 @@ namespace hen::level
 
     struct MeshComponent
     {
-        std::vector<glm::vec3> Vertices;
-        std::vector<glm::vec3> Normals;
+        std::vector<math::Vec3> Vertices;
+        std::vector<math::Vec3> Normals;
         std::vector<uint32_t> Indices;
-        std::vector<glm::vec2> TextureCoordinates;
+        std::vector<math::Vec2> TextureCoordinates;
 
         graphics::VertexArray VertexArray;
         std::shared_ptr<graphics::VertexBuffer> VertexBuffer;
@@ -197,7 +193,7 @@ namespace hen::level
                 interleavedBuffer.push_back(Vertices[i].y);
                 interleavedBuffer.push_back(Vertices[i].z);
 
-                Normals[i] = glm::normalize(Normals[i]);
+                Normals[i] = math::Normalise(Normals[i]);
 
                 interleavedBuffer.push_back(Normals[i].x);
                 interleavedBuffer.push_back(Normals[i].y);
@@ -256,8 +252,8 @@ namespace hen::level
         float InnerCutOff;
         float OuterCutOff;
 
-        glm::vec3 Colour = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 Ambient = glm::vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Colour = math::Vec3(1.0f, 1.0f, 1.0f);
+        math::Vec3 Ambient = math::Vec3(0.0f, 0.0f, 0.0f);
 
         LightComponent() = default;
 
@@ -274,43 +270,43 @@ namespace hen::level
         float NearPlane = 3.0f;
         float FarPlane = 1500.0f;
 
-        glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 Front;
-        glm::vec3 Right;
-        glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+        math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Rotation = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Front;
+        math::Vec3 Right;
+        math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
 
         CameraComponent() = default;
 
-        CameraComponent(const float& fov, const glm::vec3& position, const glm::vec3& rotation)
+        CameraComponent(const float& fov, const math::Vec3& position, const math::Vec3& rotation)
             : FOV(fov), Position(position), Rotation(rotation)
         {
 
         } 
 
-        glm::mat4 GetViewMatrix()
+        math::Matrix4 GetViewMatrix()
         {
-            return glm::lookAt(Position, Position + Front, Up);
+            return math::LookAt(Position, Position + Front, Up);
         }
         
-        glm::mat4 GetProjection(float x, float y)
+        math::Matrix4 GetProjection(float x, float y)
         {
-            return glm::perspective(glm::radians(FOV), x / y, NearPlane, FarPlane);
+            return math::Perspective(math::Radians(FOV), x / y, NearPlane, FarPlane);
         }
 
-        void SetDirty(const glm::vec3& levelUp)
+        void SetDirty(const math::Vec3& levelUp)
         {
-            glm::vec3 front;
+            math::Vec3 front;
 
-            Rotation.x = glm::clamp(Rotation.x, -89.99f, 89.99f); // you can never truly look 90 up or down, hopefully this doesnt fuck up future calculations
+            Rotation.x = math::Clamp(Rotation.x, -89.99f, 89.99f); // you can never truly look 90 up or down, hopefully this doesnt fuck up future calculations
 
-            front.x = cos(glm::radians(Rotation.y)) * cos(glm::radians(Rotation.x));
-            front.y = sin(glm::radians(Rotation.x));
-            front.z = sin(glm::radians(Rotation.y)) * cos(glm::radians(Rotation.x));
-            Front = glm::normalize(front);
+            front.x = cos(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
+            front.y = sin(math::Radians(Rotation.x));
+            front.z = sin(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
+            Front = math::Normalise(front);
 
-            Right = glm::normalize(glm::cross(Front, levelUp));
-            Up = glm::normalize(glm::cross(Right, Front));
+            Right = math::Normalise(math::Cross(Front, levelUp));
+            Up = math::Normalise(math::Cross(Right, Front));
         }
 
     };  

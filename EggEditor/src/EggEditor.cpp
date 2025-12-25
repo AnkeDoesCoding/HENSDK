@@ -37,8 +37,8 @@ void Editor::Update(float deltaTime)
 
     float xDiff = 0.0f , yDiff = 0.0f;
 
-    glm::vec2 originalMouse = glm::vec2(0.0f, 0.0f);
-    glm::vec2 currentMouse = hen::input::GetPointerPos();
+    hen::math::Vec2 originalMouse = hen::math::Vec2(0.0f, 0.0f);
+    hen::math::Vec2 currentMouse = hen::input::GetPointerPos();
 
     if(hen::input::GetMouseState().Locked && !hen::console::Visible)
     {

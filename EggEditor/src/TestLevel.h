@@ -22,7 +22,7 @@ namespace testlevel
         auto& mat = ModelEnt->AddComponent<hen::level::MaterialComponent>();
         auto& mesh = ModelEnt->AddComponent<hen::level::MeshComponent>();
 
-        transform.SetScale(glm::vec3(0.15f));
+        transform.SetScale(hen::math::Vec3(0.15f));
 
         importer::ImportModel("res/models/sponza/sponza.glb", mesh);
 
@@ -33,7 +33,7 @@ namespace testlevel
         auto& transformLight = LightEnt->AddComponent<hen::level::TransformComponent>();
         auto& light = LightEnt->AddComponent<hen::level::LightComponent>();
 
-        transformLight.SetPosition(glm::vec3(0.0f, 20.0f, -4.0f));
+        transformLight.SetPosition(hen::math::Vec3(0.0f, 20.0f, -4.0f));
 
         light.Range = 500.0f;
         light.Intensity = 1.0f;

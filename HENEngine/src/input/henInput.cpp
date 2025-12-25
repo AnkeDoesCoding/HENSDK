@@ -269,7 +269,7 @@ namespace hen::input
 
         // Dont accumulate this stuff
         Mouse.DeltaWheel = 0;
-        Mouse.DeltaPos = glm::vec2(0.0f);
+        Mouse.DeltaPos = math::Vec2(0.0f);
 
         Uint32 m = SDL_GetMouseState(&Mouse.Pos.x, &Mouse.Pos.y);
 
@@ -293,7 +293,7 @@ namespace hen::input
     void ClearDelta()
     {   
         Mouse.DeltaWheel = 0.0f;
-        Mouse.DeltaPos = glm::vec2(0.0f);
+        Mouse.DeltaPos = math::Vec2(0.0f);
     }
 
     const KeyboardState& GetKeyboardState() 
@@ -306,9 +306,9 @@ namespace hen::input
         return Mouse;
     }
 
-    glm::vec2 GetPointerPos()
+    math::Vec2 GetPointerPos()
     {
-        return glm::vec2(Mouse.Pos.x, Mouse.Pos.y);
+        return math::Vec2(Mouse.Pos.x, Mouse.Pos.y);
     }
 
     void SetPointerPos(float newX, float newY)

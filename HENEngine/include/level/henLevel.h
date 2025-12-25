@@ -42,7 +42,7 @@ namespace hen::level
         }
 
     public:
-        glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+        math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
 
     private:
         entt::registry m_Registry;

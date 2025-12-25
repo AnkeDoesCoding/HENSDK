@@ -91,13 +91,13 @@ namespace hen::graphics
         void SetVal(const std::string& name, int val) const override;
         void SetVal(const std::string& name, float val) const override;
 
-        void SetVec2(const std::string &name, const glm::vec2 &value) const override;
-        void SetVec3(const std::string &name, const glm::vec3 &value) const override;
-        void SetVec4(const std::string &name, const glm::vec4 &value) const override;
+        void SetVec2(const std::string &name, const math::Vec2 &value) const override;
+        void SetVec3(const std::string &name, const math::Vec3 &value) const override;
+        void SetVec4(const std::string &name, const math::Vec4 &value) const override;
 
-        void SetMat2(const std::string &name, const glm::mat2 &mat) const override;
-        void SetMat3(const std::string &name, const glm::mat3 &mat) const override;
-        void SetMat4(const std::string &name, const glm::mat4 &mat) const override;
+        void SetMat2(const std::string &name, const math::Matrix2 &mat) const override;
+        void SetMat3(const std::string &name, const math::Matrix3 &mat) const override;
+        void SetMat4(const std::string &name, const math::Matrix4 &mat) const override;
 
     private:
         void CheckForCompileErrors(unsigned int shader, SHADER_TYPES type);

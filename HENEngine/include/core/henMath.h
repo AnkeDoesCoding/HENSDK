@@ -1,0 +1,97 @@
+#ifndef _HENMATH_H_
+#define _HENMATH_H_
+
+#include "vendor/glm/glm.hpp"
+
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include "vendor/glm/gtc/matrix_transform.hpp"
+
+#include <vendor/glm/gtx/matrix_decompose.hpp>
+#include <vendor/glm/gtx/quaternion.hpp>
+
+namespace hen::math
+{
+    using Vec2 = glm::vec2;
+    using Vec3 = glm::vec3;
+    using Vec4 = glm::vec4;
+
+    using Matrix2 = glm::mat2;
+    using Matrix3 = glm::mat3;
+    using Matrix4 = glm::mat4;
+
+    using Quat = glm::quat;
+
+    // FLOAT
+
+    inline float Clamp(float x, float min, float max)
+    {
+        return glm::clamp(x, min, max);
+    }
+
+    inline float Cos(float x)
+    {
+        return glm::cos(x);
+    }
+
+    inline float Degrees(float radians)
+    {
+        return glm::degrees(radians);
+    }
+
+    inline float Radians(float degrees)
+    {
+        return glm::radians(degrees);
+    }
+
+    // VEC3
+
+    inline Vec3 Cross(Vec3 vectorX, Vec3 vectorY)
+    {
+        return glm::cross(vectorX, vectorY);
+    }
+
+    inline Vec3 Degrees(Vec3 radians)
+    {
+        return glm::degrees(radians);
+    }
+
+    inline Vec3 Normalise(Vec3 vector)
+    {
+        return glm::normalize(vector);
+    }
+
+    inline Vec3 Radians(Vec3 degrees)
+    {
+        return glm::radians(degrees);
+    }
+
+    // MATRIX4
+
+    inline Matrix4 LookAt(Vec3 eye, Vec3 center, Vec3 up)
+    {
+        return glm::lookAt(eye, center, up);
+    }
+
+    inline Matrix4 Perspective(float fov, float aspect, float near, float far)
+    {
+        return glm::perspective(fov, aspect, near, far);
+    }
+
+    inline Matrix4 Scale(Matrix4 matrix, Vec3 vector)
+    {
+        return glm::scale(matrix, vector);
+    }
+
+    inline Matrix4 ToMatrix4(Quat quat)
+    {
+        return glm::toMat4(quat);
+    }
+
+    inline Matrix4 Translate(Matrix4 matrix, Vec3 vector)
+    {
+        return glm::translate(matrix, vector);
+    }
+}
+
+#endif // !_HENMATH_H_

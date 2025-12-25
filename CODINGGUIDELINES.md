@@ -164,11 +164,11 @@ namespace hen::renderer
 Variables that are function parameters or go out of scope must use Camel Case:
 
 ```cpp
-Camera(glm::vec3 pos, float yaw, float pitch);
+Camera(math::Vec3 pos, float yaw, float pitch);
 
 void Camera::SetDirty()
 {
-    glm::vec3 front;
+    math::Vec3 front;
 }
 ```
 

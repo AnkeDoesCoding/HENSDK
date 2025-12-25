@@ -1,17 +1,10 @@
 #include "renderer/henRenderer.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "vendor/glm/glm.hpp"
-#include "vendor/glm/gtc/matrix_transform.hpp"
-#include "vendor/glm/gtc/type_ptr.hpp"
-#include <vendor/glm/gtc/quaternion.hpp>
-#include <vendor/glm/gtx/quaternion.hpp>
-#include "vendor/glm/gtx/string_cast.hpp"
-
 #include "graphics/henGraphics.h"
 #include "core/henArguments.h"
 #include "core/henTimer.h"
 #include "core/henCVar.h"
+#include "core/henMath.h"
 #include "src/renderer/henRHC_OpenGL.h"
 #include "tools/henConsole.h"
 #include "ui/henUI.h"
@@ -33,11 +26,11 @@ namespace hen::renderer
 
     struct ShaderDirLight 
     {
-        glm::vec3 Colour;
+        math::Vec3 Colour;
         float Pad0;
-        glm::vec3 Ambient;
+        math::Vec3 Ambient;
         float Pad1;
-        glm::vec3 Direction;
+        math::Vec3 Direction;
         float Pad2;
 
         float Intensity;
@@ -48,11 +41,11 @@ namespace hen::renderer
 
     struct ShaderPointLight
     {
-        glm::vec3 Colour;
+        math::Vec3 Colour;
         float Pad0;
-        glm::vec3 Ambient;
+        math::Vec3 Ambient;
         float Pad1;
-        glm::vec3 Position; 
+        math::Vec3 Position; 
         float Pad2;
 
         float Intensity;
@@ -63,13 +56,13 @@ namespace hen::renderer
 
     struct ShaderSpotLight 
     {
-        glm::vec3 Colour;
+        math::Vec3 Colour;
         float Pad0;
-        glm::vec3 Ambient;
+        math::Vec3 Ambient;
         float Pad1;
-        glm::vec3 Position;
+        math::Vec3 Position;
         float Pad2;
-        glm::vec3 Direction;
+        math::Vec3 Direction;
         float Pad3;
 
         float InnerCutOff;
@@ -98,7 +91,7 @@ namespace hen::renderer
 
     bool Initialised = false;
     BACKEND CurrentBackend = BACKEND::OPENGL;
-    level::CameraComponent Camera(90.0f, glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f));
+    level::CameraComponent Camera(90.0f, math::Vec3(0.0f, 10.0f, 0.0f), math::Vec3(0.0f));
 
     cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
     {
@@ -241,7 +234,7 @@ namespace hen::renderer
                         data.PointLights[pointLightIndex].Quadratic = quadratic;
                         data.PointLights[pointLightIndex].Intensity = lightComp.Intensity;
                         
-                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
+                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), math::Vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
                     
                         pointLightIndex++;
                         data.NumberOfPointLights++;
@@ -259,14 +252,14 @@ namespace hen::renderer
                         data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
                         data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
                         data.SpotLights[spotLightIndex].Colour = lightComp.Colour;
-                        data.SpotLights[spotLightIndex].InnerCutOff = glm::cos(glm::radians(lightComp.InnerCutOff));
-                        data.SpotLights[spotLightIndex].OuterCutOff = glm::cos(glm::radians(lightComp.OuterCutOff));
+                        data.SpotLights[spotLightIndex].InnerCutOff = math::Cos(math::Radians(lightComp.InnerCutOff));
+                        data.SpotLights[spotLightIndex].OuterCutOff = math::Cos(math::Radians(lightComp.OuterCutOff));
                         data.SpotLights[spotLightIndex].Intensity = lightComp.Intensity;
                         data.SpotLights[spotLightIndex].Constant = 1.0f;
                         data.SpotLights[spotLightIndex].Linear = linear;
                         data.SpotLights[spotLightIndex].Quadratic = quadratic;
                     
-                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), glm::vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
+                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), math::Vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
                     
                         spotLightIndex++;
                         data.NumberOfSpotLights++;
@@ -353,7 +346,7 @@ namespace hen::renderer
         }
     }
 
-    void RenderPrimitive(level::PRIMITIVE_TYPES primitve, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 colour)
+    void RenderPrimitive(level::PRIMITIVE_TYPES primitve, math::Vec3 position, math::Vec3 rotation, math::Vec3 scale, math::Vec3 colour)
     {
         static graphics::VertexArray cubeVA;
         static graphics::VertexArray sphereVA;
@@ -381,9 +374,9 @@ namespace hen::renderer
             initialised = true;
         }
 
-        glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotation));
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotationMatrix;
-        model = glm::scale(model, scale);
+        math::Matrix4 rotationMatrix = math::ToMatrix4(math::Quat(rotation));
+        math::Matrix4 model = math::Translate(math::Matrix4(1.0f), position) * rotationMatrix;
+        model = math::Scale(model, scale);
 
         auto* shader = CurrentShaderManager->Get(PrimitiveShader);
 
