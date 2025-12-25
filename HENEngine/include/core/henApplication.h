@@ -10,9 +10,6 @@ namespace hen
     class Application
     {
     public:
-        Application();
-        ~Application();
-
         virtual void Initialise(SDL_Window* window);
         virtual void Shutdown();
         

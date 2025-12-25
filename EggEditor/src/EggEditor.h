@@ -3,6 +3,9 @@
 
 #include "HENEngine.h"
 
+#include "UI/LevelWindow.h"
+#include "UI/ComponentWindow.h"
+
 class Editor : public hen::Application
 {
 public:
@@ -11,6 +14,10 @@ public:
 
     void FixedUpdate() override;
     void Update(float deltaTime) override;
+
+private:
+    ComponentWindow m_ComponentWindow;
+    LevelWindow m_LevelWindow;
 };
 
 #endif // !_EGGEDITOR_H_

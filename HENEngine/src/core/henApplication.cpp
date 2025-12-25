@@ -25,16 +25,6 @@ namespace hen
         }
     });
 
-    Application::Application()
-    {
-
-    }
-
-    Application::~Application()
-    {
-
-    }
-
     void Application::Initialise(SDL_Window* window)
     {
         Timer timer;   

@@ -5,8 +5,6 @@
 #include <filesystem>
 #include <cassert>
 
-#define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg) + " ( FILE: " + __FILE__ + " || LINE: " + std::to_string(__LINE__) + " )", hen::console::LOGLEVEL::ASSERT), hen::console::Shutdown(), assert(cond)))
-
 #define HEN_LOG(msg) hen::console::Log(msg, hen::console::LOGLEVEL::INFO)
 #define HEN_WARN(msg) hen::console::Log(msg, hen::console::LOGLEVEL::WARNING)
 #define HEN_ERROR(msg) hen::console::Log(msg, hen::console::LOGLEVEL::ERROR)
@@ -23,6 +21,8 @@
 
 #ifdef HEN_NO_ASSERT
     #define HEN_ASSERT(cond, msg) ((void)0)
+#else
+    #define HEN_ASSERT(cond, msg) ((cond) ? (void) 0 : (hen::console::Log(std::string(msg) + " ( FILE: " + __FILE__ + " || LINE: " + std::to_string(__LINE__) + " )", hen::console::LOGLEVEL::ASSERT), hen::console::Shutdown(), assert(cond)))
 #endif // !HEN_NO_ASSERT
 
 #ifdef HEN_NO_DEBUGBREAK
