@@ -27,7 +27,7 @@ set(SDL_RENDER_METAL OFF CACHE BOOL "")
 FetchContent_Declare(
     sdl3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL
-    GIT_TAG release-3.2.16
+    GIT_TAG release-3.4.0
 )
 
 FetchContent_MakeAvailable(sdl3)
