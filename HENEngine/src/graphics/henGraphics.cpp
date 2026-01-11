@@ -223,10 +223,6 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::NONE:
-                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                return nullptr;
-                break;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<VertexBuffer_OpenGL>(size, vertices);
                 break;
@@ -240,10 +236,6 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::NONE:
-                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                return nullptr;
-                break;
             case renderer::BACKEND::OPENGL:
                 return std::make_unique<IndexBuffer_OpenGL>(size, count);
                 break;
@@ -318,9 +310,6 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::NONE:
-                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                break;
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
                 break;
@@ -338,10 +327,6 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::NONE:
-                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                m_BackendImpl = nullptr;
-                break;
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<UniformBuffer_OpenGL>(size, binding);
                 break;
@@ -499,10 +484,6 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::NONE:
-                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                m_BackendImpl = nullptr;
-                break;
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
                 break;

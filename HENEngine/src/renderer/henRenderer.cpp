@@ -127,10 +127,6 @@ namespace hen::renderer
 
         switch (CurrentBackend)
         {
-            case BACKEND::NONE:
-                CurrentRHC = nullptr;
-                HEN_ERROR("[hen::renderer] BACKEND::NONE doesn't exist");
-                break;
             case BACKEND::OPENGL:
                 CurrentRHC = std::make_unique<RHC_OpenGL>(window);
                 GetRHC() = CurrentRHC.get();    

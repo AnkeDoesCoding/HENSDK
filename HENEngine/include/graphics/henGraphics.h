@@ -179,7 +179,6 @@ namespace hen::graphics
     public:
         Shader() = default;
         Shader(const char* vsPath, const char* fsPath);
-        Shader(Shader&&) noexcept = default;
 
         bool IsBackendValid() const;    
 

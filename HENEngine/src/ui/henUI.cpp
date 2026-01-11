@@ -23,13 +23,9 @@ namespace hen::ui
 
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::NONE:
-                break;
             case renderer::BACKEND::OPENGL:
                 ImGui_ImplSDL3_InitForOpenGL(window, SDL_GL_GetCurrentContext());
                 ImGui_ImplOpenGL3_Init("#version 460");
-                break;
-            case renderer::BACKEND::VULKAN:
                 break;
             default:
                 break;
@@ -42,8 +38,6 @@ namespace hen::ui
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::NONE:
-                break;
             case renderer::BACKEND::OPENGL:
                 ImGui_ImplOpenGL3_Shutdown();
                 break;
@@ -65,12 +59,8 @@ namespace hen::ui
             ImGui_ImplSDL3_NewFrame();
             switch (renderer::CurrentBackend)
             {
-                case renderer::BACKEND::NONE:
-                    break;
                 case renderer::BACKEND::OPENGL:
                     ImGui_ImplOpenGL3_NewFrame();
-                    break;
-                case renderer::BACKEND::VULKAN:
                     break;
                 default:
                     break;
@@ -113,12 +103,8 @@ namespace hen::ui
 
             switch (renderer::CurrentBackend)
             {
-                case renderer::BACKEND::NONE:
-                    break;
                 case renderer::BACKEND::OPENGL:
                     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-                    break;
-                case renderer::BACKEND::VULKAN:
                     break;
                 default:
                     break;

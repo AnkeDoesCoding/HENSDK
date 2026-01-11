@@ -13,7 +13,6 @@ namespace hen::renderer
 {
     enum class BACKEND
     {
-        NONE,
         OPENGL,
         VULKAN
     };
