@@ -2,6 +2,7 @@
 
 #include "core/henVersion.h"
 #include "core/henCVar.h"
+#include "core/henJobSystem.h"
 #include "input/henInput.h"
 #include "level/henLevel.h"
 #include "renderer/henRenderer.h"
@@ -30,6 +31,8 @@ namespace hen
         Timer timer;   
 
         console::Initialise(); 
+
+        jobsystem::Initialise();
 
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 

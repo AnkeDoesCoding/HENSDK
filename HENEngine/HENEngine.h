@@ -6,6 +6,7 @@
 #include "core/henApplication.h"
 #include "core/henArguments.h"
 #include "core/henCVar.h"
+#include "core/henJobSystem.h"
 #include "core/henMath.h"
 #include "core/henTimer.h"
 #include "core/henVersion.h"
