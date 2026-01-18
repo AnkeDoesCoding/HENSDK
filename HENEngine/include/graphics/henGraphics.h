@@ -38,7 +38,7 @@ namespace hen::graphics
         int Height;
         int Components;
         unsigned char* Data;
-        unsigned int ID = 0;
+        uint32_t ID = 0;
 
         void Load(const char* path); // Load from a path
         void Load(const unsigned char* data, int size, int width, int height, int components); // Load from memory
@@ -186,7 +186,7 @@ namespace hen::graphics
         void Bind();
         void UnBind();
 
-        unsigned int GetID() const;
+        uint32_t GetID() const;
 
         void SetVal(const std::string& name, bool val) const;
         void SetVal(const std::string& name, int val) const;
@@ -212,7 +212,7 @@ namespace hen::graphics
             virtual void Bind() = 0;
             virtual void UnBind() = 0;
 
-            virtual unsigned int GetID() const = 0;
+            virtual uint32_t GetID() const = 0;
 
             virtual void SetVal(const std::string& name, bool val) const = 0;
             virtual void SetVal(const std::string& name, int val) const = 0;

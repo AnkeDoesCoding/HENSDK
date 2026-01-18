@@ -33,7 +33,7 @@ namespace hen::level::primitives
              0.5f, -0.5f, -0.5f,   0.0f,-1.0f, 0.0f
         };
 
-        unsigned int Indices[] = 
+        uint32_t Indices[] = 
         {
             0, 1, 2,  2, 3, 0,
             4, 5, 6,  6, 7, 4,
@@ -77,7 +77,7 @@ namespace hen::level::primitives
              0.0f,   -1.0f,    0.0f,    0.0f,   -1.0f,    0.0f
         };
 
-        unsigned int Indices[] = 
+        uint32_t Indices[] = 
         {
             0,1,2, 0,2,3, 0,3,4, 0,4,5,
             0,5,6, 0,6,7, 0,7,8, 0,8,1,

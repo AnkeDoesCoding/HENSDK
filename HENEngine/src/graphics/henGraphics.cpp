@@ -398,7 +398,7 @@ namespace hen::graphics
         }
     }
 
-    unsigned int Shader::GetID() const
+    uint32_t Shader::GetID() const
     {
         if (IsBackendValid())
         {

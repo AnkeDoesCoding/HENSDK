@@ -42,8 +42,8 @@ namespace testlevel
 
     void Delete()
     {
-        free(ModelEnt);
-        free(LightEnt);
+        delete ModelEnt;
+        delete LightEnt;
     }
 }
 

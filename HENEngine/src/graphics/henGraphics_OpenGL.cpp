@@ -269,7 +269,7 @@ namespace hen::graphics
         std::string vsSource, fsSource;
         std::ifstream vsFile, fsFile;
 
-        unsigned int vertexShader, fragShader;
+        uint32_t vertexShader, fragShader;
         int success;
         char infoLog[512];
 
@@ -331,7 +331,7 @@ namespace hen::graphics
         glUseProgram(0);
     }
 
-    unsigned int Shader_OpenGL::GetID() const
+    uint32_t Shader_OpenGL::GetID() const
     {
         return m_ID;
     }
@@ -381,7 +381,7 @@ namespace hen::graphics
         glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
-    void Shader_OpenGL::CheckForCompileErrors(unsigned int shader, SHADER_TYPES type)
+    void Shader_OpenGL::CheckForCompileErrors(uint32_t shader, SHADER_TYPES type)
     {
         int success;
         char infoLog[1024];

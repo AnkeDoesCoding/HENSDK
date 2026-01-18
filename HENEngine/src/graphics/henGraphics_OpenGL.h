@@ -18,7 +18,7 @@ namespace hen::graphics
         void SetLayout(const BufferLayout& layout) override;
 
     private:
-        unsigned int m_ID;
+        uint32_t m_ID;
 
         BufferLayout m_Layout;
     };
@@ -35,7 +35,7 @@ namespace hen::graphics
         void UnBind() const override;
 
     private:
-        unsigned int m_ID;
+        uint32_t m_ID;
         uint32_t m_Count;
     };
 
@@ -57,7 +57,7 @@ namespace hen::graphics
     private:
         std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
         std::shared_ptr<IndexBuffer> m_IndexBuffer;
-        unsigned int m_ID;
+        uint32_t m_ID;
         uint32_t m_VertexBufferIndex = 0;
     };
 
@@ -71,7 +71,7 @@ namespace hen::graphics
         unsigned GetBinding() override;
 
     private:
-        unsigned int m_ID;
+        uint32_t m_ID;
         size_t m_Size;
         unsigned m_Binding;
     };
@@ -85,7 +85,7 @@ namespace hen::graphics
         void Bind() override;
         void UnBind() override;
 
-        unsigned int GetID() const override;
+        uint32_t GetID() const override;
 
         void SetVal(const std::string& name, bool val) const override;
         void SetVal(const std::string& name, int val) const override;
@@ -100,10 +100,10 @@ namespace hen::graphics
         void SetMat4(const std::string &name, const math::Matrix4 &mat) const override;
 
     private:
-        void CheckForCompileErrors(unsigned int shader, SHADER_TYPES type);
+        void CheckForCompileErrors(uint32_t shader, SHADER_TYPES type);
 
     private:
-        unsigned int m_ID;
+        uint32_t m_ID;
         const char* m_VSPath;
         const char* m_FSPath;
     };
