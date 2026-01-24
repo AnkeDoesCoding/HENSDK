@@ -52,67 +52,90 @@ namespace hen::graphics
         }
     }
 
+    Texture::Texture()
+    {
+
+    }
+
+    Texture::~Texture()
+    {
+        delete [] Data;
+    }
+
+    Texture::Texture(Texture&& other) noexcept
+    {
+        *this = std::move(other);
+    }
+
     void Texture::Load(const char* path)
     {
-        Data = stbi_load(path, &Width, &Height, &Components, 0);
-        if (Data)
-        {
-            glGenTextures(1, &ID);
+        State = RESOURCE_STATES::NOTREADY;
 
-            GLenum format;
+        unsigned char* stbiData;
 
-            if (Components == 1)
-            {
-                format = GL_R8;
-            }
-            else if (Components == 3)
-            {
-                format = GL_RGB;
-            }
-            else if (Components == 4)
-            {
-                format = GL_RGBA;
-            }
+        stbiData = stbi_load(path, &Width, &Height, &Components, 0);
 
-            glBindTexture(GL_TEXTURE_2D, ID);
-            glTexImage2D(GL_TEXTURE_2D, 0, format, Width, Height, 0, format, GL_UNSIGNED_BYTE, Data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        }
-        else
+        if (!stbiData)
         {
             HEN_ERROR("Failed to load texture");
-            
-            Destroy();
+
+            return;
         }
+
+        size_t dataSize = (size_t)(Width * Height * Components);
+
+        delete [] Data;
+        Data = new unsigned char[dataSize];
+
+        std::memcpy(Data, stbiData, dataSize);
+
+        stbi_image_free(stbiData);
+
+        State = RESOURCE_STATES::READYTOUPLOAD;
     }
 
     void Texture::Load(const unsigned char* data, int size, int width, int height, int components)
     {
+        State = RESOURCE_STATES::NOTREADY;
+
+        delete [] Data;
+        Data = new unsigned char[size];
+
+        std::memcpy(Data, data, size);
+
+        Width = width;
+        Height = height;
+        Components = components;
+
+        State = RESOURCE_STATES::READYTOUPLOAD;
+    }
+
+    void Texture::CreateRenderData()
+    {
         glGenTextures(1, &ID);
 
-        GLenum format;
+        GLenum internalFormat = 0;
+        GLenum dataFormat = 0;
 
-        if (components == 1)
+        if (Components == 1)
         {
-            format = GL_R8;
+            internalFormat = GL_R8;
+            dataFormat     = GL_RED;
         }
-        else if (components == 3)
+        else if (Components == 3)
         {
-            format = GL_RGB;
+            internalFormat = GL_RGB8;
+            dataFormat     = GL_RGB;
         }
-        else if (components == 4)
+        else if (Components == 4)
         {
-            format = GL_RGBA;
+            internalFormat = GL_RGBA8;
+            dataFormat     = GL_RGBA;
         }
+
 
         glBindTexture(GL_TEXTURE_2D, ID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, Data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -120,20 +143,7 @@ namespace hen::graphics
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    }
-
-    Texture::~Texture()
-    {
-        Destroy();
-    }
-
-    void Texture::Destroy()
-    {
-        if (Data)
-        {
-            stbi_image_free(Data);
-            Data = nullptr;
-        }
+        State = RESOURCE_STATES::READYTORENDER;
     }
 
     BufferElement::BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised)

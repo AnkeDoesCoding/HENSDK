@@ -165,7 +165,6 @@ namespace hen::level
             {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"},
             {graphics::SHADER_PRIMITIVES::FLOAT3, "aNormal"},
             {graphics::SHADER_PRIMITIVES::FLOAT2, "aTexCoord"}
-
         };
 
         struct SubMesh
@@ -177,6 +176,8 @@ namespace hen::level
 
         std::vector<SubMesh> SubMeshes;
         std::vector<MaterialComponent> Materials;
+
+        graphics::RESOURCE_STATES State = graphics::RESOURCE_STATES::NOTREADY;
 
         MeshComponent() = default;
 
@@ -221,6 +222,7 @@ namespace hen::level
             VertexArray.AddVertexBuffer(VertexBuffer);
             VertexArray.SetIndexBuffer(IndexBuffer);
 
+            State = graphics::RESOURCE_STATES::READYTORENDER;
         }
 
         void DeleteRenderData()
@@ -239,6 +241,8 @@ namespace hen::level
             {
                 IndexBuffer.reset();
             }
+            
+            State = graphics::RESOURCE_STATES::NOTREADY;
         }
 
     };

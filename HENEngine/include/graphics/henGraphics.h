@@ -32,20 +32,46 @@ namespace hen::graphics
         FRAGMENT
     };
 
+    enum class RESOURCE_STATES
+    {
+        NOTREADY,
+        READYTOUPLOAD,
+        READYTORENDER
+    };
+
     struct Texture
     {
         int Width;
         int Height;
         int Components;
-        unsigned char* Data;
+        unsigned char* Data = nullptr;
         uint32_t ID = 0;
+        RESOURCE_STATES State;
 
-        void Load(const char* path); // Load from a path
-        void Load(const unsigned char* data, int size, int width, int height, int components); // Load from memory
+        Texture();
+        ~Texture();
+        Texture(Texture&& other) noexcept;
 
+        void Load(const char* path);
+        void Load(const unsigned char* data, int size, int width, int height, int components);
+
+        void CreateRenderData();
         void Destroy();
 
-        ~Texture();
+        Texture& operator=(Texture&& other) noexcept
+        {
+            using std::swap;
+
+            swap(Width, other.Width);
+            swap(Height, other.Height);
+            swap(Components, other.Components);
+            swap(Data, other.Data);
+            swap(ID, other.ID);
+            swap(State, other.State);
+            
+            return *this;
+        }
+
     };
 
     struct BufferElement

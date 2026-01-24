@@ -415,8 +415,8 @@ namespace importer
                 meshComp.SubMeshes.push_back(subMesh);
             }
         }
-
-        meshComp.CreateRenderData();
+        
+        meshComp.State = hen::graphics::RESOURCE_STATES::READYTOUPLOAD;
 
         HEN_LOG("[importer] mesh import took " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }

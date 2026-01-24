@@ -301,25 +301,43 @@ namespace hen::renderer
                 int windowWidth, windowHeight;
                 SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
-                if (meshComp.VertexArray.IsBackendValid())
+                if (meshComp.State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                {
+                    meshComp.CreateRenderData();
+                }
+
+                if (meshComp.State == graphics::RESOURCE_STATES::READYTORENDER)
                 {
                     meshComp.VertexArray.Bind();
 
                     for (auto& submesh : meshComp.SubMeshes)
                     {
-                        auto* diffuse = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].DiffuseTexture);
-                        auto* specular = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].SpecularTexture);
+                        if (auto* diffuse = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].DiffuseTexture))
+                        {
+                            if (diffuse->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            {
+                                diffuse->CreateRenderData();
+                            }
 
-                        if (diffuse)
-                        {
-                            glActiveTexture(GL_TEXTURE0);
-                            glBindTexture(GL_TEXTURE_2D, diffuse->ID);
+                            if (diffuse->State == graphics::RESOURCE_STATES::READYTORENDER)
+                            {
+                                glActiveTexture(GL_TEXTURE0);
+                                glBindTexture(GL_TEXTURE_2D, diffuse->ID);
+                            }
                         }
-                    
-                        if (specular)
+                        
+                        if (auto* specular = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].SpecularTexture))
                         {
-                            glActiveTexture(GL_TEXTURE1);
-                            glBindTexture(GL_TEXTURE_2D, specular->ID);
+                            if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            {
+                                specular->CreateRenderData();
+                            }
+
+                            if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            {
+                                glActiveTexture(GL_TEXTURE1);
+                                glBindTexture(GL_TEXTURE_2D, specular->ID);
+                            }
                         }
                     
                         shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));

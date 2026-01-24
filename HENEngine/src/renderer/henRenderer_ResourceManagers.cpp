@@ -136,8 +136,7 @@ namespace hen::renderer
         {
             index = m_FreeList.back();
             m_FreeList.pop_back();
-
-            m_Textures[index].Texture.Destroy();                
+            
             m_Textures[index].Texture.Load(texPath); 
             m_Textures[index].Alive = true;
             m_Textures[index].Generation++;
@@ -172,8 +171,7 @@ namespace hen::renderer
         {
             index = m_FreeList.back();
             m_FreeList.pop_back();
-
-            m_Textures[index].Texture.Destroy();                
+         
             m_Textures[index].Texture.Load(data, size, width, height, components); 
             m_Textures[index].Alive = true;
             m_Textures[index].Generation++;
@@ -216,7 +214,6 @@ namespace hen::renderer
             return;
         }
 
-        slot.Texture.Destroy();
         slot.Alive = false;
         slot.Generation++;
         m_FreeList.push_back(handle.Index);
