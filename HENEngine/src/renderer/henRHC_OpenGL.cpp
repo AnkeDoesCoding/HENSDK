@@ -19,6 +19,24 @@ namespace hen
     {
     }
 
+    std::string RHC_OpenGL::GetGPUName()
+    {
+        const GLubyte* renderer = glGetString(GL_RENDERER);
+        return renderer ? reinterpret_cast<const char*>(renderer) : "UNKNOWN";
+    }
+
+    std::string RHC_OpenGL::GetGPUVendor()
+    {
+        const GLubyte* vendor = glGetString(GL_VENDOR);
+        return vendor ? reinterpret_cast<const char*>(vendor) : "UNKNOWN";
+    }
+
+    std::string RHC_OpenGL::GetAPIVersion()
+    {
+        const GLubyte* version = glGetString(GL_VERSION);
+        return version ? reinterpret_cast<const char*>(version) : "UNKNOWN";
+    }
+
     void RHC_OpenGL::Initialise() 
     {
         Timer timer;

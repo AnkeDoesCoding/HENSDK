@@ -10,10 +10,18 @@
 #include "ui/henUI.h"
 
 #include <memory>
+#include <fstream>
+#include <sstream>
+#include <thread>
+
+#if PLATFORM_WINDOWS
+    #include <windows.h>
+#endif // !PLATFORM_WINDOWS
 
 namespace hen
 {
     static uint64_t LastTick, CurrentTick = 0;
+    static std::string CPUName;
     static SDL_Window* Window;
     static std::unique_ptr<cvar::System> CurrentCVarSystem;
     static std::unique_ptr<ui::IMGUIManager> CurrentImGuiManager;
@@ -34,10 +42,11 @@ namespace hen
 
         jobsystem::Initialise();
 
+        HEN_ASSERT(jobsystem::Initialised, "hen::jobsystem not initialised");
+
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
         Window = window;
-
 
         renderer::Initialise(window);
 
@@ -66,6 +75,38 @@ namespace hen
         
 
         Initialised = true;
+
+        #if PLATFORM_WINDOWS
+            char cpuName[256] = {0};
+            DWORD size = sizeof(cpuName);
+
+            if (RegGetValueA(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", "ProcessorNameString", RRF_RT_REG_SZ, nullptr, cpuName, &size) == ERROR_SUCCESS)
+            {
+                CPUName = cpuName;
+            }
+        #endif // !PLATFORM_WINDOWS
+
+        #if PLATFORM_LINUX
+            std::ifstream file("/proc/cpuinfo");
+            if (file.is_open())
+            {
+                std::string line;
+                while (std::getline(file, line))
+                {
+                    if (line.rfind("model name", 0) == 0)
+                    {
+                        auto pos = line.find(':');
+                        if (pos != std::string::npos)
+                        {
+                            info.name = line.substr(pos + 2);
+                            break;
+                        }
+                    }
+                }
+            }
+        #endif // !PLATFORM_LINUX
+
+        HEN_LOG("[hen::Application] Detected hardware: \n\n------------------------------------\nCPU \n------------------------------------ \n " + CPUName + "\n " + std::to_string(std::thread::hardware_concurrency()) + " Threads \n\n------------------------------------\nGPU \n------------------------------------ \n " + renderer::GetRHC()->GetGPUName() + "\n " + renderer::GetRHC()->GetGPUVendor() + "\n " + renderer::GetRHC()->GetAPIVersion());
 
         std::string infoStr;
         infoStr += "[hen::Application] Initialised with HEN Engine " + version::Version;

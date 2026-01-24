@@ -11,6 +11,10 @@ namespace hen
         RHC_OpenGL(SDL_Window* window);
         ~RHC_OpenGL() override;
 
+        std::string GetGPUName() override;
+        std::string GetGPUVendor() override;
+        std::string GetAPIVersion() override;
+
         void Initialise() override;
         void Clear() override;
         void Present() override;

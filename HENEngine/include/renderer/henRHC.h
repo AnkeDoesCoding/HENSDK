@@ -3,12 +3,18 @@
 
 #include "SDL3/SDL.h"
 
+#include <string>
+
 namespace hen
 {
     class RHC
     {
     public:
         virtual ~RHC() = default;
+
+        virtual std::string GetGPUName() = 0;
+        virtual std::string GetGPUVendor() = 0;
+        virtual std::string GetAPIVersion() = 0;
 
         virtual void Initialise() = 0;
         virtual void Clear() = 0;

@@ -24,8 +24,9 @@ namespace testlevel
 
         transform.SetScale(hen::math::Vec3(0.15f));
 
-        importer::ImportModel("res/models/sponza/sponza.glb", mesh);
+        hen::jobsystem::Execute([&mesh] {importer::ImportModel("res/models/sponza/sponza.glb", mesh);});
 
+        
         mat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
         LightEnt = new hen::level::Entity(hen::level::GetActiveLevel()->CreateEntity("light"));
