@@ -28,7 +28,7 @@ namespace importer
         out.resize(count * compCount);
 
         const unsigned char* basePtr = buffer.data.data() + view.byteOffset + accessor.byteOffset;
-        const size_t byteStride = accessor.ByteStride(view);
+        const size_t byteStride = (view.byteStride == 0) ? (compCount * tinygltf::GetComponentSizeInBytes(accessor.componentType)) : view.byteStride;
 
         for (size_t i = 0; i < count; ++i)
         {
@@ -363,11 +363,15 @@ namespace importer
                     {
                         const tinygltf::BufferView& viewIdx = model.bufferViews[accIdx.bufferView];
                         const tinygltf::Buffer& bufIdx = model.buffers[viewIdx.buffer];
-
-                        const unsigned char* basePtr = bufIdx.data.data() + viewIdx.byteOffset + accIdx.byteOffset;
-
-                        size_t stride = tinygltf::GetComponentSizeInBytes(accIdx.componentType);
-
+                                            
+                        const unsigned char* basePtr =
+                            bufIdx.data.data() + viewIdx.byteOffset + accIdx.byteOffset;
+                                            
+                        size_t stride =
+                            (viewIdx.byteStride != 0)
+                                ? viewIdx.byteStride
+                                : tinygltf::GetComponentSizeInBytes(accIdx.componentType);
+                                            
                         for (size_t i = 0; i < accIdx.count; ++i)
                         {
                             const unsigned char* ptr = basePtr + i * stride;
