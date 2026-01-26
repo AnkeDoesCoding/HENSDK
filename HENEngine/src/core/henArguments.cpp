@@ -1,7 +1,6 @@
 #include "core/henArguments.h"
 
 #include <unordered_set>
-#include <iterator>
 
 namespace hen::arguments
 {

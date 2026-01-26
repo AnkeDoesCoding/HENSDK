@@ -3,8 +3,6 @@
 
 #include "SDL3/SDL.h"
 
-#include "core/henTimer.h"
-
 namespace hen
 {
     class Application

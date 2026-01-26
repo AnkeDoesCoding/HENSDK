@@ -1,8 +1,6 @@
 #ifndef _HENCVAR_H_
 #define _HENCVAR_H_
 
-#include "tools/henConfig.h"
-
 #include <string>
 #include <functional>
 #include <unordered_map>

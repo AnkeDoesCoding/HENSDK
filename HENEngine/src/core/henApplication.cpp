@@ -3,15 +3,14 @@
 #include "core/henVersion.h"
 #include "core/henCVar.h"
 #include "core/henJobSystem.h"
+#include "core/henTimer.h"
 #include "input/henInput.h"
-#include "level/henLevel.h"
 #include "renderer/henRenderer.h"
 #include "tools/henConsole.h"
 #include "ui/henUI.h"
 
 #include <memory>
 #include <fstream>
-#include <sstream>
 #include <thread>
 
 #if PLATFORM_WINDOWS
@@ -98,7 +97,7 @@ namespace hen
                         auto pos = line.find(':');
                         if (pos != std::string::npos)
                         {
-                            info.name = line.substr(pos + 2);
+                            CPUName = line.substr(pos + 2);
                             break;
                         }
                     }

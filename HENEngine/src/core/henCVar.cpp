@@ -1,6 +1,7 @@
 #include "core/henCVar.h"
 
 #include "tools/henConsole.h"
+#include "tools/henConfig.h"
 
 #include <sstream>
 #include <algorithm>

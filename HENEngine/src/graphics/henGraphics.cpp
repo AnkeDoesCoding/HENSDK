@@ -1,6 +1,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "graphics/henGraphics.h"
 
+#include "vendor/glad/include/glad.h"
+
 #include "src/graphics/henGraphics_OpenGL.h"
 #include "tools/henConsole.h"
 #include "renderer/henRenderer.h"
@@ -87,7 +89,7 @@ namespace hen::graphics
         delete [] Data;
         Data = new unsigned char[dataSize];
 
-        std::memcpy(Data, stbiData, dataSize);
+        memcpy(Data, stbiData, dataSize);
 
         stbi_image_free(stbiData);
 
@@ -101,7 +103,7 @@ namespace hen::graphics
         delete [] Data;
         Data = new unsigned char[size];
 
-        std::memcpy(Data, data, size);
+        memcpy(Data, data, size);
 
         Width = width;
         Height = height;

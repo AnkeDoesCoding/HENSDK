@@ -3,11 +3,9 @@
 
 #include "SDL3/SDL.h"
 
-#include "vendor/glad/include/glad.h"
 #include "renderer/henRHC.h"
 #include "renderer/henRenderer_ResourceManagers.h"
 #include "level/henLevel.h"
-#include "graphics/henGraphics.h"
 
 namespace hen::renderer
 {

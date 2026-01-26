@@ -1,5 +1,7 @@
 #include "renderer/henRenderer.h"
 
+#include "vendor/glad/include/glad.h"
+
 #include "graphics/henGraphics.h"
 #include "core/henArguments.h"
 #include "core/henTimer.h"

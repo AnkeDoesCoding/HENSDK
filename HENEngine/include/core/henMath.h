@@ -1,14 +1,10 @@
 #ifndef _HENMATH_H_
 #define _HENMATH_H_
 
-#include "vendor/glm/glm.hpp"
-
 #define GLM_ENABLE_EXPERIMENTAL
 
-#include "vendor/glm/gtc/matrix_transform.hpp"
-
-#include <vendor/glm/gtx/matrix_decompose.hpp>
-#include <vendor/glm/gtx/quaternion.hpp>
+#include "vendor/glm/gtx/matrix_decompose.hpp"
+#include "vendor/glm/gtx/quaternion.hpp"
 
 namespace hen::math
 {

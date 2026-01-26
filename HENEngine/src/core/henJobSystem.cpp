@@ -5,14 +5,14 @@
 
 #if PLATFORM_WINDOWS
     #define NOMINMAX
-    #include <Windows.h>
+    #include <windows.h>
 #endif // !PLATFORM_WINDOWS
 
 #include <algorithm>
 #include <atomic>
 #include <thread>
 #include <condition_variable>
-#include <sstream>
+#include <cmath>
 
 template <typename Item, size_t Capacity>
 class ThreadSafeRingBuffer
