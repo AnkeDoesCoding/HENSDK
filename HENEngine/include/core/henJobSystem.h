@@ -2,6 +2,7 @@
 #define _HENJOBSYSTEM_H_
 
 #include <functional>
+#include <cstdint>
 
 // again shamelessly copied from Wicked Engine, thanks Turan!!!
 

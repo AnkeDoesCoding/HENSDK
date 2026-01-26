@@ -363,35 +363,39 @@ namespace importer
                     {
                         const tinygltf::BufferView& viewIdx = model.bufferViews[accIdx.bufferView];
                         const tinygltf::Buffer& bufIdx = model.buffers[viewIdx.buffer];
-                        const unsigned char* indexData = bufIdx.data.data() + viewIdx.byteOffset + accIdx.byteOffset;
-
+                                            
+                        const unsigned char* basePtr =
+                            bufIdx.data.data() + viewIdx.byteOffset + accIdx.byteOffset;
+                                            
+                        size_t stride =
+                            (viewIdx.byteStride != 0)
+                                ? viewIdx.byteStride
+                                : tinygltf::GetComponentSizeInBytes(accIdx.componentType);
+                                            
                         for (size_t i = 0; i < accIdx.count; ++i)
                         {
+                            const unsigned char* ptr = basePtr + i * stride;
+                        
                             uint32_t idx = 0;
                             switch (accIdx.componentType)
                             {
-                                case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-                                {
-                                    const uint16_t* arr = reinterpret_cast<const uint16_t*>(indexData + i * tinygltf::GetComponentSizeInBytes(accIdx.componentType));
-                                    idx = static_cast<uint32_t>(arr[0]);
-                                    break;
-                                }
-                                case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-                                {
-                                    const uint32_t* arr = reinterpret_cast<const uint32_t*>(indexData + i * tinygltf::GetComponentSizeInBytes(accIdx.componentType));
-                                    idx = arr[0];
-                                    break;
-                                }
                                 case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-                                {
-                                    const uint8_t* arr = reinterpret_cast<const uint8_t*>(indexData + i * tinygltf::GetComponentSizeInBytes(accIdx.componentType));
-                                    idx = static_cast<uint32_t>(arr[0]);
+                                    idx = *reinterpret_cast<const uint8_t*>(ptr);
                                     break;
-                                }
+                            
+                                case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+                                    idx = *reinterpret_cast<const uint16_t*>(ptr);
+                                    break;
+                            
+                                case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+                                    idx = *reinterpret_cast<const uint32_t*>(ptr);
+                                    break;
+                            
                                 default:
                                     HEN_ERROR("[gltf] unsupported index component type");
                                     break;
                             }
+                        
                             meshComp.Indices.push_back(vertexStart + idx);
                         }
 
