@@ -26,56 +26,42 @@ namespace hen::renderer
 
     static ShaderHandle PrimitiveShader;
 
-    struct ShaderDirLight 
+    struct alignas(16) ShaderDirLight 
     {
-        math::Vec3 Colour;
-        float Pad0;
-        math::Vec3 Ambient;
-        float Pad1;
-        math::Vec3 Direction;
-        float Pad2;
+        math::Vec4 Colour;
 
-        float Intensity;
-        float Pad3;
-        float Pad4;
-        float Pad5;  
+        math::Vec3 Ambient;
+        float Pad0;
+        math::Vec3 Direction;
+        float Pad1;
     };  
 
-    struct ShaderPointLight
+    struct alignas(16) ShaderPointLight
     {
-        math::Vec3 Colour;
-        float Pad0;
-        math::Vec3 Ambient;
-        float Pad1;
-        math::Vec3 Position; 
-        float Pad2;
+        math::Vec4 Colour;
 
-        float Intensity;
-        float Constant;
-        float Linear;
-        float Quadratic;
+        math::Vec3 Ambient;
+        float Pad0;
+        math::Vec3 Position; 
+        float Pad1;
+
+        math::Vec4 Attenuation;
     };
 
-    struct ShaderSpotLight 
+    struct alignas(16) ShaderSpotLight 
     {
-        math::Vec3 Colour;
-        float Pad0;
+        math::Vec4 Colour;
+
         math::Vec3 Ambient;
-        float Pad1;
+        float Pad0;
         math::Vec3 Position;
-        float Pad2;
+        float Pad1;
         math::Vec3 Direction;
-        float Pad3;
+        float Pad2;
 
-        float InnerCutOff;
-        float OuterCutOff;    
-        float Intensity;
-        float Pad4;
+        math::Vec4 Angles;
 
-        float Constant;
-        float Linear;
-        float Quadratic;
-        float Pad5;
+        math::Vec4 Attenuation;
     };
 
     struct ShaderLights
@@ -221,16 +207,16 @@ namespace hen::renderer
                             continue;
                         }
                     
-                        linear    = 4.5f / lightComp.Range;
+                        linear = 4.5f / lightComp.Range;
                         quadratic = 75.f / (lightComp.Range * lightComp.Range);
                         
-                        data.PointLights[pointLightIndex].Position  = transformComp.GetPosition();
-                        data.PointLights[pointLightIndex].Colour    = lightComp.Colour;
-                        data.PointLights[pointLightIndex].Ambient   = lightComp.Ambient;
-                        data.PointLights[pointLightIndex].Constant  = 1.0f;
-                        data.PointLights[pointLightIndex].Linear    = linear;
-                        data.PointLights[pointLightIndex].Quadratic = quadratic;
-                        data.PointLights[pointLightIndex].Intensity = lightComp.Intensity;
+                        data.PointLights[pointLightIndex].Position = transformComp.GetPosition();
+                        data.PointLights[pointLightIndex].Colour = math::Vec4(lightComp.Colour, 0.0f);
+                        data.PointLights[pointLightIndex].Ambient = lightComp.Ambient;
+                        data.PointLights[pointLightIndex].Attenuation.x = 1.0f;
+                        data.PointLights[pointLightIndex].Attenuation.y = linear;
+                        data.PointLights[pointLightIndex].Attenuation.z = quadratic;
+                        data.PointLights[pointLightIndex].Colour.w = lightComp.Intensity;
                         
                         RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), math::Vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
                     
@@ -249,13 +235,13 @@ namespace hen::renderer
                         data.SpotLights[spotLightIndex].Position = transformComp.GetPosition();
                         data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
                         data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
-                        data.SpotLights[spotLightIndex].Colour = lightComp.Colour;
-                        data.SpotLights[spotLightIndex].InnerCutOff = math::Cos(math::Radians(lightComp.InnerCutOff));
-                        data.SpotLights[spotLightIndex].OuterCutOff = math::Cos(math::Radians(lightComp.OuterCutOff));
-                        data.SpotLights[spotLightIndex].Intensity = lightComp.Intensity;
-                        data.SpotLights[spotLightIndex].Constant = 1.0f;
-                        data.SpotLights[spotLightIndex].Linear = linear;
-                        data.SpotLights[spotLightIndex].Quadratic = quadratic;
+                        data.SpotLights[spotLightIndex].Colour = math::Vec4(lightComp.Colour, 0.0f);
+                        data.SpotLights[spotLightIndex].Angles.x = math::Cos(math::Radians(lightComp.InnerCutOff));
+                        data.SpotLights[spotLightIndex].Angles.y = math::Cos(math::Radians(lightComp.OuterCutOff));
+                        data.SpotLights[spotLightIndex].Colour.w = lightComp.Intensity;
+                        data.SpotLights[spotLightIndex].Attenuation.x = 1.0f;
+                        data.SpotLights[spotLightIndex].Attenuation.y = linear;
+                        data.SpotLights[spotLightIndex].Attenuation.z = quadratic;
                     
                         RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), math::Vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
                     
@@ -269,9 +255,9 @@ namespace hen::renderer
                         }
                     
                         data.DirLight.Ambient = lightComp.Ambient;
-                        data.DirLight.Colour = lightComp.Colour;
+                        data.DirLight.Colour = math::Vec4(lightComp.Colour, 0.0f);
                         data.DirLight.Direction = transformComp.GetForwardVector();
-                        data.DirLight.Intensity = lightComp.Intensity;
+                        data.DirLight.Colour.w = lightComp.Intensity;
                     
                         data.HasDirectionalLight = true;
                         break; 

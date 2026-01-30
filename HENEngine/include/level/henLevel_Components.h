@@ -82,7 +82,7 @@ namespace hen::level
         math::Vec3 GetForwardVector() const
         {
             float pitch = Rotation.x;
-            float yaw   = Rotation.y;
+            float yaw = Rotation.y;
 
             math::Vec3 forward;
             forward.x = cos(yaw) * cos(pitch);
@@ -96,7 +96,7 @@ namespace hen::level
         {
             math::Vec3 levelUp = math::Vec3(0.0f, 1.0f, 0.0f);
             math::Vec3 forward = GetForwardVector();
-            math::Vec3 right   = math::Normalise(math::Cross(forward, levelUp));
+            math::Vec3 right = math::Normalise(math::Cross(forward, levelUp));
             return math::Normalise(math::Cross(right, forward));
         }
 
