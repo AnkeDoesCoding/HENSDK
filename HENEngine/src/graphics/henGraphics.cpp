@@ -1,4 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
 #include "graphics/henGraphics.h"
 
 #include "vendor/glad/include/glad.h"

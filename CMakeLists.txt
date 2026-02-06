@@ -5,6 +5,10 @@ project ("HEN SDK" CXX)
 # Make sure to delete the build folder and reconfigure after changing this 
 set(SHIPPING_BUILD OFF CACHE BOOL "" FORCE)
 
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
 include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -43,13 +47,9 @@ endif()
 
 
 if(${SHIPPING_BUILD})
-
     add_compile_definitions(ENGINE_RESOURCE_PATH="./res/engine/")
-
 else()
-
     add_compile_definitions(ENGINE_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/HENEngine/res/")
-
 endif()
 
 add_subdirectory("HENEngine")

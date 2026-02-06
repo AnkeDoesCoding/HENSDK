@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 4.0.2)
 
 project ("EggEditor" CXX)
 
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp" "vendor/*.cpp")
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
