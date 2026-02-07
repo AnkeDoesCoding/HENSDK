@@ -5,6 +5,7 @@
 #include "core/henJobSystem.h"
 #include "core/henTimer.h"
 #include "input/henInput.h"
+#include "physics/henPhysics.h"
 #include "renderer/henRenderer.h"
 #include "tools/henConsole.h"
 #include "ui/henUI.h"
@@ -12,16 +13,22 @@
 #include <memory>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 
 #if PLATFORM_WINDOWS
+    #define NOMINMAX
     #include <windows.h>
 #endif // !PLATFORM_WINDOWS
 
 namespace hen
 {
-    static uint64_t LastTick, CurrentTick = 0;
+    static double Accumulator = 0.0;
+    static double CurrentTimestep = 0.0;
+    static constexpr double FixedTimestep = 1.0 / 60.0;
+
     static std::string CPUName;
     static SDL_Window* Window;
+
     static std::unique_ptr<cvar::System> CurrentCVarSystem;
     static std::unique_ptr<ui::IMGUIManager> CurrentImGuiManager;
     
@@ -50,6 +57,9 @@ namespace hen
         renderer::Initialise(window);
 
         HEN_ASSERT(renderer::Initialised, "hen::renderer not initialised");
+
+        
+        physics::Initialise();
 
 
         CurrentImGuiManager = std::make_unique<ui::IMGUIManager>();
@@ -136,38 +146,48 @@ namespace hen
         ui::GetIMGUIManager()->Shutdown();
         cvar::GetSystem()->Shutdown();
 
+        physics::Shutdown();
         console::Shutdown();
     }
 
     void Application::Run()
     {
-        if (Initialised)
+        if (!Initialised)
         {
-            renderer::Run();
-
-            LastTick = CurrentTick;
-            CurrentTick = SDL_GetTicks();
-
-            float deltaTime = (CurrentTick - LastTick) / 1000.0f;
-
-            Update(deltaTime);
-            FixedUpdate();
-
-            input::Update();
+            return;
         }
+
+        double newTime = (double)SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
+        double frameTime = newTime - CurrentTimestep;
+        CurrentTimestep = newTime;
+
+        frameTime = std::min(frameTime, 0.25);
+
+        Accumulator += frameTime;
+
+        Update((float)frameTime);
+
+        while (Accumulator >= FixedTimestep)
+        {
+            FixedUpdate();
+            Accumulator -= FixedTimestep;
+        }
+
+        renderer::Run();
+        input::Update();
     }
 
     void Application::FixedUpdate()
+    {
+        physics::Run(FixedTimestep);
+    }
+
+    void Application::Update(float deltaTime)
     {
         if (input::Press(input::KEYBOARD_BUTTON_TILDE))
         {
             console::Toggle();
         }
-    }
-
-    void Application::Update(float deltaTime)
-    {
-
     }
 
     void Application::ProcessEvent(const SDL_Event& event)
