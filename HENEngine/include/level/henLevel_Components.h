@@ -31,9 +31,10 @@ namespace hen::level
 
     struct TransformComponent
     {
-        mutable math::Matrix4 Transform;
-        math::Vec3 Position;
-        math::Vec3 Rotation;
+        mutable math::Matrix4 Transform = math::Matrix4(1.0f);
+        math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 LocalPosition = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Rotation= math::Vec3(0.0f, 0.0f, 0.0f);
         math::Vec3 Scale = math::Vec3(1.0f, 1.0f, 1.0f);
 
         mutable bool Dirty = true;
@@ -135,6 +136,56 @@ namespace hen::level
             return Transform;
         }
 
+    };
+
+    struct RigidBodyComponent
+    {
+        enum class COLLISIONSHAPES
+        {
+            BOX,
+            SPHERE,
+            CAPSULE,
+            CYLINDER,
+            CONVEX_HULL,
+            TRIANGLE_MESH
+        };
+
+        struct BoxParams
+        {
+            math::Vec3 HalfExtents = math::Vec3(1.0f, 1.0f, 1.0f);
+        } Box;
+
+        struct SphereParams
+        {
+            float Radius = 1.0f;
+        } Sphere;
+
+        struct CapsuleParams
+        {
+            float Radius = 1.0f;
+            float Height = 1.0f;
+        } Capsule;
+
+        struct CylinderParams
+        {
+            float Radius = 1.0f;
+            float Height = 1.0f;
+        } Cylinder;
+
+        COLLISIONSHAPES Shape;
+        std::shared_ptr<void> PhysicsObject = nullptr;
+        math::Vec3 Offset;
+
+        bool Kinematic = false;
+        bool DisableDeactivation = false;
+        bool StartDeactivated = false;
+
+        float Mass = 1.0f;
+        float Friction = 0.5f;
+        float Restitution = 0.05f;
+        float LinearDamping = 0.05f;
+        float AngularDamping = 0.05f;
+        float Bouyancy = 1.5f;
     };
 
     struct MaterialComponent
@@ -251,10 +302,10 @@ namespace hen::level
     {
         LIGHT_TYPES Type;
 
-        float Range;
-        float Intensity;
-        float InnerCutOff;
-        float OuterCutOff;
+        float Range = 200.0f;
+        float Intensity = 1.0f;
+        float InnerCutOff = 25.0f;
+        float OuterCutOff = 50.0f;
 
         math::Vec3 Colour = math::Vec3(1.0f, 1.0f, 1.0f);
         math::Vec3 Ambient = math::Vec3(0.0f, 0.0f, 0.0f);

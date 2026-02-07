@@ -72,11 +72,10 @@ hen::scene
 etc...
 ```
 
-**AVOID** `using namespace` directives:
+**AVOID** `using namespace` directives for the standard library:
 
 ```cpp
 // Wrong!
-using namespace hen; 
 using namespace std;
 ```
 
@@ -102,23 +101,20 @@ namespace hen
 It's okay to use the old syntax if you have multiple namespace in a single file:
 
 ```cpp
-namespace hen
+namespace hen::physics
 {
-    namespace physics
-    {
-        ...
-    }
-
     namespace jolt
     {
         ...
     }
+
+    ...
 }
 ```
 
 Namespaces should be laid out as follows:
 
-```cpp
+```cppS
 
 namespace Foo
 {
