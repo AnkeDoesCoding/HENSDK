@@ -210,7 +210,7 @@ namespace hen::renderer
                         linear = 4.5f / lightComp.Range;
                         quadratic = 75.f / (lightComp.Range * lightComp.Range);
                         
-                        data.PointLights[pointLightIndex].Position = transformComp.GetPosition();
+                        data.PointLights[pointLightIndex].Position = transformComp.LocalPosition;
                         data.PointLights[pointLightIndex].Colour = math::Vec4(lightComp.Colour, 0.0f);
                         data.PointLights[pointLightIndex].Ambient = lightComp.Ambient;
                         data.PointLights[pointLightIndex].Attenuation.x = 1.0f;
@@ -218,7 +218,7 @@ namespace hen::renderer
                         data.PointLights[pointLightIndex].Attenuation.z = quadratic;
                         data.PointLights[pointLightIndex].Colour.w = lightComp.Intensity;
                         
-                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), math::Vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
+                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.LocalPosition, math::Vec3(0.0f), transformComp.LocalScale, lightComp.Colour);
                     
                         pointLightIndex++;
                         data.NumberOfPointLights++;
@@ -232,7 +232,7 @@ namespace hen::renderer
                         linear = 4.5 / lightComp.Range;
                         quadratic = 75 / (lightComp.Range * lightComp.Range);
                         
-                        data.SpotLights[spotLightIndex].Position = transformComp.GetPosition();
+                        data.SpotLights[spotLightIndex].Position = transformComp.LocalPosition;
                         data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
                         data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
                         data.SpotLights[spotLightIndex].Colour = math::Vec4(lightComp.Colour, 0.0f);
@@ -243,7 +243,7 @@ namespace hen::renderer
                         data.SpotLights[spotLightIndex].Attenuation.y = linear;
                         data.SpotLights[spotLightIndex].Attenuation.z = quadratic;
                     
-                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.GetPosition(), math::Vec3(0.0f), transformComp.GetScale(), lightComp.Colour);
+                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.LocalPosition, math::Vec3(0.0f), transformComp.LocalScale, lightComp.Colour);
                     
                         spotLightIndex++;
                         data.NumberOfSpotLights++;
@@ -330,7 +330,7 @@ namespace hen::renderer
                     
                         shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
                         shader->SetMat4("uView", Camera.GetViewMatrix());
-                        shader->SetMat4("uModel", transformComp.GetMatrix());
+                        shader->SetMat4("uModel", transformComp.GetWorldMatrix());
                         shader->SetVec3("uViewPos", Camera.Position);
 
                         shader->SetVal("uMaterial.Diffuse", 0);

@@ -31,109 +31,77 @@ namespace hen::level
 
     struct TransformComponent
     {
-        mutable math::Matrix4 Transform = math::Matrix4(1.0f);
-        math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
-        math::Vec3 LocalPosition = math::Vec3(0.0f, 0.0f, 0.0f);
-        math::Vec3 Rotation= math::Vec3(0.0f, 0.0f, 0.0f);
-        math::Vec3 Scale = math::Vec3(1.0f, 1.0f, 1.0f);
+        math::Vec3 LocalPosition = math::Vec3(0.0f);
+        math::Quat LocalRotation = math::Quat(1.0f, 0.0f, 0.0f, 0.0f);
+        math::Vec3 LocalScale = math::Vec3(1.0f);
 
+        mutable math::Matrix4 World = math::Matrix4(1.0f);
         mutable bool Dirty = true;
 
-        TransformComponent() = default;
-
-        TransformComponent(const math::Matrix4& transform)
-            : Transform(transform)
+        math::Matrix4 GetLocalMatrix() const
         {
-
+            return math::Translate(math::Matrix4(1.0f), LocalPosition) * math::ToMatrix4(LocalRotation) * math::Scale(math::Matrix4(1.0f), LocalScale);
         }
 
-        TransformComponent(const math::Vec3& position, const math::Vec3& rotation, const math::Vec3& scale)
-            : Position(position), Rotation(rotation), Scale(scale)
-        {
-            
-        }
-
-        const math::Vec3& GetRotation() const
-        {
-            return Rotation;
-        }
-
-        const math::Vec3& GetPosition()
-        {
-            return Position;
-        }
-
-        const math::Vec3& GetScale() const
-        {
-            return Scale;
-        }
-
-        const math::Matrix4& GetMatrix() const
+        const math::Matrix4& GetWorldMatrix() const
         {
             if (Dirty)
             {
-                Transform = math::Translate(math::Matrix4(1.0f), Position) * math::ToMatrix4(math::Quat(Rotation)) * math::Scale(math::Matrix4(1.0f), Scale);
-
+                math::Matrix4 local = GetLocalMatrix();
+                World = local;
                 Dirty = false;
             }
 
-            return Transform;
+            return World;
         }
 
         math::Vec3 GetForwardVector() const
         {
-            float pitch = Rotation.x;
-            float yaw = Rotation.y;
-
-            math::Vec3 forward;
-            forward.x = cos(yaw) * cos(pitch);
-            forward.y = sin(pitch);
-            forward.z = sin(yaw) * cos(pitch);
-
-            return math::Normalise(forward);
-        }
-
-        math::Vec3 GetUpVector() const
-        {
-            math::Vec3 levelUp = math::Vec3(0.0f, 1.0f, 0.0f);
-            math::Vec3 forward = GetForwardVector();
-            math::Vec3 right = math::Normalise(math::Cross(forward, levelUp));
-            return math::Normalise(math::Cross(right, forward));
+            return math::Normalise(LocalRotation * math::Vec3(0.0f, 0.0f, 1.0f));
         }
 
         math::Vec3 GetRightVector() const
         {
-            math::Vec3 levelUp = math::Vec3(0.0f, 1.0f, 0.0f);
-            math::Vec3 forward = GetForwardVector();
-            return math::Normalise(math::Cross(forward, levelUp));
+            return math::Normalise(LocalRotation * math::Vec3(1.0f, 0.0f, 0.0f));
         }
 
-        void SetPosition(const math::Vec3& position)
+        math::Vec3 GetUpVector() const
         {
-            Position = position;
+            return math::Normalise(LocalRotation * math::Vec3(0.0f, 1.0f, 0.0f));
+        }
+
+        void SetLocalPosition(const math::Vec3& pos)
+        {
+            LocalPosition = pos;
+            SetDirty();
+        }
+
+        void SetLocalRotation(const math::Quat& rot)
+        {
+            LocalRotation = rot;
+            SetDirty();
+        }
+
+        void SetLocalScale(const math::Vec3& scale)
+        {
+            LocalScale = scale;
+            SetDirty();
+        }
+
+        void SetEulerRotation(const math::Vec3& eulerDegrees)
+        {
+            LocalRotation = math::Quat(math::Radians(eulerDegrees));
+            SetDirty();
+        }
+
+        math::Vec3 GetEulerRotation() const
+        {
+            return math::Degrees(math::EulerAngles(LocalRotation));
+        }
+
+        void SetDirty() const
+        {
             Dirty = true;
-        }
-
-        void SetRotation(const math::Vec3& rotation)
-        {
-            Rotation = rotation;
-            Dirty = true;
-        }
-
-        void SetScale(const math::Vec3& scale)
-        {
-            Scale = scale;
-            Dirty = true;
-        }
-
-        operator math::Matrix4& ()
-        {
-            return Transform;
-        }
-
-        operator const math::Matrix4& () const
-        {
-            return Transform;
         }
 
     };
@@ -152,7 +120,7 @@ namespace hen::level
 
         struct BoxParams
         {
-            math::Vec3 HalfExtents = math::Vec3(1.0f, 1.0f, 1.0f);
+            math::Vec3 HalfExtents = math::Vec3(1.0f);
         } Box;
 
         struct SphereParams

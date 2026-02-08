@@ -10,6 +10,13 @@ public:
     
 public:
     hen::level::Entity SelectedEntity;
+
+private:
+
+    hen::level::Entity m_LastSelectedEntity;
+
+    hen::math::Vec3 m_DegreesRotation;
+    bool m_RotationInitialised;
 };
 
 #endif // !_COMPONENTWINDOW_H_

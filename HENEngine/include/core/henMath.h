@@ -62,6 +62,11 @@ namespace hen::math
         return glm::radians(degrees);
     }
 
+    inline Vec3 EulerAngles(Quat quat)
+    {
+        return glm::eulerAngles(quat);
+    }
+
     // MATRIX4
 
     inline Matrix4 LookAt(Vec3 eye, Vec3 center, Vec3 up)

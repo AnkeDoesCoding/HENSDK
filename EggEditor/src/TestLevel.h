@@ -22,10 +22,9 @@ namespace testlevel
         auto& mat = ModelEnt->AddComponent<hen::level::MaterialComponent>();
         auto& mesh = ModelEnt->AddComponent<hen::level::MeshComponent>();
 
-        transform.SetScale(hen::math::Vec3(0.15f));
+        transform.SetLocalScale(hen::math::Vec3(0.15f));
 
         hen::jobsystem::Execute([&mesh] {importer::ImportModel("res/models/sponza/sponza.glb", mesh);});
-
         
         mat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
@@ -34,7 +33,7 @@ namespace testlevel
         auto& transformLight = LightEnt->AddComponent<hen::level::TransformComponent>();
         auto& light = LightEnt->AddComponent<hen::level::LightComponent>();
 
-        transformLight.SetPosition(hen::math::Vec3(0.0f, 20.0f, -4.0f));
+        transformLight.SetLocalPosition(hen::math::Vec3(0.0f, 20.0f, -4.0f));
 
         light.Range = 500.0f;
         light.Intensity = 1.0f;

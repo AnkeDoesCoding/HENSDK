@@ -8,43 +8,69 @@ void ComponentWindow::Initialise()
 
         if (SelectedEntity)
         {
+            if (m_LastSelectedEntity != SelectedEntity)
+            {
+                m_LastSelectedEntity = SelectedEntity;
+                m_RotationInitialised = false;
+            }
+
             if (SelectedEntity.HasComponent<hen::level::TransformComponent>())
             {
                 auto& transform = SelectedEntity.GetComponent<hen::level::TransformComponent>();
 
-                hen::math::Vec3 rotationDeg = hen::math::Degrees(transform.Rotation);  
+                bool changed = false;
+                
+                if (!m_RotationInitialised)
+                {
+                    m_DegreesRotation = transform.GetEulerRotation();  
+                    m_RotationInitialised = true;
+                }
 
                 ImGui::Text("Transform");
 
                 ImGui::Spacing();
                 ImGui::Spacing();
 
-                ImGui::DragFloat3("Position", &transform.Position.x, 0.1f);
+                if (ImGui::DragFloat3("Position", &transform.LocalPosition.x, 0.1f))
+                {
+                    changed = true;
+                }
 
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##pos"))
                 {
-                    transform.Position = hen::math::Vec3(0.0f);
+                    transform.LocalPosition = hen::math::Vec3(0.0f);
                 }
 
-                ImGui::DragFloat3("Rotation", &rotationDeg.x, 0.5f);
+                if (ImGui::DragFloat3("Rotation", &m_DegreesRotation.x, 0.5f))
+                {
+                    transform.SetEulerRotation(m_DegreesRotation);
+                    changed = true;
+                }
 
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##rot"))
                 {
-                    transform.Rotation = hen::math::Vec3(0.0f);
-                    rotationDeg = hen::math::Degrees(transform.Rotation);  
+                    transform.SetLocalRotation(hen::math::Quat(1,0,0,0));
+                    m_DegreesRotation = transform.GetEulerRotation();  
+                    changed = true;
                 }
 
-                ImGui::DragFloat3("Scale", &transform.Scale.x, 0.1f);
+                if (ImGui::DragFloat3("Scale", &transform.LocalScale.x, 0.1f))
+                {
+                    changed = true;
+                }
 
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##scale"))
                 {
-                    transform.Scale = hen::math::Vec3(1.0f);
+                    transform.LocalScale = hen::math::Vec3(1.0f);
                 }
 
-                transform.SetRotation(hen::math::Radians(rotationDeg));
+                if (changed)
+                {
+                    transform.SetDirty();
+                }
 
                 ImGui::Spacing();
                 ImGui::Spacing();
