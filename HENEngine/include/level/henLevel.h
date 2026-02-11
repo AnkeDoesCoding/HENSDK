@@ -60,7 +60,6 @@ namespace hen::level
             return m_Handle != entt::null && m_Level != nullptr && m_Level->m_Registry.valid(m_Handle);
         }
 
-
         template<typename Component>
         bool HasComponent() const
         {
@@ -168,10 +167,10 @@ namespace hen::level
             return Iterator(m_View.end(),   m_Level); 
         }
 
-        template<typename... T>
+        template<typename... Component>
         auto Get(Entity entity)
         {
-            return m_View.template get<T...>((entt::entity)entity);
+            return m_View.template get<Component...>((entt::entity)entity);
         }
 
         bool Contains(Entity entity) const

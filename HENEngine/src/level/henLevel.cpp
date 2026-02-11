@@ -42,7 +42,7 @@ namespace hen::level
         entity.AddComponent<NameComponent>(name.empty() ? "unknown" : name);
 
         return entity;
-    }
+   }
 
     Entity::Entity(const Entity& other)
         : m_Handle(other.m_Handle), m_Level(other.m_Level)

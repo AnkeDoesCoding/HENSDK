@@ -8,6 +8,7 @@
 #include <ctime>
 #include <deque>
 #include <vector>
+#include <mutex>
 
 #define TIME_FORMAT "%H:%M:%S"
 #define MAX_DISPLAYED_LOGS 20000
@@ -26,7 +27,10 @@ namespace hen::console
     };
 
     static std::ofstream LogFile{};
+    static std::deque<LogEntry> PendingEntries;
     static std::deque<LogEntry> Entries;
+
+    static std::mutex Mutex;
 
     static char InputBuffer[1024] = "";
 
@@ -210,6 +214,21 @@ namespace hen::console
                 return;
             }
         
+            {
+                std::scoped_lock lock(Mutex);
+
+                while(!PendingEntries.empty())
+                {
+                    Entries.push_back(PendingEntries.front());
+                    PendingEntries.pop_front();
+                
+                    if(Entries.size() > MAX_DISPLAYED_LOGS)
+                    {
+                        Entries.pop_front();
+                    }
+                }
+            }
+            
             ImGui::Begin("Console", &Visible, ImGuiWindowFlags_NoDocking);
         
             float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
@@ -439,11 +458,9 @@ namespace hen::console
             level
         };
 
-        Entries.push_back(entry);   
-
-        if (Entries.size() > MAX_DISPLAYED_LOGS)
         {
-            Entries.pop_front();
+            std::scoped_lock lock(Mutex);
+            PendingEntries.push_back(entry);
         }
 
         LogFile << levelText << message << " - " << GetCurrentTime() << "\n";
