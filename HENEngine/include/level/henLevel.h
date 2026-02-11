@@ -26,12 +26,9 @@ namespace hen::level
     public:
         Level();
         ~Level();
-
-        void Update(float deltaTime);
-
-        entt::registry* GetRegistry();
     
         Entity CreateEntity(const std::string& name = std::string());
+        void RemoveEntity(const Entity& entity);
 
         template<typename... Components>
         auto GetView() 
@@ -143,7 +140,8 @@ namespace hen::level
 
             Iterator& operator++() 
             { 
-                ++m_It; return *this; 
+                m_It++; 
+                return *this; 
             }
 
             bool operator!=(const Iterator& other) const 
@@ -167,6 +165,13 @@ namespace hen::level
             return Iterator(m_View.end(),   m_Level); 
         }
 
+        Entity operator[](std::size_t index) const
+        {
+            auto it = m_View.begin();
+            std::advance(it, index);
+            return Entity(*it, m_Level);
+        }
+
         template<typename... Component>
         auto Get(Entity entity)
         {
@@ -176,6 +181,11 @@ namespace hen::level
         bool Contains(Entity entity) const
         {
             return m_View.contains((entt::entity)entity);
+        }
+
+        std::size_t Size() const
+        {
+            return m_View.size(); 
         }
 
     private:

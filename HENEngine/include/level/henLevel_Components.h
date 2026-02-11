@@ -140,9 +140,9 @@ namespace hen::level
             float Height = 1.0f;
         } Cylinder;
 
-        COLLISIONSHAPES Shape;
+        COLLISIONSHAPES Shape = COLLISIONSHAPES::BOX;
         std::shared_ptr<void> PhysicsObject = nullptr;
-        math::Vec3 Offset;
+        math::Vec3 Offset = math::Vec3(1.0f);
 
         bool Kinematic = false;
         bool DisableDeactivation = false;

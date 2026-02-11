@@ -147,6 +147,14 @@ namespace hen::physics
 			BroadPhaseLayerInterfaceImpl BroadPhaseLayerInterface;
 			ObjectLayerPairFilterImpl ObjectObjectLayerFilter;
 			ObjectBroadPhaseLayerFilterImpl ObjectBroadPhaseLayerFilter;
+
+			float Accumulator;
+			float Alpha = 0;
+
+			float GetKinematicDT(float deltaTime) const
+			{
+				return math::Clamp(Accumulator + deltaTime, 0.0f, cvar_HZ.GetInt() * cvar_Accuracy.GetInt());
+			}
 		};
 
 		struct RigidBody
@@ -194,9 +202,9 @@ namespace hen::physics
 		{ 
 			return Quat(q.x, q.y, q.z, q.w); 
 		}
-		inline math::Vec4 cast(QuatArg q) 
+		inline  math::Quat cast(QuatArg q) 
 		{ 
-			return  math::Vec4(q.GetX(), q.GetY(), q.GetZ(), q.GetW()); 
+			return math::Quat(q.GetW(), q.GetX(), q.GetY(), q.GetZ()); 
 		}
 
 		inline Mat44 cast(const math::Matrix4& m)
@@ -229,7 +237,7 @@ namespace hen::physics
 		{
 			if (level.PhysicsLevel == nullptr)
 			{
-				std::shared_ptr physLevel = std::make_shared<PhysicsLevel>();
+				auto physLevel = std::make_shared<PhysicsLevel>();
 
 				physLevel->System.Init(MaxBodies, NumberBodyMutexes, MaxBodyPairs, MaxContactConstraints, physLevel->BroadPhaseLayerInterface, physLevel->ObjectBroadPhaseLayerFilter, physLevel->ObjectObjectLayerFilter);
 
@@ -310,9 +318,10 @@ namespace hen::physics
 			}
 
 			RigidBody& physicsObject = GetRigidBody(rigidBodyComp);
+			physicsObject.Shape = shapeResult.Get();
 			physicsObject.ParentPhysicsLevel = level.PhysicsLevel;
 			physicsObject.Entity = entity;
-			
+
 			PhysicsLevel& physicsLevel = GetPhysicsLevel(level);
 			
 			Mat44 worldMat = cast(transformComp.GetWorldMatrix());
@@ -372,16 +381,165 @@ namespace hen::physics
 			return;
 		}
 
-		if (deltaTime <= 0 || !cvar_SimulationEnabled.GetBool() || !Initialised)
+		if (deltaTime <= 0 || !Initialised)
 		{
 			return;
 		}
 
 		level::Level& currentLevel = *level::GetActiveLevel();
-
 		jolt::PhysicsLevel& physLevel = jolt::GetPhysicsLevel(currentLevel);
 
-		// TODO: USE JOBSYSTEM TO DISPATCH JOBS
+		physLevel.System.SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
+
+		auto rbView = currentLevel.GetView<level::RigidBodyComponent>();
+
+		jobsystem::Dispatch(rbView.Size(), 64, [&rbView, &physLevel, &currentLevel, &deltaTime](jobsystem::DispatchArgs args)
+		{
+			auto entity = rbView[args.JobIndex];
+			
+			if (!entity.HasComponent<level::TransformComponent>())
+			{
+				return;
+			}
+
+			auto& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
+			auto& transformComponent = entity.GetComponent<level::TransformComponent>();
+
+			if (rbComponent.PhysicsObject == nullptr)
+			{
+				jolt::AddRigidBody(currentLevel, entity);
+			}
+			else
+			{
+				jolt::RigidBody& physObj = jolt::GetRigidBody(rbComponent);
+
+				if (physObj.BodyHandle.IsInvalid())
+				{
+					return;
+				}
+
+				JPH::BodyInterface& bodyInterface = physLevel.System.GetBodyInterface();
+				bodyInterface.SetFriction(physObj.BodyHandle, rbComponent.Friction);
+				bodyInterface.SetRestitution(physObj.BodyHandle, rbComponent.Restitution);
+				const JPH::EMotionType prevMotionType = bodyInterface.GetMotionType(physObj.BodyHandle);
+				const JPH::EMotionType currentMotionType = rbComponent.Mass == 0 ? JPH::EMotionType::Static : (rbComponent.Kinematic ? JPH::EMotionType::Kinematic : JPH::EMotionType::Dynamic);
+
+				if (prevMotionType != currentMotionType)
+				{
+					bodyInterface.SetMotionType(physObj.BodyHandle, currentMotionType, JPH::EActivation::Activate);
+				}
+
+				bodyInterface.ActivateBody(physObj.BodyHandle);
+
+				const JPH::Vec3 position = jolt::cast(transformComponent.LocalPosition);
+				const JPH::Quat rotation = jolt::cast(transformComponent.LocalRotation);
+			
+				JPH::Mat44 matrix = JPH::Mat44::sTranslation(position) * JPH::Mat44::sRotation(rotation);
+				matrix = matrix * physObj.Offset;
+
+				if (cvar_SimulationEnabled.GetBool())
+				{
+					if (currentMotionType == JPH::EMotionType::Kinematic)
+					{
+						bodyInterface.MoveKinematic(physObj.BodyHandle, matrix.GetTranslation(), matrix.GetQuaternion().Normalized(), physLevel.GetKinematicDT(deltaTime));
+					}
+					else if (currentMotionType == JPH::EMotionType::Static || !bodyInterface.IsActive(physObj.BodyHandle))
+					{
+						bodyInterface.SetPositionAndRotation(physObj.BodyHandle, matrix.GetTranslation(), matrix.GetQuaternion().Normalized(), JPH::EActivation::DontActivate);
+					}
+				}
+				else
+				{
+					physObj.PreviousPosition = position;
+					physObj.PreviousRotation = rotation;
+					bodyInterface.SetPositionAndRotation(physObj.BodyHandle, matrix.GetTranslation(), matrix.GetQuaternion().Normalized(), JPH::EActivation::Activate);
+				}
+			}
+		});
+
+		if (cvar_SimulationEnabled.GetBool())
+    	{
+    	    static JPH::TempAllocatorMalloc tempAllocator;
+    	    static JPH::JobSystemThreadPool joltJobSystem(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+
+    	    const float fixedStep = 1.0f / cvar_HZ.GetInt();
+
+    	    physLevel.Accumulator += deltaTime;
+    	    physLevel.Accumulator = math::Clamp(physLevel.Accumulator, 0.0f, fixedStep * cvar_Accuracy.GetInt());
+
+    	    while (physLevel.Accumulator >= fixedStep)
+    	    {
+    	        if (cvar_InterpolationEnabled.GetBool())
+    	        {
+    	            jobsystem::Dispatch(rbView.Size(), 64, [&rbView, &physLevel](jobsystem::DispatchArgs args)
+    	            {
+    	                auto entity = rbView[args.JobIndex];
+    	                auto& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
+    	                jolt::RigidBody& physObj = jolt::GetRigidBody(rbComponent);
+
+    	                if (physObj.BodyHandle.IsInvalid())
+    	                    return;
+
+    	                JPH::BodyInterface& bodyInterface = physLevel.System.GetBodyInterfaceNoLock();
+    	                JPH::Mat44 matrix = bodyInterface.GetWorldTransform(physObj.BodyHandle);
+    	                matrix = matrix * physObj.OffsetInverse;
+
+    	                physObj.PreviousPosition = matrix.GetTranslation();
+    	                physObj.PreviousRotation = matrix.GetQuaternion().Normalized();
+    	            });
+    	        }
+
+    	        physLevel.System.Update(fixedStep, 1, &tempAllocator, &joltJobSystem);
+    	        physLevel.Accumulator -= fixedStep;
+    	    }
+
+    	    physLevel.Alpha = math::Clamp(physLevel.Accumulator / fixedStep, 0.0f, 1.0f);
+    	}
+
+
+		jobsystem::Dispatch(rbView.Size(), 64, [&rbView, &physLevel, &currentLevel](jobsystem::DispatchArgs args) 
+		{
+			auto entity = rbView[args.JobIndex];
+
+			if (!entity.HasComponent<level::TransformComponent>())
+			{
+				return;
+			}
+
+			auto& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
+			auto& transformComponent = entity.GetComponent<level::TransformComponent>();
+			
+			jolt::RigidBody& physObj = jolt::GetRigidBody(rbComponent);
+
+			if (physObj.BodyHandle.IsInvalid())
+			{
+				return;
+			}
+
+			JPH::BodyInterface& bodyInterface = physLevel.System.GetBodyInterfaceNoLock();
+
+			if (bodyInterface.GetMotionType(physObj.BodyHandle) != JPH::EMotionType::Dynamic)
+			{
+				return;
+			}
+
+			JPH::Mat44 matrix = bodyInterface.GetWorldTransform(physObj.BodyHandle);
+			matrix = matrix * physObj.OffsetInverse;
+
+			JPH::Vec3 position = matrix.GetTranslation();
+			JPH::Quat rotation = matrix.GetQuaternion().Normalized();
+
+			if (cvar_InterpolationEnabled.GetBool())
+			{
+				position = position * physLevel.Alpha + physObj.PreviousPosition * (1 - physLevel.Alpha);
+				rotation = physObj.PreviousRotation.SLERP(rotation, physLevel.Alpha);
+			}
+
+			transformComponent.SetLocalPosition(jolt::cast(position));
+			transformComponent.SetLocalRotation(jolt::cast(rotation));
+		});
+
+		jobsystem::Wait();
 
     }
 
