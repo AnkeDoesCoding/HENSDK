@@ -6,7 +6,9 @@ namespace hen::physics
     void Initialise();
     void Shutdown();
 
-    void Run(float hz);
+    void Update(float deltaTime);
+
+    extern bool Initialised;
 }
 
 #endif //_HENPHYSICS_H_

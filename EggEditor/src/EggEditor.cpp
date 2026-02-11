@@ -20,8 +20,6 @@ void Editor::Initialise(SDL_Window* window)
 void Editor::Shutdown()
 {
     hen::Application::Shutdown();
-
-    testlevel::Delete();
 }
 
 void Editor::FixedUpdate()

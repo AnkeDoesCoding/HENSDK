@@ -40,6 +40,7 @@ void ComponentWindow::Initialise()
                 if (ImGui::Button("Reset##pos"))
                 {
                     transform.LocalPosition = hen::math::Vec3(0.0f);
+                    changed = true;
                 }
 
                 if (ImGui::DragFloat3("Rotation", &m_DegreesRotation.x, 0.5f))
@@ -65,6 +66,7 @@ void ComponentWindow::Initialise()
                 if (ImGui::Button("Reset##scale"))
                 {
                     transform.LocalScale = hen::math::Vec3(1.0f);
+                    changed = true;
                 }
 
                 if (changed)

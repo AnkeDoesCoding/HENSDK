@@ -24,7 +24,6 @@ namespace hen
 {
     static double Accumulator = 0.0;
     static double CurrentTimestep = 0.0;
-    static constexpr double FixedTimestep = 1.0 / 60.0;
 
     static std::string CPUName;
     static SDL_Window* Window;
@@ -39,6 +38,8 @@ namespace hen
             SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
         }
     });
+
+    cvar::CVar cvar_HZ("a_hz", 60);
 
     void Application::Initialise(SDL_Window* window)
     {
@@ -158,19 +159,19 @@ namespace hen
         }
 
         double newTime = (double)SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
-        double frameTime = newTime - CurrentTimestep;
+        double deltaTime = newTime - CurrentTimestep;
         CurrentTimestep = newTime;
 
-        frameTime = std::min(frameTime, 0.25);
+        deltaTime = std::min(deltaTime, 0.25);
 
-        Accumulator += frameTime;
+        Accumulator += deltaTime;
 
-        Update((float)frameTime);
+        Update((float)deltaTime);
 
-        while (Accumulator >= FixedTimestep)
+        while (Accumulator >= (1.0 / cvar_HZ.GetInt()))
         {
             FixedUpdate();
-            Accumulator -= FixedTimestep;
+            Accumulator -= (1.0 / cvar_HZ.GetInt());
         }
 
         renderer::Run();
@@ -179,11 +180,18 @@ namespace hen
 
     void Application::FixedUpdate()
     {
-        physics::Run(FixedTimestep);
+
     }
 
     void Application::Update(float deltaTime)
     {
+        if (!Initialised)
+        {
+            return;
+        }
+
+        physics::Update(deltaTime);
+
         if (input::Press(input::KEYBOARD_BUTTON_TILDE))
         {
             console::Toggle();

@@ -7,15 +7,20 @@
 #include "vendor/JoltPhysics/Jolt/Core/JobSystemThreadPool.h"
 #include "vendor/JoltPhysics/Jolt/Physics/PhysicsSettings.h"
 #include "vendor/JoltPhysics/Jolt/Physics/PhysicsSystem.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/BoxShape.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Body/BodyCreationSettings.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Body/BodyActivationListener.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/BoxShape.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/SphereShape.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CylinderShape.h"
 
 JPH_SUPPRESS_WARNINGS
 
 #include "core/henTimer.h"
+#include "core/henMath.h"
+#include "core/henCVar.h"
 #include "core/henJobSystem.h"
+#include "level/henLevel.h"
 #include "tools/henConsole.h"
 
 #include <thread>
@@ -24,212 +29,365 @@ using namespace JPH::literals;
 
 namespace hen::physics
 {
-    namespace Layers
-    {
-        static constexpr JPH::ObjectLayer STATIC = 0;
-        static constexpr JPH::ObjectLayer DYNAMIC = 1;
-        static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
-    }
+	bool Initialised = false;
 
-    namespace BroadPhaseLayers
-    {
-    	static constexpr JPH::BroadPhaseLayer STATIC(0);
-    	static constexpr JPH::BroadPhaseLayer DYNAMIC(1);
-    	static constexpr JPH::uint NUM_LAYERS(2);
-    };
+	cvar::CVar cvar_SimulationEnabled("phys_sim_enabled", true, cvar::FLAGS_ARCHIVE);
+	cvar::CVar cvar_InterpolationEnabled("phys_sim_interpolate", true, cvar::FLAGS_ARCHIVE);
+	cvar::CVar cvar_Accuracy("phys_sim_accuracy", 4, cvar::FLAGS_ARCHIVE);
+	cvar::CVar cvar_HZ("phys_sim_hz", 60, cvar::FLAGS_ARCHIVE);
 
-    class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
-    {
-    public:
-    	virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
-    	{
-    		switch (inObject1)
-    		{
-    		case Layers::STATIC:
-    			return inObject2 == Layers::DYNAMIC; // Non moving only collides with moving
-    		case Layers::DYNAMIC:
-    			return true; // Moving collides with everything
-    		default:
-    			JPH_ASSERT(false);
-    			return false;
-    		}
-    	}
-    };
-
-    class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
-    {
-    public:
-    	BPLayerInterfaceImpl()
-    	{
-    		mObjectToBroadPhase[Layers::STATIC] = BroadPhaseLayers::STATIC;
-    		mObjectToBroadPhase[Layers::DYNAMIC] = BroadPhaseLayers::DYNAMIC;
-    	}
-
-    	virtual JPH::uint GetNumBroadPhaseLayers() const override
-    	{
-    		return BroadPhaseLayers::NUM_LAYERS;
-    	}
-
-    	virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
-    	{
-    		JPH_ASSERT(inLayer < Layers::NUM_LAYERS);
-    		return mObjectToBroadPhase[inLayer];
-    	}
-
-    #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-    	virtual const char * GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
-    	{
-    		switch ((JPH::BroadPhaseLayer::Type)inLayer)
-    		{
-    		    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::STATIC:	
-                    return "STATIC";
-    		    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::DYNAMIC:		
-                    return "DYNAMIC";
-    		    default:													
-                    JPH_ASSERT(false); return "INVALID";
-    		}
-    	}
-    #endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
-
-    private:
-    	JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
-    };
-
-    class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
-    {
-    public:
-    	virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
-    	{
-    		switch (inLayer1)
-    		{
-    		case Layers::STATIC:
-    			return inLayer2 == BroadPhaseLayers::STATIC;
-    		case Layers::DYNAMIC:
-    			return true;
-    		default:
-    			JPH_ASSERT(false);
-    			return false;
-    		}
-    	}
-    };
-
-	class MyContactListener : public JPH::ContactListener
+	namespace jolt
 	{
-	public:
-		virtual JPH::ValidateResult	OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override
+		using namespace JPH;
+		using namespace JPH::literals;
+
+		static const uint MaxBodies = 65536;
+		static const uint NumberBodyMutexes = 0;
+		static const uint MaxBodyPairs = 65536;
+		static const uint MaxContactConstraints = 65536;
+		const EMotionQuality MotionQuality = EMotionQuality::LinearCast;
+
+		// dont really like these namespaces acting as enums but it is what it is
+		namespace LAYERS
+    	{
+    	    static constexpr ObjectLayer STATIC = 0;
+    	    static constexpr ObjectLayer DYNAMIC = 1;
+    	    static constexpr ObjectLayer NUM_LAYERS = 2;
+    	}
+	
+		// right now im using a 1 to 1 mapping however i could change that in the future
+		// if i do that then JPH_TRACK_BROADPHASE_STATS is important
+    	namespace BROADPHASELAYERS
+    	{
+    		static constexpr BroadPhaseLayer STATIC(0);
+    		static constexpr BroadPhaseLayer DYNAMIC(1);
+    		static constexpr uint NUM_LAYERS(2);
+    	};
+
+		class ObjectLayerPairFilterImpl : public ObjectLayerPairFilter
+    	{
+    	public:
+    		bool ShouldCollide(ObjectLayer object1, ObjectLayer object2) const override
+    		{
+    			switch (object1)
+    			{
+    			case LAYERS::STATIC:
+    				return object2 == LAYERS::DYNAMIC; // static only collides with dynamic
+    			case LAYERS::DYNAMIC:
+    				return true;
+    			default:
+    				HEN_ASSERT(false, "Object(s) have invalid layer");
+    				return false;
+    			}
+    		}
+    	};
+
+		class ObjectBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
+    	{
+    	public:
+    		bool ShouldCollide(JPH::ObjectLayer layer1, JPH::BroadPhaseLayer layer2) const override
+    		{
+    			switch (layer1)
+    			{
+    			case LAYERS::STATIC:
+    				return layer2 == BROADPHASELAYERS::STATIC;
+    			case LAYERS::DYNAMIC:
+    				return true;
+    			default:
+    				HEN_ASSERT(false, "Object(s) have invalid layer");
+    				return false;
+    			}
+    		}
+    	};
+
+		class BroadPhaseLayerInterfaceImpl final : public BroadPhaseLayerInterface
 		{
-			HEN_LOG("Contact validate callback");
-			return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
+		public:
+			BroadPhaseLayerInterfaceImpl()
+			{
+				// 1 to 1 mapping
+				m_ObjectToBroadPhase[LAYERS::STATIC] = BROADPHASELAYERS::STATIC;
+				m_ObjectToBroadPhase[LAYERS::DYNAMIC] = BROADPHASELAYERS::DYNAMIC;
+			}
+
+			uint GetNumBroadPhaseLayers() const override
+			{
+				return BROADPHASELAYERS::NUM_LAYERS;
+			}
+
+			BroadPhaseLayer GetBroadPhaseLayer(ObjectLayer layer) const override
+			{
+				HEN_ASSERT(layer < LAYERS::NUM_LAYERS, "Invalid layer passed");
+				return m_ObjectToBroadPhase[layer];
+			}
+
+			#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
+    			const char * GetBroadPhaseLayerName(JPH::BroadPhaseLayer layer) const override
+    			{
+    				switch ((JPH::BroadPhaseLayer::Type)layer)
+    				{
+    				    case (JPH::BroadPhaseLayer::Type)BROADPHASELAYERS::STATIC:	
+        		            return "STATIC";
+    				    case (JPH::BroadPhaseLayer::Type)BROADPHASELAYERS::DYNAMIC:		
+        		            return "DYNAMIC";
+    				    default:													
+        		            HEN_ASSERT(false, "Broadphase is in an invalid layer"); 
+							return "INVALID";
+    				}
+    			}
+    		#endif // !JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
+
+		private:
+			BroadPhaseLayer m_ObjectToBroadPhase[LAYERS::NUM_LAYERS];
+		};
+
+		struct PhysicsLevel
+		{
+			PhysicsSystem System;
+			BroadPhaseLayerInterfaceImpl BroadPhaseLayerInterface;
+			ObjectLayerPairFilterImpl ObjectObjectLayerFilter;
+			ObjectBroadPhaseLayerFilterImpl ObjectBroadPhaseLayerFilter;
+		};
+
+		struct RigidBody
+		{
+			std::shared_ptr<void> ParentPhysicsLevel;
+			ShapeRefC Shape;
+			BodyID BodyHandle;
+			level::Entity Entity;
+
+			Vec3 PreviousPosition = Vec3::sZero();
+			Quat PreviousRotation = Quat::sIdentity();
+
+			Mat44 Offset = Mat44::sIdentity();
+			Mat44 OffsetInverse = Mat44::sIdentity();
+
+			~RigidBody()
+			{
+				if (ParentPhysicsLevel == nullptr || BodyHandle.IsInvalid())
+				{
+					return;
+				}
+
+				BodyInterface& interface = ((PhysicsLevel*)ParentPhysicsLevel.get())->System.GetBodyInterface();
+				interface.RemoveBody(BodyHandle);
+				interface.DestroyBody(BodyHandle);
+			}
+		};
+
+		// Conversion shit for vectors and stuff
+
+		inline Vec3 cast(const Float3& v) 
+		{ 
+			return Vec3(v.x, v.y, v.z); 
+		}
+		inline Vec3 cast(const math::Vec3& v) 
+		{ 
+			return Vec3(v.x, v.y, v.z); 
+		}
+		inline math::Vec3 cast(Vec3Arg v) 
+		{ 
+			return  math::Vec3(v.GetX(), v.GetY(), v.GetZ()); 
 		}
 
-		virtual void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
-		{
-			HEN_LOG("A contact was added");
+		inline Quat cast(const math::Quat& q) 
+		{ 
+			return Quat(q.x, q.y, q.z, q.w); 
+		}
+		inline math::Vec4 cast(QuatArg q) 
+		{ 
+			return  math::Vec4(q.GetX(), q.GetY(), q.GetZ(), q.GetW()); 
 		}
 
-		virtual void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
+		inline Mat44 cast(const math::Matrix4& m)
 		{
-			HEN_LOG("A contact was persisted");
+			return Mat44( // NOTE: THIS IS GLM SPECIFIC, SO IF ANOTHER MATH LIBRARY IS IMPLEMENTED IN THE FUTURE, THIS WILL SHIT ITSELF
+				Vec4(m[0][0], m[0][1], m[0][2], m[0][3]),
+				Vec4(m[1][0], m[1][1], m[1][2], m[1][3]),
+				Vec4(m[2][0], m[2][1], m[2][2], m[2][3]),
+				Vec4(m[3][0], m[3][1], m[3][2], m[3][3])
+			);
+		}
+		inline glm::mat4 cast(const JPH::Mat44& m)
+		{
+		   glm::mat4 out;
+		
+		   for (int column = 0; column < 4; ++column)
+		   {
+		       JPH::Vec4 col = m.GetColumn4(column);
+
+		       out[column][0] = col.GetX();
+		       out[column][1] = col.GetY();
+		       out[column][2] = col.GetZ();
+		       out[column][3] = col.GetW();
+		   }
+	   
+		   return out;
 		}
 
-		virtual void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override
+		PhysicsLevel& GetPhysicsLevel(level::Level& level)
 		{
-			HEN_LOG("A contact was removed");
-		}
-	};
+			if (level.PhysicsLevel == nullptr)
+			{
+				std::shared_ptr physLevel = std::make_shared<PhysicsLevel>();
 
-	class MyBodyActivationListener : public JPH::BodyActivationListener
-	{
-	public:
-		virtual void OnBodyActivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
+				physLevel->System.Init(MaxBodies, NumberBodyMutexes, MaxBodyPairs, MaxContactConstraints, physLevel->BroadPhaseLayerInterface, physLevel->ObjectBroadPhaseLayerFilter, physLevel->ObjectObjectLayerFilter);
+
+				level.PhysicsLevel = physLevel;
+			}
+
+			return *(PhysicsLevel*)level.PhysicsLevel.get();
+		}
+
+		RigidBody& GetRigidBody(level::RigidBodyComponent& physComponent)
 		{
-			HEN_LOG("A body got activated");
+			if (physComponent.PhysicsObject == nullptr)
+			{
+				physComponent.PhysicsObject = std::make_shared<RigidBody>();
+			}
+
+			return *(RigidBody*)physComponent.PhysicsObject.get();
 		}
 
-		virtual void OnBodyDeactivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
+		void AddRigidBody(level::Level& level, level::Entity entity)
 		{
-			HEN_LOG("A body went to sleep");
+			ShapeSettings::ShapeResult shapeResult;
+
+			float convexRadius = 0.001f;
+
+			if (!entity.HasComponent<level::RigidBodyComponent>())
+			{
+				HEN_WARN("[hen::physics] Entity " + entity.GetComponent<level::NameComponent>().Name + "doesn't have a rigidbody component");
+				return;
+			}
+
+			if (!entity.HasComponent<level::TransformComponent>())
+			{
+				HEN_WARN("[hen::physics] Entity " + entity.GetComponent<level::NameComponent>().Name + "doesn't have a transform component");
+				return;
+			}
+
+			auto& transformComp = entity.GetComponent<level::TransformComponent>();
+			auto& rigidBodyComp = entity.GetComponent<level::RigidBodyComponent>();
+
+			switch (rigidBodyComp.Shape)
+			{
+				case level::RigidBodyComponent::COLLISIONSHAPES::BOX:
+				{
+					BoxShapeSettings settings(Vec3(rigidBodyComp.Box.HalfExtents.x * transformComp.LocalScale.x, rigidBodyComp.Box.HalfExtents.y * transformComp.LocalScale.y, rigidBodyComp.Box.HalfExtents.z * transformComp.LocalScale.z));
+					settings.SetEmbedded();
+					shapeResult = settings.Create();
+					break;
+				}
+				case level::RigidBodyComponent::COLLISIONSHAPES::SPHERE:
+				{
+					SphereShapeSettings settings(rigidBodyComp.Sphere.Radius * transformComp.LocalScale.x);
+					settings.SetEmbedded();
+					shapeResult = settings.Create();
+					break;
+				}	
+				case level::RigidBodyComponent::COLLISIONSHAPES::CAPSULE:
+				{
+					CapsuleShapeSettings settings(rigidBodyComp.Capsule.Height * transformComp.LocalScale.y, rigidBodyComp.Capsule.Radius * transformComp.LocalScale.x);
+					settings.SetEmbedded();
+					shapeResult = settings.Create();
+					break;
+				}
+				case level::RigidBodyComponent::COLLISIONSHAPES::CYLINDER:
+				{
+					CylinderShapeSettings settings(rigidBodyComp.Cylinder.Height * transformComp.LocalScale.y, rigidBodyComp.Cylinder.Radius * transformComp.LocalScale.x, convexRadius);
+					settings.SetEmbedded();
+					shapeResult = settings.Create();
+					break;
+				}
+			}
+
+			if (!shapeResult.IsValid())
+			{
+				std::string error = shapeResult.GetError().c_str();
+				HEN_ERROR("[hen::physics] Rigidbody creation failed: " + error);
+				return;
+			}
+
+			RigidBody& physicsObject = GetRigidBody(rigidBodyComp);
+			physicsObject.ParentPhysicsLevel = level.PhysicsLevel;
+			physicsObject.Entity = entity;
+			
+			PhysicsLevel& physicsLevel = GetPhysicsLevel(level);
+			
+			Mat44 worldMat = cast(transformComp.GetWorldMatrix());
+			Vec3 offset = cast(rigidBodyComp.Offset);
+
+			physicsObject.Offset.SetTranslation(offset);
+			physicsObject.OffsetInverse = physicsObject.Offset.Inversed();
+			physicsObject.PreviousPosition = worldMat.GetTranslation();
+			physicsObject.PreviousRotation = worldMat.GetQuaternion().Normalized();
+
+			const EMotionType motionType = rigidBodyComp.Mass == 0 ? EMotionType::Static : (rigidBodyComp.Kinematic ? EMotionType::Kinematic : EMotionType::Dynamic);
+
+			BodyCreationSettings settings(physicsObject.Shape.GetPtr(), offset + physicsObject.PreviousPosition, physicsObject.PreviousRotation, motionType, LAYERS::DYNAMIC);
+
+			settings.mMassPropertiesOverride.mMass = motionType == EMotionType::Dynamic ? rigidBodyComp.Mass : 1;
+			settings.mFriction = rigidBodyComp.Friction;
+			settings.mRestitution = rigidBodyComp.Restitution;
+			settings.mLinearDamping = rigidBodyComp.LinearDamping;
+			settings.mAngularDamping = rigidBodyComp.AngularDamping;
+			settings.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
+			settings.mAllowSleeping = !rigidBodyComp.DisableDeactivation;
+			settings.mMotionQuality = MotionQuality;
+			settings.mUserData = (uint64_t)&physicsObject;
+			
+			BodyInterface& interface = physicsLevel.System.GetBodyInterface();
+
+			const EActivation activation = rigidBodyComp.StartDeactivated ? EActivation::DontActivate : EActivation::Activate;
+
+			physicsObject.BodyHandle = interface.CreateAndAddBody(settings, activation);
+
+			if (physicsObject.BodyHandle.IsInvalid())
+			{
+				HEN_ERROR("[hen::physics] Failed to create rigidbody");
+				return;
+			}
 		}
-	};
 
-
-	static BPLayerInterfaceImpl BroadPhaseInterface;
-	static ObjectVsBroadPhaseLayerFilterImpl ObjectBroadphaseFilter;
-	static ObjectLayerPairFilterImpl ObjectObjectLayerFilter;
-
-	static MyContactListener ContactListener;
-
-	static JPH::PhysicsSystem System;
-	static std::unique_ptr<JPH::JobSystemThreadPool> JobSystem;
-	static std::unique_ptr<JPH::TempAllocatorImpl> Allocator;
-
-	static const JPH::uint MaxBodies = 1024;
-	static const JPH::uint NumBodyMutexes = 0;
-	static const JPH::uint MaxBodyPairs = 1024;
-	static const JPH::uint MaxContactConstraints = 1024;
-
-	static JPH::BodyID SphereID;
+	}
 
     void Initialise()
     {
         hen::Timer timer;
 
-        JPH::RegisterDefaultAllocator();
+		JPH::RegisterDefaultAllocator();
+		JPH::Factory::sInstance = new JPH::Factory();
+		JPH::RegisterTypes();
 
-        JPH::Factory::sInstance = new JPH::Factory();
+		Initialised = true;
 
-        JPH::RegisterTypes();
-
-        Allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024); // 10mb
-
-        JobSystem = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
-
-		System.Init(MaxBodies, NumBodyMutexes, MaxBodyPairs, MaxContactConstraints, BroadPhaseInterface, ObjectBroadphaseFilter, ObjectObjectLayerFilter);
-
-		System.SetContactListener(&ContactListener);
-
-		JPH::BodyInterface &body_interface = System.GetBodyInterface();
-
-		JPH::BoxShapeSettings floor_shape_settings(JPH::Vec3(100.0f, 1.0f, 100.0f));
-		floor_shape_settings.SetEmbedded();
-
-		JPH::ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
-		JPH::ShapeRefC floor_shape = floor_shape_result.Get();
-
-		JPH::BodyCreationSettings floor_settings(floor_shape, JPH::RVec3(0.0_r, -1.0_r, 0.0_r), JPH::Quat::sIdentity(), JPH::EMotionType::Static, Layers::STATIC);
-
-		JPH::Body *floor = body_interface.CreateBody(floor_settings);
-
-		body_interface.AddBody(floor->GetID(), JPH::EActivation::DontActivate);
-
-		JPH::BodyCreationSettings sphere_settings(new JPH::SphereShape(0.5f), JPH::RVec3(0.0_r, 2.0_r, 0.0_r), JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic, Layers::DYNAMIC);
-		SphereID = body_interface.CreateAndAddBody(sphere_settings, JPH::EActivation::Activate);
-
-		body_interface.SetLinearVelocity(SphereID, JPH::Vec3(0.0f, -5.0f, 0.0f));
-
-		System.OptimizeBroadPhase();
-
-        HEN_LOG("[hen::physics] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::physics] Initialised with Jolt Physics " + std::to_string(JPH_VERSION_MAJOR) + "." + std::to_string(JPH_VERSION_MINOR) + "." + std::to_string(JPH_VERSION_PATCH) + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
 
-    void Run(float hz)
+    void Update(float deltaTime)
     {	
-		System.Update(hz, 1, Allocator.get(), JobSystem.get());
-
-		if (System.GetBodyInterface().IsActive(SphereID))
+		if (!level::GetActiveLevel())
 		{
-			JPH::RVec3 position = System.GetBodyInterface().GetCenterOfMassPosition(SphereID);
-			JPH::Vec3 velocity = System.GetBodyInterface().GetLinearVelocity(SphereID);
-
-			HEN_LOG("Position = (" + std::to_string(position.GetX()) + ", " + std::to_string(position.GetY()) + ", " + std::to_string(position.GetZ()) + "), Velocity = (" + std::to_string(velocity.GetX()) + ", " + std::to_string(velocity.GetY()) + ", " + std::to_string(velocity.GetZ()) + ")" );
+			return;
 		}
+
+		if (deltaTime <= 0 || !cvar_SimulationEnabled.GetBool() || !Initialised)
+		{
+			return;
+		}
+
+		level::Level& currentLevel = *level::GetActiveLevel();
+
+		jolt::PhysicsLevel& physLevel = jolt::GetPhysicsLevel(currentLevel);
+
+		// TODO: USE JOBSYSTEM TO DISPATCH JOBS
+
     }
 
 	void Shutdown()
 	{
-
 		JPH::UnregisterTypes();
-
 		delete JPH::Factory::sInstance;
 		JPH::Factory::sInstance = nullptr;
 	}

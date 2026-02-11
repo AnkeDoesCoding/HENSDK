@@ -336,6 +336,7 @@ namespace hen::renderer
                         shader->SetVal("uMaterial.Diffuse", 0);
                         shader->SetVal("uMaterial.Specular", 1);
                         shader->SetVal("uMaterial.Shininess", 64.0f);
+                        shader->SetVec3("uMaterial.Colour", meshComp.Colour);
 
                         CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
                     }

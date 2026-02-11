@@ -160,9 +160,8 @@ namespace hen::level
     {
         renderer::TextureHandle DiffuseTexture;
         renderer::TextureHandle SpecularTexture;
-
         renderer::ShaderHandle Shader;
-
+        
         MaterialComponent() = default;
 
         MaterialComponent(const MaterialComponent& other) = default;
@@ -197,6 +196,8 @@ namespace hen::level
         std::vector<MaterialComponent> Materials;
 
         graphics::RESOURCE_STATES State = graphics::RESOURCE_STATES::NOTREADY;
+
+        math::Vec3 Colour = math::Vec3(1.0f); // multiplied by textures if there any and acts as fallback if no textures found
 
         MeshComponent() = default;
 

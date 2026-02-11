@@ -7,8 +7,6 @@
 #include "level/henLevel_Components.h"
 #include "level/henLevel_Primitives.h"
 
-#define UNDERLYING_VIEW decltype(std::declval<entt::registry>().view<Components...>())
-
 namespace hen::level
 {
     enum class PRIMITIVE_TYPES
@@ -121,6 +119,7 @@ namespace hen::level
     template<typename... Components>
     class View
     {
+        using UnderlyingView = decltype(std::declval<entt::registry>().view<Components...>());
     public:
 
         explicit View(entt::registry& registry, Level* level)
@@ -132,7 +131,7 @@ namespace hen::level
         class Iterator
         {
         public:
-            Iterator(typename UNDERLYING_VIEW::iterator it, Level* level)
+            Iterator(typename UnderlyingView::iterator it, Level* level)
                 : m_It(it), m_Level(level) 
             {
                 
@@ -154,7 +153,7 @@ namespace hen::level
             }
 
         private:
-            typename UNDERLYING_VIEW::iterator m_It;
+            typename UnderlyingView::iterator m_It;
             Level* m_Level;
 
         };
@@ -181,7 +180,7 @@ namespace hen::level
         }
 
     private:
-        UNDERLYING_VIEW m_View;
+        UnderlyingView m_View;
         Level* m_Level = nullptr;
         
     };
