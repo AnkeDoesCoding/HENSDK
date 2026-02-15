@@ -51,6 +51,7 @@ namespace hen
 
         HEN_ASSERT(jobsystem::Initialised, "hen::jobsystem not initialised");
 
+
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
         Window = window;
@@ -62,6 +63,8 @@ namespace hen
         
         physics::Initialise();
 
+        HEN_ASSERT(physics::Initialised, "hen::physics not initialised");
+        
 
         CurrentImGuiManager = std::make_unique<ui::IMGUIManager>();
         ui::GetIMGUIManager() = CurrentImGuiManager.get(); 
@@ -71,7 +74,7 @@ namespace hen
         HEN_ASSERT(CurrentImGuiManager->Initialised, "hen::ui::ImGuiManager not initialised");
 
 
-        input::Initialise(renderer::GetRHC()->GetWindow());
+        input::Initialise(window);
 
         HEN_ASSERT(input::Initialised, "hen::input not initialised");
 
@@ -165,15 +168,17 @@ namespace hen
             return;
         }
 
+        renderer::Run();
+
         double newTime = (double)SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
         double deltaTime = newTime - CurrentTimestep;
         CurrentTimestep = newTime;
 
-        deltaTime = std::min(deltaTime, 0.25);
-
-        Accumulator += deltaTime;
+        deltaTime = math::Clamp(deltaTime, 0.0f, 0.5f);
 
         Update((float)deltaTime);
+
+        Accumulator += deltaTime;
 
         while (Accumulator >= (1.0 / cvar_HZ.GetInt()))
         {
@@ -181,8 +186,6 @@ namespace hen
             Accumulator -= (1.0 / cvar_HZ.GetInt());
         }
 
-        renderer::Run();
-        input::Update();
     }
 
     void Application::FixedUpdate()
@@ -197,6 +200,7 @@ namespace hen
             return;
         }
 
+        input::Update();
         physics::Update(deltaTime);
 
         if (input::Press(input::KEYBOARD_BUTTON_TILDE))

@@ -272,7 +272,6 @@ namespace hen::renderer
 
     void Render()
     {
-
         if (auto level = level::GetActiveLevel())
         {
             auto litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();

@@ -38,6 +38,8 @@ namespace hen::level
 
     public:
         math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
+        math::Vec3 Gravity = math::Vec3(0.0f, -9.81f, 0.0f);
+        
         std::shared_ptr<void> PhysicsLevel;
 
     private:
@@ -183,6 +185,7 @@ namespace hen::level
             return m_View.contains((entt::entity)entity);
         }
 
+        // Only works when view contains one type of component
         std::size_t Size() const
         {
             return m_View.size(); 

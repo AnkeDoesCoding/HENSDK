@@ -277,7 +277,7 @@ namespace hen::level
         float OuterCutOff = 50.0f;
 
         math::Vec3 Colour = math::Vec3(1.0f, 1.0f, 1.0f);
-        math::Vec3 Ambient = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Ambient = math::Vec3(0.05f, 0.05f, 0.05f);
 
         LightComponent() = default;
 
