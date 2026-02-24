@@ -38,7 +38,7 @@ namespace hen::level
 
     public:
         math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
-        math::Vec3 Gravity = math::Vec3(0.0f, -9.81f, 0.0f);
+        math::Vec3 Gravity = math::Vec3(0.0f, -10.0f, 0.0f);
         
         std::shared_ptr<void> PhysicsLevel;
 

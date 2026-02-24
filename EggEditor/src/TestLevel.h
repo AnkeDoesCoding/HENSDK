@@ -50,10 +50,10 @@ namespace testlevel
         auto& cubeRB = CubeEnt.AddComponent<hen::level::RigidBodyComponent>();
         auto& cubeMat = CubeEnt.AddComponent<hen::level::MaterialComponent>();
 
-        cubeRB.Mass = 1.0f;
+        cubeRB.Mass = 100.0f;
 
         cubeTransform.SetLocalScale(hen::math::Vec3(10.0f));
-        cubeTransform.SetLocalPosition(hen::math::Vec3(0.0f, 50.0f, 0.0f));
+        cubeTransform.SetLocalPosition(hen::math::Vec3(20.0f, 100.0f, 0.0f));
         hen::jobsystem::Execute([&cubeMesh] {importer::ImportModel("res/models/primitives/cube.glb", cubeMesh);});
         cubeMat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 

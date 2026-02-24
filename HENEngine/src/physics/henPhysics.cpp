@@ -8,7 +8,6 @@
 #include "vendor/JoltPhysics/Jolt/Physics/PhysicsSettings.h"
 #include "vendor/JoltPhysics/Jolt/Physics/PhysicsSystem.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Body/BodyCreationSettings.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Body/BodyActivationListener.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/BoxShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CapsuleShape.h"
@@ -35,7 +34,7 @@ namespace hen::physics
 	cvar::CVar cvar_SimulationEnabled("phys_sim_enabled", true, cvar::FLAGS_ARCHIVE);
 	cvar::CVar cvar_InterpolationEnabled("phys_sim_interpolate", true, cvar::FLAGS_ARCHIVE);
 	cvar::CVar cvar_Accuracy("phys_sim_accuracy", 4, cvar::FLAGS_ARCHIVE);
-	cvar::CVar cvar_HZ("phys_sim_hz", 32, cvar::FLAGS_ARCHIVE);
+	cvar::CVar cvar_HZ("phys_sim_hz", 60, cvar::FLAGS_ARCHIVE);
 
 	// jolt and hen's coordinate systems are both right handed y up
 
@@ -239,6 +238,7 @@ namespace hen::physics
 				auto physLevel = std::make_shared<PhysicsLevel>();
 
 				physLevel->System.Init(MaxBodies, NumberBodyMutexes, MaxBodyPairs, MaxContactConstraints, physLevel->BroadPhaseLayerInterface, physLevel->ObjectBroadPhaseLayerFilter, physLevel->ObjectObjectLayerFilter);
+				physLevel->System.OptimizeBroadPhase();
 
 				level.PhysicsLevel = physLevel;
 			}
@@ -328,8 +328,6 @@ namespace hen::physics
 					}
 
 					TriangleList list;
-
-					HEN_LOG("Submesh count: " + std::to_string(meshComponent.SubMeshes.size()));
 
 					for (uint32_t submeshIndex = 0; submeshIndex < meshComponent.SubMeshes.size(); submeshIndex++)
     				{
@@ -437,6 +435,13 @@ namespace hen::physics
 
         HEN_LOG("[hen::physics] Initialised with Jolt Physics " + std::to_string(JPH_VERSION_MAJOR) + "." + std::to_string(JPH_VERSION_MINOR) + "." + std::to_string(JPH_VERSION_PATCH) + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
     }
+
+	void Shutdown()
+	{
+		jolt::UnregisterTypes();
+		delete jolt::Factory::sInstance;
+		jolt::Factory::sInstance = nullptr;
+	}
 
     void Update(float deltaTime)
     {	
@@ -578,7 +583,7 @@ namespace hen::physics
 
 			auto& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
 			auto& transformComponent = entity.GetComponent<level::TransformComponent>();
-			
+
 			jolt::RigidBody& physObj = jolt::GetRigidBody(rbComponent);
 
 			if (physObj.BodyHandle.IsInvalid())
@@ -611,12 +616,46 @@ namespace hen::physics
 
 		jobsystem::Wait();
 
+
     }
 
-	void Shutdown()
+	void AddImpulse(level::RigidBodyComponent& rbComponent, math::Vec3 impulse)
 	{
-		jolt::UnregisterTypes();
-		delete jolt::Factory::sInstance;
-		jolt::Factory::sInstance = nullptr;
+		if (!rbComponent.PhysicsObject)
+		{
+			return;
+		}
+
+		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		{
+			physLevel->System.GetBodyInterfaceNoLock().AddImpulse(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(impulse));
+		}
 	}
+
+    void AddForce(level::RigidBodyComponent& rbComponent, math::Vec3 force)
+	{
+		if (!rbComponent.PhysicsObject)
+		{
+			return;
+		}
+
+		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		{
+			physLevel->System.GetBodyInterfaceNoLock().AddForce(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(force));
+		}
+	}
+
+    void AddTorque(level::RigidBodyComponent& rbComponent, math::Vec3 torque)
+	{
+		if (!rbComponent.PhysicsObject)
+		{
+			return;
+		}
+
+		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		{
+			physLevel->System.GetBodyInterfaceNoLock().AddTorque(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(torque));
+		}
+	}
+
 }
