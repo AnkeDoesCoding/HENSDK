@@ -38,9 +38,9 @@ namespace hen::level
 
     public:
         math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
-        math::Vec3 Gravity = math::Vec3(0.0f, -10.0f, 0.0f);
+        math::Vec3 Gravity = math::Vec3(0.0f, -20.0f, 0.0f); // -9.81 felt too floaty even though it was physically correct
         
-        std::shared_ptr<void> PhysicsLevel;
+        std::shared_ptr<void> PhysicsLevel;  // I dont really like this shared void ptr approach
 
     private:
         entt::registry m_Registry;

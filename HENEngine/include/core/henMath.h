@@ -47,14 +47,19 @@ namespace hen::math
         return glm::cross(vectorX, vectorY);
     }
 
-    inline Vec3 Degrees(Vec3 radians)
-    {
-        return glm::degrees(radians);
-    }
-
     inline Vec3 Normalise(Vec3 vector)
     {
         return glm::normalize(vector);
+    }
+
+    inline float Length(Vec3 vector)
+    {
+        return glm::length(vector);
+    }
+
+    inline Vec3 Degrees(Vec3 radians)
+    {
+        return glm::degrees(radians);
     }
 
     inline Vec3 Radians(Vec3 degrees)
@@ -92,6 +97,11 @@ namespace hen::math
     inline Matrix4 Translate(Matrix4 matrix, Vec3 vector)
     {
         return glm::translate(matrix, vector);
+    }
+
+    inline Matrix4 Inverse(Matrix4 matrix)
+    {
+        return glm::inverse(matrix);
     }
 }
 
