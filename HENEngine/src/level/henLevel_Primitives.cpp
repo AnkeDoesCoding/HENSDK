@@ -94,4 +94,23 @@ namespace hen::level::primitives
         };
 
     }
+
+    Ray::Ray(const math::Vec3& origin, const math::Vec3& direction, const float min, const float max)
+        :Origin(origin), Direction(direction), Minimum(min), Maximum(max)
+    {
+
+    }
+
+    Ray::Ray(const math::Vec3& start, const math::Vec3& end)
+    {
+        Origin = start;
+        Direction = math::Normalise(end - start);
+        Maximum = math::Length(end - start);
+    }
+
+    Ray::Ray(const math::Vec2& mousePos)
+    {
+        // TODO: IMPLEMENT
+    }
+    
 }

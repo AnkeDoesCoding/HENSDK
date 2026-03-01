@@ -7,8 +7,6 @@
 #include "level/henLevel_Components.h"
 #include "level/henLevel_Primitives.h"
 
-#define UNDERLYING_VIEW decltype(std::declval<entt::registry>().view<Components...>())
-
 namespace hen::level
 {
     enum class PRIMITIVE_TYPES
@@ -28,12 +26,9 @@ namespace hen::level
     public:
         Level();
         ~Level();
-
-        void Update(float deltaTime);
-
-        entt::registry* GetRegistry();
     
         Entity CreateEntity(const std::string& name = std::string());
+        void RemoveEntity(const Entity& entity);
 
         template<typename... Components>
         auto GetView() 
@@ -43,6 +38,9 @@ namespace hen::level
 
     public:
         math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
+        math::Vec3 Gravity = math::Vec3(0.0f, -20.0f, 0.0f); // -9.81 felt too floaty even though it was physically correct
+        
+        std::shared_ptr<void> PhysicsLevel;  // I dont really like this shared void ptr approach
 
     private:
         entt::registry m_Registry;
@@ -60,7 +58,6 @@ namespace hen::level
         {
             return m_Handle != entt::null && m_Level != nullptr && m_Level->m_Registry.valid(m_Handle);
         }
-
 
         template<typename Component>
         bool HasComponent() const
@@ -120,6 +117,7 @@ namespace hen::level
     template<typename... Components>
     class View
     {
+        using UnderlyingView = decltype(std::declval<entt::registry>().view<Components...>());
     public:
 
         explicit View(entt::registry& registry, Level* level)
@@ -131,7 +129,7 @@ namespace hen::level
         class Iterator
         {
         public:
-            Iterator(typename UNDERLYING_VIEW::iterator it, Level* level)
+            Iterator(typename UnderlyingView::iterator it, Level* level)
                 : m_It(it), m_Level(level) 
             {
                 
@@ -144,7 +142,8 @@ namespace hen::level
 
             Iterator& operator++() 
             { 
-                ++m_It; return *this; 
+                m_It++; 
+                return *this; 
             }
 
             bool operator!=(const Iterator& other) const 
@@ -153,7 +152,7 @@ namespace hen::level
             }
 
         private:
-            typename UNDERLYING_VIEW::iterator m_It;
+            typename UnderlyingView::iterator m_It;
             Level* m_Level;
 
         };
@@ -168,10 +167,17 @@ namespace hen::level
             return Iterator(m_View.end(),   m_Level); 
         }
 
-        template<typename... T>
+        Entity operator[](std::size_t index) const
+        {
+            auto it = m_View.begin();
+            std::advance(it, index);
+            return Entity(*it, m_Level);
+        }
+
+        template<typename... Component>
         auto Get(Entity entity)
         {
-            return m_View.template get<T...>((entt::entity)entity);
+            return m_View.template get<Component...>((entt::entity)entity);
         }
 
         bool Contains(Entity entity) const
@@ -179,8 +185,14 @@ namespace hen::level
             return m_View.contains((entt::entity)entity);
         }
 
+        // Only works when view contains one type of component
+        std::size_t Size() const
+        {
+            return m_View.size(); 
+        }
+
     private:
-        UNDERLYING_VIEW m_View;
+        UnderlyingView m_View;
         Level* m_Level = nullptr;
         
     };

@@ -17,6 +17,8 @@
 
 #include "level/henLevel.h"
 
+#include "physics/henPhysics.h"
+
 #include "renderer/henRenderer.h"
 #include "renderer/henRHC.h"
 

@@ -114,7 +114,6 @@ namespace hen::input
 	void Initialise(SDL_Window* window);
     void Update();
     void ProcessEvent(const SDL_Event& event);
-	void ClearDelta();
 
     const KeyboardState& GetKeyboardState();
     const MouseState& GetMouseState();
@@ -128,6 +127,7 @@ namespace hen::input
 
 	bool Down(BUTTON button);
 	bool Press(BUTTON button);
+	bool Release(BUTTON button);
 
 	extern bool Initialised;
 }

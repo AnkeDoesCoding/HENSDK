@@ -18,16 +18,6 @@ namespace hen::level
         }
     }
 
-    void Level::Update(float deltaTime)
-    {
-
-    }
-
-    entt::registry* Level::GetRegistry()
-    {
-        return &m_Registry;
-    }
-
     Entity Level::CreateEntity(const std::string& name)
     {
         if (!GetActiveLevel())
@@ -42,6 +32,11 @@ namespace hen::level
         entity.AddComponent<NameComponent>(name.empty() ? "unknown" : name);
 
         return entity;
+    }
+
+    void Level::RemoveEntity(const Entity& entity)
+    {
+        m_Registry.destroy(entity);
     }
 
     Entity::Entity(const Entity& other)
@@ -60,7 +55,4 @@ namespace hen::level
     { 
         return ActiveLevel; 
     }
-
-
-
 }

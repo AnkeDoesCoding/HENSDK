@@ -213,10 +213,18 @@ namespace hen::input
             case SDL_EVENT_KEYMAP_CHANGED:
                 break;
             case SDL_EVENT_MOUSE_MOTION:
-                Mouse.Pos.x = event.motion.x;
-                Mouse.Pos.y = event.motion.y;
-                Mouse.DeltaPos.x += event.motion.xrel;
-                Mouse.DeltaPos.y += event.motion.yrel;
+                if (Mouse.Locked)
+                {
+                    Mouse.DeltaPos.x += event.motion.xrel;
+                    Mouse.DeltaPos.y += event.motion.yrel;
+                }
+                else
+                {
+                    Mouse.Pos.x = event.motion.x;
+                    Mouse.Pos.y = event.motion.y;
+                    Mouse.DeltaPos.x += event.motion.xrel;
+                    Mouse.DeltaPos.y += event.motion.yrel;
+                }
                 break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 switch (event.button.button)
@@ -264,19 +272,62 @@ namespace hen::input
 
     void Update()
     {
-        Keyboard = GetKeyboardState();
-        Mouse = GetMouseState();
-
         // Dont accumulate this stuff
         Mouse.DeltaWheel = 0;
         Mouse.DeltaPos = math::Vec2(0.0f);
+
+        Keyboard = GetKeyboardState();
+        Mouse = GetMouseState();        
+
+        if (Mouse.Locked)
+        {
+            int w, h;
+            SDL_GetWindowSize(Window, &w, &h);
+
+            int cx = w / 2;
+            int cy = h / 2;
+
+            SDL_WarpMouseInWindow(Window, cx, cy);
+
+            Mouse.Pos.x = cx;
+            Mouse.Pos.y = cy;
+        }
 
         Uint32 m = SDL_GetMouseState(&Mouse.Pos.x, &Mouse.Pos.y);
 
         Mouse.LMB = (m & SDL_BUTTON_LMASK) != 0;
         Mouse.RMB = (m & SDL_BUTTON_RMASK) != 0;
         Mouse.MMB = (m & SDL_BUTTON_MMASK) != 0;
-        
+
+        for (auto i = Inputs.begin(); i != Inputs.end();)
+		{
+			BUTTON button = i->first.button;
+
+			bool toDelete = false;
+
+			if (Down(button))
+			{
+				i->second++;
+			}
+			else if (i->second == -1)
+			{
+				toDelete = true;
+			}
+			else
+			{
+				i->second = -1;
+			}
+
+			if (toDelete)
+			{
+				Inputs.erase(i++);
+			}
+			else
+			{
+				++i;
+			}
+		}
+
         for(auto& event : Events)
         {
             HandleSDLEvent(event);
@@ -289,13 +340,7 @@ namespace hen::input
     {
         Events.push_back(event);
     }
-
-    void ClearDelta()
-    {   
-        Mouse.DeltaWheel = 0.0f;
-        Mouse.DeltaPos = math::Vec2(0.0f);
-    }
-
+    
     const KeyboardState& GetKeyboardState() 
     {
         return Keyboard;
@@ -381,15 +426,41 @@ namespace hen::input
 
 		Input input;
 		input.button = button;
-		auto iter = Inputs.find(input);
+		auto i = Inputs.find(input);
 
-		if (iter == Inputs.end())
+		if (i == Inputs.end())
 		{
 			Inputs.insert(std::make_pair(input, 0));
 			return true;
 		}
+        if (i->second == 0)
+        {
+            return true;
+        }
 
 		return false;
     }   
+
+    bool Release(BUTTON button)
+    {
+        Input input;
+        input.button = button;
+        auto i = Inputs.find(input);
+
+        if (i == Inputs.end())
+        {
+            if (Down(button))
+            {
+                Inputs.insert(std::make_pair(input, 0));
+            } 
+            return false;
+        }
+        if (i->second == -1)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 }

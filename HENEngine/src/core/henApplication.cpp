@@ -5,6 +5,7 @@
 #include "core/henJobSystem.h"
 #include "core/henTimer.h"
 #include "input/henInput.h"
+#include "physics/henPhysics.h"
 #include "renderer/henRenderer.h"
 #include "tools/henConsole.h"
 #include "ui/henUI.h"
@@ -12,16 +13,21 @@
 #include <memory>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 
 #if PLATFORM_WINDOWS
+    #define NOMINMAX
     #include <windows.h>
 #endif // !PLATFORM_WINDOWS
 
 namespace hen
 {
-    static uint64_t LastTick, CurrentTick = 0;
+    static double Accumulator = 0.0;
+    static double CurrentTimestep = 0.0;
+
     static std::string CPUName;
     static SDL_Window* Window;
+
     static std::unique_ptr<cvar::System> CurrentCVarSystem;
     static std::unique_ptr<ui::IMGUIManager> CurrentImGuiManager;
     
@@ -33,6 +39,8 @@ namespace hen
         }
     });
 
+    cvar::CVar cvar_HZ("a_hz", 60);
+
     void Application::Initialise(SDL_Window* window)
     {
         Timer timer;   
@@ -43,6 +51,7 @@ namespace hen
 
         HEN_ASSERT(jobsystem::Initialised, "hen::jobsystem not initialised");
 
+
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
         Window = window;
@@ -51,6 +60,11 @@ namespace hen
 
         HEN_ASSERT(renderer::Initialised, "hen::renderer not initialised");
 
+        
+        physics::Initialise();
+
+        HEN_ASSERT(physics::Initialised, "hen::physics not initialised");
+        
 
         CurrentImGuiManager = std::make_unique<ui::IMGUIManager>();
         ui::GetIMGUIManager() = CurrentImGuiManager.get(); 
@@ -60,7 +74,7 @@ namespace hen
         HEN_ASSERT(CurrentImGuiManager->Initialised, "hen::ui::ImGuiManager not initialised");
 
 
-        input::Initialise(renderer::GetRHC()->GetWindow());
+        input::Initialise(window);
 
         HEN_ASSERT(input::Initialised, "hen::input not initialised");
 
@@ -126,6 +140,13 @@ namespace hen
 
         SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
 
+        ui::GetIMGUIManager()->RegisterDrawCallback([]()
+        {
+            ImGui::Begin("Debug");
+            ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+            ImGui::End();
+        });
+
         HEN_LOG(infoStr);
     }
 
@@ -136,38 +157,56 @@ namespace hen
         ui::GetIMGUIManager()->Shutdown();
         cvar::GetSystem()->Shutdown();
 
+        physics::Shutdown();
         console::Shutdown();
     }
 
     void Application::Run()
     {
-        if (Initialised)
+        if (!Initialised)
         {
-            renderer::Run();
-
-            LastTick = CurrentTick;
-            CurrentTick = SDL_GetTicks();
-
-            float deltaTime = (CurrentTick - LastTick) / 1000.0f;
-
-            Update(deltaTime);
-            FixedUpdate();
-
-            input::Update();
+            return;
         }
+
+        renderer::Run();
+
+        double newTime = (double)SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
+        double deltaTime = newTime - CurrentTimestep;
+        CurrentTimestep = newTime;
+
+        deltaTime = math::Clamp(deltaTime, 0.0f, 0.5f);
+
+        Update((float)deltaTime);
+
+        Accumulator += deltaTime;
+
+        while (Accumulator >= (1.0 / cvar_HZ.GetInt()))
+        {
+            FixedUpdate();
+            Accumulator -= (1.0 / cvar_HZ.GetInt());
+        }
+
     }
 
     void Application::FixedUpdate()
     {
-        if (input::Press(input::KEYBOARD_BUTTON_TILDE))
-        {
-            console::Toggle();
-        }
+
     }
 
     void Application::Update(float deltaTime)
     {
+        if (!Initialised)
+        {
+            return;
+        }
 
+        input::Update();
+        physics::Update(deltaTime);
+
+        if (input::Press(input::KEYBOARD_BUTTON_TILDE))
+        {
+            console::Toggle();
+        }
     }
 
     void Application::ProcessEvent(const SDL_Event& event)

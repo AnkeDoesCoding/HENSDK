@@ -1,7 +1,7 @@
 #ifndef _HENGRAPHICS_H_
 #define _HENGRAPHICS_H_
 
-#include "vendor/stb/include/stb_image.h" // #define STB_IMAGE_IMPLEMENTATION is in henGraphics.cpp
+#include "vendor/stb/include/stb_image.h"
 
 #include "core/henMath.h"
 

@@ -16,6 +16,16 @@ namespace hen::level
         DIRECTIONAL
     };
     
+    enum class COLLISIONSHAPES
+    {
+        BOX,
+        SPHERE,
+        CAPSULE,
+        CYLINDER,
+        CONVEX_HULL,
+        TRIANGLE_MESH
+    };
+
     struct NameComponent
     {
         std::string Name = "unknown";
@@ -31,108 +41,124 @@ namespace hen::level
 
     struct TransformComponent
     {
-        mutable math::Matrix4 Transform;
-        math::Vec3 Position;
-        math::Vec3 Rotation;
-        math::Vec3 Scale = math::Vec3(1.0f, 1.0f, 1.0f);
+        math::Vec3 LocalPosition = math::Vec3(0.0f);
+        math::Quat LocalRotation = math::Quat(1.0f, 0.0f, 0.0f, 0.0f);
+        math::Vec3 LocalScale = math::Vec3(1.0f);
 
+        mutable math::Matrix4 World = math::Matrix4(1.0f);
         mutable bool Dirty = true;
 
-        TransformComponent() = default;
-
-        TransformComponent(const math::Matrix4& transform)
-            : Transform(transform)
+        math::Matrix4 GetLocalMatrix() const
         {
-
+            return math::Translate(math::Matrix4(1.0f), LocalPosition) * math::ToMatrix4(LocalRotation) * math::Scale(math::Matrix4(1.0f), LocalScale);
         }
 
-        TransformComponent(const math::Vec3& position, const math::Vec3& rotation, const math::Vec3& scale)
-            : Position(position), Rotation(rotation), Scale(scale)
-        {
-            
-        }
-
-        const math::Vec3& GetRotation() const
-        {
-            return Rotation;
-        }
-
-        const math::Vec3& GetPosition()
-        {
-            return Position;
-        }
-
-        const math::Vec3& GetScale() const
-        {
-            return Scale;
-        }
-
-        const math::Matrix4& GetMatrix() const
+        const math::Matrix4& GetWorldMatrix() const
         {
             if (Dirty)
             {
-                Transform = math::Translate(math::Matrix4(1.0f), Position) * math::ToMatrix4(math::Quat(Rotation)) * math::Scale(math::Matrix4(1.0f), Scale);
-
+                math::Matrix4 local = GetLocalMatrix();
+                World = local;
                 Dirty = false;
             }
 
-            return Transform;
+            return World;
         }
 
         math::Vec3 GetForwardVector() const
         {
-            float pitch = Rotation.x;
-            float yaw = Rotation.y;
-
-            math::Vec3 forward;
-            forward.x = cos(yaw) * cos(pitch);
-            forward.y = sin(pitch);
-            forward.z = sin(yaw) * cos(pitch);
-
-            return math::Normalise(forward);
-        }
-
-        math::Vec3 GetUpVector() const
-        {
-            math::Vec3 levelUp = math::Vec3(0.0f, 1.0f, 0.0f);
-            math::Vec3 forward = GetForwardVector();
-            math::Vec3 right = math::Normalise(math::Cross(forward, levelUp));
-            return math::Normalise(math::Cross(right, forward));
+            return math::Normalise(LocalRotation * math::Vec3(0.0f, 0.0f, 1.0f));
         }
 
         math::Vec3 GetRightVector() const
         {
-            math::Vec3 levelUp = math::Vec3(0.0f, 1.0f, 0.0f);
-            math::Vec3 forward = GetForwardVector();
-            return math::Normalise(math::Cross(forward, levelUp));
+            return math::Normalise(LocalRotation * math::Vec3(1.0f, 0.0f, 0.0f));
         }
 
-        void SetPosition(const math::Vec3& position)
+        math::Vec3 GetUpVector() const
         {
-            Position = position;
+            return math::Normalise(LocalRotation * math::Vec3(0.0f, 1.0f, 0.0f));
+        }
+
+        void SetLocalPosition(const math::Vec3& pos)
+        {
+            LocalPosition = pos;
+            SetDirty();
+        }
+
+        void SetLocalRotation(const math::Quat& rot)
+        {
+            LocalRotation = rot;
+            SetDirty();
+        }
+
+        void SetLocalScale(const math::Vec3& scale)
+        {
+            LocalScale = scale;
+            SetDirty();
+        }
+
+        void SetEulerRotation(const math::Vec3& eulerDegrees)
+        {
+            LocalRotation = math::Quat(math::Radians(eulerDegrees));
+            SetDirty();
+        }
+
+        math::Vec3 GetEulerRotation() const
+        {
+            return math::Degrees(math::EulerAngles(LocalRotation));
+        }
+
+        void SetDirty() const
+        {
             Dirty = true;
         }
 
-        void SetRotation(const math::Vec3& rotation)
+    };
+
+    struct CameraComponent
+    {
+        float FOV = 90.0f;
+        float NearPlane = 3.0f;
+        float FarPlane = 1500.0f;
+
+        math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Rotation = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Front;
+        math::Vec3 Right;
+        math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
+
+        CameraComponent() = default;
+
+        CameraComponent(const float& fov, const math::Vec3& position, const math::Vec3& rotation)
+            : FOV(fov), Position(position), Rotation(rotation)
         {
-            Rotation = rotation;
-            Dirty = true;
+
+        } 
+
+        math::Matrix4 GetViewMatrix()
+        {
+            return math::LookAt(Position, Position + Front, Up);
+        }
+        
+        math::Matrix4 GetProjection(float x, float y)
+        {
+            return math::Perspective(math::Radians(FOV), x / y, NearPlane, FarPlane);
         }
 
-        void SetScale(const math::Vec3& scale)
+        void SetDirty(const math::Vec3& levelUp)
         {
-            Scale = scale;
-            Dirty = true;
-        }
+            math::Vec3 front;
 
-        operator math::Matrix4& ()
-        {
-            return Transform;
-        }
+            Rotation.x = math::Clamp(Rotation.x, -89.99f, 89.99f); // you can never truly look 90 up or down, hopefully this doesnt fuck up future calculations
 
-        operator const math::Matrix4& () const
-        {
-            return Transform;
+            front.x = cos(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
+            front.y = sin(math::Radians(Rotation.x));
+            front.z = sin(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
+            Front = math::Normalise(front);
+
+            Right = math::Normalise(math::Cross(Front, levelUp));
+            Up = math::Normalise(math::Cross(Right, Front));
         }
 
     };
@@ -141,11 +167,9 @@ namespace hen::level
     {
         renderer::TextureHandle DiffuseTexture;
         renderer::TextureHandle SpecularTexture;
-
         renderer::ShaderHandle Shader;
-
+        
         MaterialComponent() = default;
-
         MaterialComponent(const MaterialComponent& other) = default;
     };
 
@@ -178,6 +202,8 @@ namespace hen::level
         std::vector<MaterialComponent> Materials;
 
         graphics::RESOURCE_STATES State = graphics::RESOURCE_STATES::NOTREADY;
+
+        math::Vec3 Colour = math::Vec3(1.0f); // multiplied by textures if there any and acts as fallback if no textures found
 
         MeshComponent() = default;
 
@@ -251,13 +277,13 @@ namespace hen::level
     {
         LIGHT_TYPES Type;
 
-        float Range;
-        float Intensity;
-        float InnerCutOff;
-        float OuterCutOff;
+        float Range = 200.0f;
+        float Intensity = 1.0f;
+        float InnerCutOff = 25.0f;
+        float OuterCutOff = 50.0f;
 
         math::Vec3 Colour = math::Vec3(1.0f, 1.0f, 1.0f);
-        math::Vec3 Ambient = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Ambient = math::Vec3(0.05f, 0.05f, 0.05f);
 
         LightComponent() = default;
 
@@ -268,52 +294,51 @@ namespace hen::level
         }
     };
 
-    struct CameraComponent
+    struct RigidBodyComponent
     {
-        float FOV = 90.0f;
-        float NearPlane = 3.0f;
-        float FarPlane = 1500.0f;
-
-        math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
-        math::Vec3 Rotation = math::Vec3(0.0f, 0.0f, 0.0f);
-        math::Vec3 Front;
-        math::Vec3 Right;
-        math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
-
-        CameraComponent() = default;
-
-        CameraComponent(const float& fov, const math::Vec3& position, const math::Vec3& rotation)
-            : FOV(fov), Position(position), Rotation(rotation)
+        struct BoxParams
         {
+            math::Vec3 HalfExtents = math::Vec3(1.0f);
+        } Box;
 
-        } 
-
-        math::Matrix4 GetViewMatrix()
+        struct SphereParams
         {
-            return math::LookAt(Position, Position + Front, Up);
+            float Radius = 1.0f;
+        } Sphere;
+
+        struct CapsuleParams
+        {
+            float Radius = 1.0f;
+            float Height = 1.0f;
+        } Capsule;
+
+        struct CylinderParams
+        {
+            float Radius = 1.0f;
+            float Height = 1.0f;
+        } Cylinder;
+
+        COLLISIONSHAPES Shape = COLLISIONSHAPES::BOX;
+        std::shared_ptr<void> PhysicsObject = nullptr;
+        math::Vec3 Offset = math::Vec3(0.0f);
+
+        bool Dirty = false;
+        bool Kinematic = false;
+        bool DisableDeactivation = false;
+        bool StartDeactivated = false;
+
+        float Mass = 1.0f;
+        float Friction = 0.5f;
+        float Restitution = 0.05f;
+        float LinearDamping = 0.05f;
+        float AngularDamping = 0.05f;
+        float Bouyancy = 1.5f;
+
+        void SetDirty()
+        {
+            Dirty = true;
         }
-        
-        math::Matrix4 GetProjection(float x, float y)
-        {
-            return math::Perspective(math::Radians(FOV), x / y, NearPlane, FarPlane);
-        }
-
-        void SetDirty(const math::Vec3& levelUp)
-        {
-            math::Vec3 front;
-
-            Rotation.x = math::Clamp(Rotation.x, -89.99f, 89.99f); // you can never truly look 90 up or down, hopefully this doesnt fuck up future calculations
-
-            front.x = cos(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
-            front.y = sin(math::Radians(Rotation.x));
-            front.z = sin(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
-            Front = math::Normalise(front);
-
-            Right = math::Normalise(math::Cross(Front, levelUp));
-            Up = math::Normalise(math::Cross(Right, Front));
-        }
-
-    };  
+    };
 }
 
 #endif // !_HENLEVEL_COMPONENTS_H_

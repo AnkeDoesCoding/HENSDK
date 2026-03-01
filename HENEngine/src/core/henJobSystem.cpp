@@ -63,7 +63,7 @@ namespace hen::jobsystem
     bool Initialised = false;
 
     static uint32_t NumberOfThreads = 0;
-    static uint64_t CurrentLabel = 0;
+    std::atomic<uint64_t> CurrentLabel;
     std::atomic<uint64_t> FinishedLabel;
 
     static ThreadSafeRingBuffer<std::function<void()>, 256> JobPool;
@@ -82,6 +82,7 @@ namespace hen::jobsystem
         Timer timer;
 
         FinishedLabel.store(0);
+        CurrentLabel.store(0);
 
         auto numberOfCores = std::thread::hardware_concurrency();
         NumberOfThreads = std::max(1u, numberOfCores);
@@ -131,7 +132,7 @@ namespace hen::jobsystem
 
     void Execute(const std::function<void()>& job)
     {
-        CurrentLabel += 1;
+        CurrentLabel.fetch_add(1);
 
         while (!JobPool.PushBack(job))
         {
@@ -151,7 +152,7 @@ namespace hen::jobsystem
         // an overestimate of job groups
 		const uint32_t groupCount = (jobCount + groupSize - 1) / groupSize;
 
-		CurrentLabel += groupCount;
+		CurrentLabel.fetch_add(groupCount);
 
 		for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
 		{
@@ -190,6 +191,6 @@ namespace hen::jobsystem
 
     bool IsBusy()
     {
-        return FinishedLabel.load() < CurrentLabel;
+        return FinishedLabel.load() < CurrentLabel.load();
     }
 }
