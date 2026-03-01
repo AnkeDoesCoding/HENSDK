@@ -25,7 +25,7 @@ namespace testlevel
         auto& light = LightEnt.AddComponent<hen::level::LightComponent>();
 
         lightTransform.SetLocalPosition(hen::math::Vec3(0.0f, 25.0f, 15.0f));
-        light.Range = 500.0f;
+        light.Range = 2500.0f;
 
         // Sponza
 
@@ -35,12 +35,12 @@ namespace testlevel
         auto& modelMesh = ModelEnt.AddComponent<hen::level::MeshComponent>();
         auto& modelRB = ModelEnt.AddComponent<hen::level::RigidBodyComponent>();
 
-        modelTransform.SetLocalScale(hen::math::Vec3(0.15f));
+        modelTransform.SetLocalScale(hen::math::Vec3(0.5f));
         hen::jobsystem::Execute([&modelMesh] {importer::ImportModel("res/models/sponza/sponza.glb", modelMesh);});
         modelMat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
         modelRB.Kinematic = true;
-        modelRB.Shape = hen::level::RigidBodyComponent::COLLISIONSHAPES::TRIANGLE_MESH;
+        modelRB.Shape = hen::level::COLLISIONSHAPES::TRIANGLE_MESH;
 
         // Cube
 
@@ -51,6 +51,7 @@ namespace testlevel
         auto& cubeMat = CubeEnt.AddComponent<hen::level::MaterialComponent>();
 
         cubeRB.Mass = 100.0f;
+        cubeRB.Restitution = 0.2f;
 
         cubeTransform.SetLocalScale(hen::math::Vec3(10.0f));
         cubeTransform.SetLocalPosition(hen::math::Vec3(20.0f, 100.0f, 0.0f));

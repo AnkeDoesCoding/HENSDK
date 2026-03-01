@@ -16,6 +16,16 @@ namespace hen::level
         DIRECTIONAL
     };
     
+    enum class COLLISIONSHAPES
+    {
+        BOX,
+        SPHERE,
+        CAPSULE,
+        CYLINDER,
+        CONVEX_HULL,
+        TRIANGLE_MESH
+    };
+
     struct NameComponent
     {
         std::string Name = "unknown";
@@ -106,54 +116,51 @@ namespace hen::level
 
     };
 
-    struct RigidBodyComponent
+    struct CameraComponent
     {
-        enum class COLLISIONSHAPES
+        float FOV = 90.0f;
+        float NearPlane = 3.0f;
+        float FarPlane = 1500.0f;
+
+        math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Rotation = math::Vec3(0.0f, 0.0f, 0.0f);
+        math::Vec3 Front;
+        math::Vec3 Right;
+        math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
+
+        CameraComponent() = default;
+
+        CameraComponent(const float& fov, const math::Vec3& position, const math::Vec3& rotation)
+            : FOV(fov), Position(position), Rotation(rotation)
         {
-            BOX,
-            SPHERE,
-            CAPSULE,
-            CYLINDER,
-            CONVEX_HULL,
-            TRIANGLE_MESH
-        };
 
-        struct BoxParams
+        } 
+
+        math::Matrix4 GetViewMatrix()
         {
-            math::Vec3 HalfExtents = math::Vec3(1.0f);
-        } Box;
-
-        struct SphereParams
+            return math::LookAt(Position, Position + Front, Up);
+        }
+        
+        math::Matrix4 GetProjection(float x, float y)
         {
-            float Radius = 1.0f;
-        } Sphere;
+            return math::Perspective(math::Radians(FOV), x / y, NearPlane, FarPlane);
+        }
 
-        struct CapsuleParams
+        void SetDirty(const math::Vec3& levelUp)
         {
-            float Radius = 1.0f;
-            float Height = 1.0f;
-        } Capsule;
+            math::Vec3 front;
 
-        struct CylinderParams
-        {
-            float Radius = 1.0f;
-            float Height = 1.0f;
-        } Cylinder;
+            Rotation.x = math::Clamp(Rotation.x, -89.99f, 89.99f); // you can never truly look 90 up or down, hopefully this doesnt fuck up future calculations
 
-        COLLISIONSHAPES Shape = COLLISIONSHAPES::BOX;
-        std::shared_ptr<void> PhysicsObject = nullptr;
-        math::Vec3 Offset = math::Vec3(1.0f);
+            front.x = cos(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
+            front.y = sin(math::Radians(Rotation.x));
+            front.z = sin(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
+            Front = math::Normalise(front);
 
-        bool Kinematic = false;
-        bool DisableDeactivation = false;
-        bool StartDeactivated = false;
+            Right = math::Normalise(math::Cross(Front, levelUp));
+            Up = math::Normalise(math::Cross(Right, Front));
+        }
 
-        float Mass = 1.0f;
-        float Friction = 0.5f;
-        float Restitution = 0.05f;
-        float LinearDamping = 0.05f;
-        float AngularDamping = 0.05f;
-        float Bouyancy = 1.5f;
     };
 
     struct MaterialComponent
@@ -288,52 +295,45 @@ namespace hen::level
         }
     };
 
-    struct CameraComponent
+    struct RigidBodyComponent
     {
-        float FOV = 90.0f;
-        float NearPlane = 3.0f;
-        float FarPlane = 1500.0f;
-
-        math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
-        math::Vec3 Rotation = math::Vec3(0.0f, 0.0f, 0.0f);
-        math::Vec3 Front;
-        math::Vec3 Right;
-        math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
-
-        CameraComponent() = default;
-
-        CameraComponent(const float& fov, const math::Vec3& position, const math::Vec3& rotation)
-            : FOV(fov), Position(position), Rotation(rotation)
+        struct BoxParams
         {
+            math::Vec3 HalfExtents = math::Vec3(1.0f);
+        } Box;
 
-        } 
-
-        math::Matrix4 GetViewMatrix()
+        struct SphereParams
         {
-            return math::LookAt(Position, Position + Front, Up);
-        }
-        
-        math::Matrix4 GetProjection(float x, float y)
+            float Radius = 1.0f;
+        } Sphere;
+
+        struct CapsuleParams
         {
-            return math::Perspective(math::Radians(FOV), x / y, NearPlane, FarPlane);
-        }
+            float Radius = 1.0f;
+            float Height = 1.0f;
+        } Capsule;
 
-        void SetDirty(const math::Vec3& levelUp)
+        struct CylinderParams
         {
-            math::Vec3 front;
+            float Radius = 1.0f;
+            float Height = 1.0f;
+        } Cylinder;
 
-            Rotation.x = math::Clamp(Rotation.x, -89.99f, 89.99f); // you can never truly look 90 up or down, hopefully this doesnt fuck up future calculations
+        COLLISIONSHAPES Shape = COLLISIONSHAPES::BOX;
+        std::shared_ptr<void> PhysicsObject = nullptr;
+        math::Vec3 Offset = math::Vec3(1.0f);
 
-            front.x = cos(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
-            front.y = sin(math::Radians(Rotation.x));
-            front.z = sin(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
-            Front = math::Normalise(front);
+        bool Kinematic = false;
+        bool DisableDeactivation = false;
+        bool StartDeactivated = false;
 
-            Right = math::Normalise(math::Cross(Front, levelUp));
-            Up = math::Normalise(math::Cross(Right, Front));
-        }
-
-    };  
+        float Mass = 1.0f;
+        float Friction = 0.5f;
+        float Restitution = 0.05f;
+        float LinearDamping = 0.05f;
+        float AngularDamping = 0.05f;
+        float Bouyancy = 1.5f;
+    };
 }
 
 #endif // !_HENLEVEL_COMPONENTS_H_

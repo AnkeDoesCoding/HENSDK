@@ -11,11 +11,15 @@ namespace hen::physics
 
     void Update(float deltaTime);
 
-    void AddImpulse(level::RigidBodyComponent& rbComponent, math::Vec3 impulse);
+    void AddImpulse(level::RigidBodyComponent& rbComponent, const math::Vec3& impulse);
+    void AddImpulseAt(level::RigidBodyComponent& rbComponent, const math::Vec3& impulse, const math::Vec3& position);
 
-    void AddForce(level::RigidBodyComponent& rbComponent, math::Vec3 force);
+    void AddForce(level::RigidBodyComponent& rbComponent, const math::Vec3& force);
+    void AddForceAt(level::RigidBodyComponent& rbComponent, const math::Vec3& force, const math::Vec3& position);
 
-    void AddTorque(level::RigidBodyComponent& rbComponent, math::Vec3 torque);
+    void AddTorque(level::RigidBodyComponent& rbComponent, const math::Vec3& torque);
+    
+    level::primitives::RayResult CastRay(const level::primitives::Ray& ray);
 
     extern bool Initialised;
 }

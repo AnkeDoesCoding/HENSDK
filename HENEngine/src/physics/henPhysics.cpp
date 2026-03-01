@@ -13,6 +13,9 @@
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CapsuleShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CylinderShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/MeshShape.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/RayCast.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/CastResult.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/CollisionCollectorImpl.h"
 
 JPH_SUPPRESS_WARNINGS
 
@@ -150,8 +153,8 @@ namespace hen::physics
 			ObjectLayerPairFilterImpl ObjectObjectLayerFilter;
 			ObjectBroadPhaseLayerFilterImpl ObjectBroadPhaseLayerFilter;
 
-			float Accumulator;
-			float Alpha = 0;
+			float Accumulator = 0.0f;
+			float Alpha = 0.0f;
 
 			float GetKinematicDT(float deltaTime) const
 			{
@@ -200,7 +203,7 @@ namespace hen::physics
 		{ 
 			return Quat(q.x, q.y, q.z, q.w); 
 		}
-		inline  math::Quat Cast(QuatArg q) 
+		inline math::Quat Cast(QuatArg q) 
 		{ 
 			return math::Quat(q.GetW(), q.GetX(), q.GetY(), q.GetZ()); 
 		}
@@ -279,35 +282,35 @@ namespace hen::physics
 
 			switch (rigidBodyComp.Shape)
 			{
-				case level::RigidBodyComponent::COLLISIONSHAPES::BOX:
+				case level::COLLISIONSHAPES::BOX:
 				{
 					BoxShapeSettings settings(Vec3(rigidBodyComp.Box.HalfExtents.x * transformComp.LocalScale.x, rigidBodyComp.Box.HalfExtents.y * transformComp.LocalScale.y, rigidBodyComp.Box.HalfExtents.z * transformComp.LocalScale.z), convexRadius);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}
-				case level::RigidBodyComponent::COLLISIONSHAPES::SPHERE:
+				case level::COLLISIONSHAPES::SPHERE:
 				{
 					SphereShapeSettings settings(rigidBodyComp.Sphere.Radius * transformComp.LocalScale.x);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}	
-				case level::RigidBodyComponent::COLLISIONSHAPES::CAPSULE:
+				case level::COLLISIONSHAPES::CAPSULE:
 				{
 					CapsuleShapeSettings settings(rigidBodyComp.Capsule.Height * transformComp.LocalScale.y, rigidBodyComp.Capsule.Radius * transformComp.LocalScale.x);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}
-				case level::RigidBodyComponent::COLLISIONSHAPES::CYLINDER:
+				case level::COLLISIONSHAPES::CYLINDER:
 				{
 					CylinderShapeSettings settings(rigidBodyComp.Cylinder.Height * transformComp.LocalScale.y, rigidBodyComp.Cylinder.Radius * transformComp.LocalScale.x, convexRadius);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}
-				case level::RigidBodyComponent::COLLISIONSHAPES::TRIANGLE_MESH:
+				case level::COLLISIONSHAPES::TRIANGLE_MESH:
 				{
 					if (!entity.HasComponent<level::MeshComponent>())
 					{
@@ -619,7 +622,7 @@ namespace hen::physics
 
     }
 
-	void AddImpulse(level::RigidBodyComponent& rbComponent, math::Vec3 impulse)
+	void AddImpulse(level::RigidBodyComponent& rbComponent, const math::Vec3& impulse)
 	{
 		if (!rbComponent.PhysicsObject)
 		{
@@ -632,7 +635,20 @@ namespace hen::physics
 		}
 	}
 
-    void AddForce(level::RigidBodyComponent& rbComponent, math::Vec3 force)
+    void AddImpulseAt(level::RigidBodyComponent& rbComponent, const math::Vec3& impulse, const math::Vec3& position)
+	{
+		if (!rbComponent.PhysicsObject)
+		{
+			return;
+		}
+
+		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		{
+			physLevel->System.GetBodyInterfaceNoLock().AddImpulse(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(impulse), jolt::Cast(position));
+		}
+	}
+
+    void AddForce(level::RigidBodyComponent& rbComponent, const math::Vec3& force)
 	{
 		if (!rbComponent.PhysicsObject)
 		{
@@ -645,7 +661,20 @@ namespace hen::physics
 		}
 	}
 
-    void AddTorque(level::RigidBodyComponent& rbComponent, math::Vec3 torque)
+	void AddForceAt(level::RigidBodyComponent& rbComponent, const math::Vec3& force, const math::Vec3& position)
+	{
+		if (!rbComponent.PhysicsObject)
+		{
+			return;
+		}
+
+		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		{
+			physLevel->System.GetBodyInterfaceNoLock().AddForce(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(force), jolt::Cast(position));
+		}
+	}
+
+    void AddTorque(level::RigidBodyComponent& rbComponent, const math::Vec3& torque)
 	{
 		if (!rbComponent.PhysicsObject)
 		{
@@ -656,6 +685,52 @@ namespace hen::physics
 		{
 			physLevel->System.GetBodyInterfaceNoLock().AddTorque(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(torque));
 		}
+	}
+	
+	level::primitives::RayResult CastRay(const level::primitives::Ray& ray)
+	{
+		level::primitives::RayResult result;
+
+		level::Level* currentLevel = level::GetActiveLevel();
+
+		if (!currentLevel)
+		{
+			return result;
+		}
+
+		jolt::PhysicsLevel& physLevel = jolt::GetPhysicsLevel(*currentLevel);
+
+		jolt::ClosestHitCollisionCollector<jolt::CastRayCollector> collector;
+		jolt::RayCastSettings settings;
+		jolt::RRayCast rayCast (jolt::Cast(ray.Origin), jolt::Cast(ray.Direction) * ray.Maximum);
+
+		physLevel.System.GetNarrowPhaseQuery().CastRay(rayCast, settings, collector);
+
+		if (collector.HadHit())
+		{
+			const jolt::RayCastResult& hit = collector.mHit;
+
+        	jolt::Vec3 hitPos = rayCast.mOrigin + rayCast.mDirection * hit.mFraction;
+			jolt::Vec3 hitNormal;
+			jolt::RigidBody* hitObj;
+
+			jolt::BodyLockRead lock(physLevel.System.GetBodyLockInterface(), hit.mBodyID);
+
+			if (lock.Succeeded())
+			{
+			    const jolt::Body& body = lock.GetBody();
+
+			    hitNormal = body.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, hitPos);
+				hitObj = reinterpret_cast<jolt::RigidBody*>(body.GetUserData());
+			}
+
+        	result.Hit = true;
+        	result.HitPosition = jolt::Cast(hitPos);
+			result.HitNormal = jolt::Cast(hitNormal);
+			result.HitEntity = &hitObj->Entity;
+		}
+
+		return result;
 	}
 
 }
