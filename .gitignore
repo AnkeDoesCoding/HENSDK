@@ -33,7 +33,7 @@
 
 #Build Results
 
-build/
+/build/
 out/
 .cache
 
