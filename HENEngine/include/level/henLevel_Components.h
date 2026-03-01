@@ -170,7 +170,6 @@ namespace hen::level
         renderer::ShaderHandle Shader;
         
         MaterialComponent() = default;
-
         MaterialComponent(const MaterialComponent& other) = default;
     };
 
@@ -321,8 +320,9 @@ namespace hen::level
 
         COLLISIONSHAPES Shape = COLLISIONSHAPES::BOX;
         std::shared_ptr<void> PhysicsObject = nullptr;
-        math::Vec3 Offset = math::Vec3(1.0f);
+        math::Vec3 Offset = math::Vec3(0.0f);
 
+        bool Dirty = false;
         bool Kinematic = false;
         bool DisableDeactivation = false;
         bool StartDeactivated = false;
@@ -333,6 +333,11 @@ namespace hen::level
         float LinearDamping = 0.05f;
         float AngularDamping = 0.05f;
         float Bouyancy = 1.5f;
+
+        void SetDirty()
+        {
+            Dirty = true;
+        }
     };
 }
 

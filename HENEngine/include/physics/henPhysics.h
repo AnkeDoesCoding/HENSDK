@@ -11,6 +11,9 @@ namespace hen::physics
 
     void Update(float deltaTime);
 
+    math::Vec3 GetLinearVelocity(level::RigidBodyComponent& rbComponent);    
+    math::Vec3 GetAngularVelocity(level::RigidBodyComponent& rbComponent);
+
     void AddImpulse(level::RigidBodyComponent& rbComponent, const math::Vec3& impulse);
     void AddImpulseAt(level::RigidBodyComponent& rbComponent, const math::Vec3& impulse, const math::Vec3& position);
 

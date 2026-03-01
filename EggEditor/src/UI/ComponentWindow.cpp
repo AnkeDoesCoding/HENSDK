@@ -82,11 +82,108 @@ void ComponentWindow::Initialise()
 
             }
         
+            if (SelectedEntity.HasComponent<hen::level::RigidBodyComponent>())
+            {
+                auto& rigidBody = SelectedEntity.GetComponent<hen::level::RigidBodyComponent>();
+
+                const char* collisionTypes[] = { "Box", "Sphere", "Capsule", "Cylinder", "Convex Hull", "Triangle Mesh" };
+                int currentType = static_cast<int>(rigidBody.Shape);
+
+                ImGui::Text("Rigid Body");
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                if (ImGui::Combo("Collision Shape", &currentType, collisionTypes, IM_ARRAYSIZE(collisionTypes)))
+                {
+                    rigidBody.Shape = static_cast<hen::level::COLLISIONSHAPES>(currentType);
+                    rigidBody.SetDirty();
+                }
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                switch (rigidBody.Shape)
+                {
+                    case hen::level::COLLISIONSHAPES::BOX:
+                        if (ImGui::DragFloat3("Box Half Extents", &rigidBody.Box.HalfExtents.x, 0.1f))
+                        {
+                            rigidBody.SetDirty();
+                        }
+                        break;
+                    case hen::level::COLLISIONSHAPES::SPHERE:
+                        if (ImGui::InputFloat("Sphere Radius", &rigidBody.Sphere.Radius))
+                        {
+                            rigidBody.SetDirty();
+                        }
+                        break;
+                    case hen::level::COLLISIONSHAPES::CAPSULE:
+                        if (ImGui::InputFloat("Capsule Radius", &rigidBody.Capsule.Radius))
+                        {
+                            rigidBody.SetDirty();
+                        }
+
+                        if (ImGui::InputFloat("Capsule Height", &rigidBody.Capsule.Height))
+                        {
+                            rigidBody.SetDirty();
+                        }
+                        break;
+                    case hen::level::COLLISIONSHAPES::CYLINDER:
+                        if (ImGui::InputFloat("Cylinder Radius", &rigidBody.Cylinder.Radius))
+                        {
+                            rigidBody.SetDirty();
+                        }
+
+                        if (ImGui::InputFloat("Cylinder Height", &rigidBody.Cylinder.Height))
+                        {
+                            rigidBody.SetDirty();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                ImGui::InputFloat("Mass", &rigidBody.Mass);
+                ImGui::InputFloat("Friction", &rigidBody.Friction);
+                ImGui::InputFloat("Restituiton", &rigidBody.Restitution);
+                ImGui::InputFloat("LinearDamping", &rigidBody.LinearDamping);
+                ImGui::InputFloat("AngularDamping", &rigidBody.AngularDamping);
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                ImGui::Checkbox("Kinematic", &rigidBody.Kinematic);
+                ImGui::Checkbox("DisableDeactivation", &rigidBody.DisableDeactivation);
+                ImGui::Checkbox("StartDeactivated", &rigidBody.StartDeactivated);
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                if (ImGui::InputFloat3("Offset", &rigidBody.Offset.x))
+                {
+                    rigidBody.SetDirty();
+                }
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+                ImGui::Spacing();
+            }
+
             if (SelectedEntity.HasComponent<hen::level::MeshComponent>())
             {
                 auto& mesh = SelectedEntity.GetComponent<hen::level::MeshComponent>();
                 
                 ImGui::Text("Mesh");
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                ImGui::DragFloat3("Colour", &mesh.Colour.x, 0.1f);
 
                 ImGui::Spacing();
                 ImGui::Spacing();

@@ -13,6 +13,7 @@
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CapsuleShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CylinderShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/MeshShape.h"
+#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/ConvexHullShape.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/RayCast.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/CastResult.h"
 #include "vendor/JoltPhysics/Jolt/Physics/Collision/CollisionCollectorImpl.h"
@@ -310,6 +311,39 @@ namespace hen::physics
 					shapeResult = settings.Create();
 					break;
 				}
+				case level::COLLISIONSHAPES::CONVEX_HULL:
+				{
+					if (!entity.HasComponent<level::MeshComponent>())
+					{
+						HEN_WARN("[hen::physics] Entity: " + entity.GetComponent<level::NameComponent>().Name + " requested convex hull collision but doesn't have a mesh component, resolving to box collision");
+
+						BoxShapeSettings settings(Vec3(rigidBodyComp.Box.HalfExtents.x * transformComp.LocalScale.x, rigidBodyComp.Box.HalfExtents.y * transformComp.LocalScale.y, rigidBodyComp.Box.HalfExtents.z * transformComp.LocalScale.z), convexRadius);
+						settings.SetEmbedded();
+						shapeResult = settings.Create();
+
+						break;
+					}
+
+					auto& meshComponent = entity.GetComponent<level::MeshComponent>();
+
+					if (meshComponent.State != graphics::RESOURCE_STATES::READYTORENDER)
+					{
+						return;
+					}
+
+					Array<Vec3> points;
+					points.reserve(meshComponent.Vertices.size());
+					for (auto& pos : meshComponent.Vertices)
+					{
+						points.push_back(Vec3(pos.x * transformComp.LocalScale.x, pos.y * transformComp.LocalScale.y, pos.z * transformComp.LocalScale.z));
+					}
+
+					ConvexHullShapeSettings settings(points, convexRadius);
+					settings.SetEmbedded();
+					shapeResult = settings.Create();
+
+					break;
+				}
 				case level::COLLISIONSHAPES::TRIANGLE_MESH:
 				{
 					if (!entity.HasComponent<level::MeshComponent>())
@@ -485,13 +519,25 @@ namespace hen::physics
 
 			jolt::RigidBody& physObj = jolt::GetRigidBody(rbComponent);
 
-			if (physObj.BodyHandle.IsInvalid()) // ehh maybe not the best solution
+			if (physObj.BodyHandle.IsInvalid())
 			{
 				jolt::AddRigidBody(*level::GetActiveLevel(), entity);
 				return;
 			}
 
 			jolt::BodyInterface& bodyInterface = physLevel.System.GetBodyInterface();
+
+			if (rbComponent.Dirty)
+			{
+				bodyInterface.RemoveBody(physObj.BodyHandle);
+				bodyInterface.DestroyBody(physObj.BodyHandle);
+
+				jolt::AddRigidBody(*level::GetActiveLevel(), entity);
+
+				rbComponent.Dirty = false;
+				return;
+			}
+
 			bodyInterface.SetFriction(physObj.BodyHandle, rbComponent.Friction);
 			bodyInterface.SetRestitution(physObj.BodyHandle, rbComponent.Restitution);
 			const jolt::EMotionType prevMotionType = bodyInterface.GetMotionType(physObj.BodyHandle);
@@ -618,9 +664,37 @@ namespace hen::physics
 		});
 
 		jobsystem::Wait();
-
-
     }
+
+	math::Vec3 GetLinearVelocity(level::RigidBodyComponent& rbComponent)
+	{
+		if (!rbComponent.PhysicsObject)
+		{
+			return math::Vec3(0.0f);
+		}
+
+		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		{
+			return jolt::Cast(physLevel->System.GetBodyInterfaceNoLock().GetLinearVelocity(jolt::GetRigidBody(rbComponent).BodyHandle));
+		}
+
+		return math::Vec3(0.0f);
+	}    
+
+    math::Vec3 GetAngularVelocity(level::RigidBodyComponent& rbComponent)
+	{
+		if (!rbComponent.PhysicsObject)
+		{
+			return math::Vec3(0.0f);
+		}
+
+		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		{
+			return jolt::Cast(physLevel->System.GetBodyInterfaceNoLock().GetAngularVelocity(jolt::GetRigidBody(rbComponent).BodyHandle));
+		}
+
+		return math::Vec3(0.0f);
+	}
 
 	void AddImpulse(level::RigidBodyComponent& rbComponent, const math::Vec3& impulse)
 	{
