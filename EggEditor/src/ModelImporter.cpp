@@ -401,12 +401,12 @@ namespace importer
                 if (prim.material >= 0 && prim.material < static_cast<int>(model.materials.size()))
                 {
                     const auto& material = model.materials[prim.material];
-                    hen::level::MaterialComponent materialComp;
+                    hen::level::MaterialComponent materialComp; // TODO: FIX OWNERSHIP OF MATERIAL COMPONENT
 
                     LoadTextureFromIndex(model, modelDir, material.pbrMetallicRoughness.baseColorTexture.index, materialComp.DiffuseTexture);
 
                     meshComp.Materials.push_back(materialComp);
-                    subMesh.MaterialIndex = (uint32_t)(meshComp.Materials.size()-1);
+                    subMesh.MaterialIndex = static_cast<uint32_t>(meshComp.Materials.size()-1);
                 }
 
                 meshComp.SubMeshes.push_back(subMesh);

@@ -140,13 +140,6 @@ namespace hen
 
         SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
 
-        ui::GetIMGUIManager()->RegisterDrawCallback([]()
-        {
-            ImGui::Begin("Debug");
-            ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-            ImGui::End();
-        });
-
         HEN_LOG(infoStr);
     }
 

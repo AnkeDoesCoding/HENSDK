@@ -301,6 +301,8 @@ namespace hen::renderer
                     {
                         if (auto* diffuse = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].DiffuseTexture))
                         {
+                            shader->SetVal("uMaterial.HasDiffuse", 1);
+
                             if (diffuse->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
                             {
                                 diffuse->CreateRenderData();
@@ -308,13 +310,20 @@ namespace hen::renderer
 
                             if (diffuse->State == graphics::RESOURCE_STATES::READYTORENDER)
                             {
+
                                 glActiveTexture(GL_TEXTURE0);
                                 glBindTexture(GL_TEXTURE_2D, diffuse->ID);
                             }
                         }
-                        
+                        else
+                        {
+                            shader->SetVal("uMaterial.HasDiffuse", 0);
+                        }
+
                         if (auto* specular = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].SpecularTexture))
                         {
+                            shader->SetVal("uMaterial.HasSpecular", 1);
+
                             if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
                             {
                                 specular->CreateRenderData();
@@ -326,6 +335,12 @@ namespace hen::renderer
                                 glBindTexture(GL_TEXTURE_2D, specular->ID);
                             }
                         }
+                        else
+                        {
+                            shader->SetVal("uMaterial.HasSpecular", 0);
+                        }
+
+                        // gack
                     
                         shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
                         shader->SetMat4("uView", Camera.GetViewMatrix());
@@ -335,7 +350,7 @@ namespace hen::renderer
                         shader->SetVal("uMaterial.Diffuse", 0);
                         shader->SetVal("uMaterial.Specular", 1);
                         shader->SetVal("uMaterial.Shininess", 64.0f);
-                        shader->SetVec3("uMaterial.Colour", meshComp.Colour);
+                        shader->SetVec3("uMaterial.Colour", meshComp.Materials[submesh.MaterialIndex].Colour);
 
                         CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
                     }

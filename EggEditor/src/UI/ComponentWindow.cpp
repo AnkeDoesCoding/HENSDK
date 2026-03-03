@@ -11,20 +11,13 @@ void ComponentWindow::Initialise()
             if (m_LastSelectedEntity != SelectedEntity)
             {
                 m_LastSelectedEntity = SelectedEntity;
-                m_RotationInitialised = false;
             }
 
             if (SelectedEntity.HasComponent<hen::level::TransformComponent>())
             {
                 auto& transform = SelectedEntity.GetComponent<hen::level::TransformComponent>();
 
-                bool changed = false;
-                
-                if (!m_RotationInitialised)
-                {
-                    m_DegreesRotation = transform.GetEulerRotation();  
-                    m_RotationInitialised = true;
-                }
+                hen::math::Vec3 rotation = transform.GetEulerRotation();
 
                 ImGui::Text("Transform");
 
@@ -33,44 +26,42 @@ void ComponentWindow::Initialise()
 
                 if (ImGui::DragFloat3("Position", &transform.LocalPosition.x, 0.1f))
                 {
-                    changed = true;
+                    transform.SetDirty();
                 }
 
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##pos"))
                 {
                     transform.LocalPosition = hen::math::Vec3(0.0f);
-                    changed = true;
+                    transform.SetDirty();
+
                 }
 
-                if (ImGui::DragFloat3("Rotation", &m_DegreesRotation.x, 0.5f))
+                if (ImGui::DragFloat3("Rotation", &rotation.x, 0.5f))
                 {
-                    transform.SetEulerRotation(m_DegreesRotation);
-                    changed = true;
+                    transform.SetEulerRotation(rotation);
+                    transform.SetDirty();
+
                 }
 
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##rot"))
                 {
                     transform.SetLocalRotation(hen::math::Quat(1,0,0,0));
-                    m_DegreesRotation = transform.GetEulerRotation();  
-                    changed = true;
+                    rotation = transform.GetEulerRotation();  
+                    transform.SetDirty();
+
                 }
 
                 if (ImGui::DragFloat3("Scale", &transform.LocalScale.x, 0.1f))
                 {
-                    changed = true;
+                    transform.SetDirty();
                 }
 
                 ImGui::SameLine();
                 if (ImGui::Button("Reset##scale"))
                 {
                     transform.LocalScale = hen::math::Vec3(1.0f);
-                    changed = true;
-                }
-
-                if (changed)
-                {
                     transform.SetDirty();
                 }
 
@@ -183,11 +174,6 @@ void ComponentWindow::Initialise()
                 ImGui::Spacing();
                 ImGui::Spacing();
 
-                ImGui::DragFloat3("Colour", &mesh.Colour.x, 0.1f);
-
-                ImGui::Spacing();
-                ImGui::Spacing();
-
                 std::string verticesText = "Vertices: " + std::to_string(mesh.Vertices.size());
                 std::string normalsText = "Normals: " + std::to_string(mesh.Normals.size());
                 std::string indicesText = "Indices: " + std::to_string(mesh.Indices.size());
@@ -206,6 +192,25 @@ void ComponentWindow::Initialise()
                 ImGui::Spacing();
                 ImGui::Spacing();
 
+            }
+
+            if (SelectedEntity.HasComponent<hen::level::MaterialComponent>())
+            {
+                auto& material = SelectedEntity.GetComponent<hen::level::MaterialComponent>();
+                
+                ImGui::Text("Material");
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                ImGui::Text("Colour");
+                ImGui::ColorPicker3("", &material.Colour.x);
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+                ImGui::Spacing();
             }
         
             if (SelectedEntity.HasComponent<hen::level::LightComponent>())
