@@ -150,7 +150,7 @@ namespace hen::renderer
 
         Initialised = true;
 
-        HEN_LOG("[hen::renderer] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::renderer] Initialised in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }
 
     void Run()
@@ -327,7 +327,7 @@ namespace hen::renderer
                             }
                         }
                     
-                        shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
+                        shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
                         shader->SetMat4("uView", Camera.GetViewMatrix());
                         shader->SetMat4("uModel", transformComp.GetWorldMatrix());
                         shader->SetVec3("uViewPos", Camera.Position);
@@ -388,7 +388,7 @@ namespace hen::renderer
         SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
         shader->SetVec3("uColour", colour);
-        shader->SetMat4("uProjection", Camera.GetProjection((float)windowWidth, (float)windowHeight));
+        shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
         shader->SetMat4("uView", Camera.GetViewMatrix());
         shader->SetMat4("uModel", model);
 

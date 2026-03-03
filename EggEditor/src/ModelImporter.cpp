@@ -145,19 +145,19 @@ namespace importer
         const T* src = reinterpret_cast<const T*>(data);
         for (size_t i = 0; i < count; i++)
         {
-            out.push_back(start + (uint32_t)src[i]);
+            out.push_back(start + static_cast<uint32_t>(src[i]));
         }
     }
 
     void LoadTextureFromIndex(tinygltf::Model& model, std::filesystem::path& modelDir, int index, hen::renderer::TextureHandle& handle)
     {
-        if (index < 0 || index >= (int)model.textures.size())
+        if (index < 0 || index >= static_cast<int>(model.textures.size()))
         {
             return;
         }
                     
         int src = model.textures[index].source;
-        if (src < 0 || src >= (int)model.images.size())
+        if (src < 0 || src >= static_cast<int>(model.images.size()))
         {
             return;
         }
@@ -398,7 +398,7 @@ namespace importer
 
                 // materials
 
-                if (prim.material >= 0 && prim.material < (int)model.materials.size())
+                if (prim.material >= 0 && prim.material < static_cast<int>(model.materials.size()))
                 {
                     const auto& material = model.materials[prim.material];
                     hen::level::MaterialComponent materialComp;
@@ -415,7 +415,7 @@ namespace importer
         
         meshComp.State = hen::graphics::RESOURCE_STATES::READYTOUPLOAD;
 
-        HEN_LOG("[importer] mesh import took " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[importer] mesh import took " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }
     
 }

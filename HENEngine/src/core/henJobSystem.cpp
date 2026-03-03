@@ -110,7 +110,7 @@ namespace hen::jobsystem
 
             // wierd windows shit
             #if PLATFORM_WINDOWS
-                HANDLE handle = (HANDLE)worker.native_handle();
+                HANDLE handle = static_cast<HANDLE>(worker.native_handle());
 
                 DWORD_PTR affinityMask = 1ull << i;
                 DWORD_PTR affinityResult = SetThreadAffinityMask(handle, affinityMask);
@@ -127,7 +127,7 @@ namespace hen::jobsystem
 
         Initialised = true;
 
-        HEN_LOG("[hen::jobsystem] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::jobsystem] Initialised in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }
 
     void Execute(const std::function<void()>& job)

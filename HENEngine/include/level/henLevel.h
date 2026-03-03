@@ -177,15 +177,15 @@ namespace hen::level
         template<typename... Component>
         auto Get(Entity entity)
         {
-            return m_View.template get<Component...>((entt::entity)entity);
+            return m_View.template get<Component...>(static_cast<entt::entity>(entity));
         }
 
         bool Contains(Entity entity) const
         {
-            return m_View.contains((entt::entity)entity);
+            return m_View.contains(static_cast<entt::entity>(entity));
         }
 
-        // Only works when view contains one type of component
+        // Only works when view contains one type of component  
         std::size_t Size() const
         {
             return m_View.size(); 

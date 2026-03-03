@@ -180,7 +180,7 @@ namespace hen::input
 
         Initialised = true;
 
-        HEN_LOG("[hen::input] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::input] Initialised in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }
 
     void HandleSDLEvent(SDL_Event& event)
@@ -385,7 +385,7 @@ namespace hen::input
 
     bool Down(BUTTON button)
     {
-        uint16_t keycode = (uint16_t)button;
+        uint16_t keycode = static_cast<uint16_t>(button);
 
 		switch (button)
 		{

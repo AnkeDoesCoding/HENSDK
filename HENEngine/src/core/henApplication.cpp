@@ -136,7 +136,7 @@ namespace hen
             infoStr += "RELEASE";
         #endif // !DEBUG
 
-        infoStr += " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms";
+        infoStr += " in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms";
 
         SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
 
@@ -170,13 +170,13 @@ namespace hen
 
         renderer::Run();
 
-        double newTime = (double)SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
+        double newTime = static_cast<double>(SDL_GetPerformanceCounter()) / static_cast<double>(SDL_GetPerformanceFrequency());
         double deltaTime = newTime - CurrentTimestep;
         CurrentTimestep = newTime;
 
         deltaTime = math::Clamp(deltaTime, 0.0f, 0.5f);
 
-        Update((float)deltaTime);
+        Update(static_cast<float>(deltaTime));
 
         Accumulator += deltaTime;
 

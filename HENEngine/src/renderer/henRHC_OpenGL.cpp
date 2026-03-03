@@ -60,7 +60,7 @@ namespace hen
         SDL_GLContext context = SDL_GL_CreateContext(m_Window);
         SDL_GL_MakeCurrent(m_Window, context);
 
-        int loadGL = gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+        int loadGL = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
 
         HEN_ASSERT(loadGL, "Failed to load OpenGL context");
 
@@ -68,7 +68,7 @@ namespace hen
 
         Initialised = true;
 
-        HEN_LOG("[hen::RHC_OpenGL] Initialised in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::RHC_OpenGL] Initialised in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }
 
     void RHC_OpenGL::Clear()
@@ -84,7 +84,7 @@ namespace hen
 
     void RHC_OpenGL::DrawElements(uint32_t count, uint32_t offset)
     {
-        glDrawElements(GL_TRIANGLES, (GLsizei)count, GL_UNSIGNED_INT, reinterpret_cast<void*>(offset * sizeof(uint32_t)));
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(offset * sizeof(uint32_t)));
     }
 
     void RHC_OpenGL::DrawArrays(uint32_t count, uint32_t offset)

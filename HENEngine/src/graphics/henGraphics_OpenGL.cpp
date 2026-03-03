@@ -157,7 +157,7 @@ namespace hen::graphics
                         ShaderPrimitiveToOpenGLType(element.Type),
                         element.Normalised ? GL_TRUE : GL_FALSE,
                         layout.GetStride(),
-                        (const void*) element.Offset
+                        reinterpret_cast<const void*>(element.Offset)
                     );
                     m_VertexBufferIndex++;
                     break;
@@ -175,7 +175,7 @@ namespace hen::graphics
                         element.GetComponentCount(),
                         ShaderPrimitiveToOpenGLType(element.Type),
                         layout.GetStride(),
-                        (const void*) element.Offset
+                        reinterpret_cast<const void*>(element.Offset)
                     );
                     m_VertexBufferIndex++;
                     break;
@@ -338,7 +338,7 @@ namespace hen::graphics
 
     void Shader_OpenGL::SetVal(const std::string& name, bool val) const
     {
-        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), (int)val); 
+        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), static_cast<int>(val)); 
     }  
 
     void Shader_OpenGL::SetVal(const std::string& name, int val) const

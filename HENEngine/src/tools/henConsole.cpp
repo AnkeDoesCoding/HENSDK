@@ -163,7 +163,7 @@ namespace hen::console
         switch (data->EventFlag)
         {
             case ImGuiInputTextFlags_CallbackCompletion:
-                if (AutoCompleteIndex >= 0 && AutoCompleteIndex < (int)AutocompleteMatches.size())
+                if (AutoCompleteIndex >= 0 && AutoCompleteIndex < static_cast<int>(AutocompleteMatches.size()))
                 {
                     const std::string& pick = AutocompleteMatches[AutoCompleteIndex];
                     data->DeleteChars(0, data->BufTextLen);
@@ -174,7 +174,7 @@ namespace hen::console
                 if (data->EventKey == ImGuiKey_DownArrow)
                 {
                     AutoCompleteIndex++;
-                    if (AutoCompleteIndex >= (int)AutocompleteMatches.size())
+                    if (AutoCompleteIndex >= static_cast<int>(AutocompleteMatches.size()))
                     {
                         AutoCompleteIndex = 0;
                     }
@@ -185,7 +185,7 @@ namespace hen::console
                     AutoCompleteIndex--;
                     if (AutoCompleteIndex < 0)
                     {
-                        AutoCompleteIndex = (int)AutocompleteMatches.size() - 1;
+                        AutoCompleteIndex = static_cast<int>(AutocompleteMatches.size() - 1);
                     }
                     return 1;
                 }
@@ -386,7 +386,7 @@ namespace hen::console
                         ImVec2 itemMin(pos.x, pos.y + i * lineHeight);
                         ImVec2 itemMax(pos.x + size.x, pos.y + (i+1) * lineHeight);
                     
-                        if ((int)i == AutoCompleteIndex)
+                        if (static_cast<int>(i) == AutoCompleteIndex)
                         {
                             drawList->AddRectFilled(itemMin, itemMax, IM_COL32(100,100,120,200));
                         }

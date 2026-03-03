@@ -130,11 +130,11 @@ namespace hen::physics
 			#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
     			const char * GetBroadPhaseLayerName(JPH::BroadPhaseLayer layer) const override
     			{
-    				switch ((JPH::BroadPhaseLayer::Type)layer)
+    				switch (static_cast<JPH::BroadPhaseLayer::Type>(layer))
     				{
-    				    case (JPH::BroadPhaseLayer::Type)BROADPHASELAYERS::STATIC:	
+    				    case static_cast<JPH::BroadPhaseLayer::Type>(BROADPHASELAYERS::STATIC):	
         		            return "STATIC";
-    				    case (JPH::BroadPhaseLayer::Type)BROADPHASELAYERS::DYNAMIC:		
+    				    case static_cast<JPH::BroadPhaseLayer::Type>(BROADPHASELAYERS::DYNAMIC):		
         		            return "DYNAMIC";
     				    default:													
         		            HEN_ASSERT(false, "Broadphase is in an invalid layer"); 
@@ -183,7 +183,7 @@ namespace hen::physics
 					return;
 				}
 
-				BodyInterface& interface = ((PhysicsLevel*)ParentPhysicsLevel.get())->System.GetBodyInterface();
+				BodyInterface& interface = (reinterpret_cast<PhysicsLevel*>(ParentPhysicsLevel.get())->System.GetBodyInterface());
 				interface.RemoveBody(BodyHandle);
 				interface.DestroyBody(BodyHandle);
 			}
@@ -247,7 +247,7 @@ namespace hen::physics
 				level.PhysicsLevel = physLevel;
 			}
 
-			return *(PhysicsLevel*)level.PhysicsLevel.get();
+			return *reinterpret_cast<PhysicsLevel*>(level.PhysicsLevel.get());
 		}
 
 		RigidBody& GetRigidBody(level::RigidBodyComponent& physComponent)
@@ -257,7 +257,7 @@ namespace hen::physics
 				physComponent.PhysicsObject = std::make_shared<RigidBody>();
 			}
 
-			return *(RigidBody*)physComponent.PhysicsObject.get();
+			return *reinterpret_cast<RigidBody*>(physComponent.PhysicsObject.get());
 		}
 
 		void AddRigidBody(level::Level& level, level::Entity entity)
@@ -470,7 +470,7 @@ namespace hen::physics
 
 		Initialised = true;
 
-        HEN_LOG("[hen::physics] Initialised with Jolt Physics " + std::to_string(JPH_VERSION_MAJOR) + "." + std::to_string(JPH_VERSION_MINOR) + "." + std::to_string(JPH_VERSION_PATCH) + " in " + std::to_string((int)std::round(timer.ElapsedMilliseconds())) + " ms");
+        HEN_LOG("[hen::physics] Initialised with Jolt Physics " + std::to_string(JPH_VERSION_MAJOR) + "." + std::to_string(JPH_VERSION_MINOR) + "." + std::to_string(JPH_VERSION_PATCH) + " in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }
 
 	void Shutdown()
@@ -673,7 +673,7 @@ namespace hen::physics
 			return math::Vec3(0.0f);
 		}
 
-		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		if (jolt::PhysicsLevel* physLevel = reinterpret_cast<jolt::PhysicsLevel*>(jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get()))
 		{
 			return jolt::Cast(physLevel->System.GetBodyInterfaceNoLock().GetLinearVelocity(jolt::GetRigidBody(rbComponent).BodyHandle));
 		}
@@ -688,7 +688,7 @@ namespace hen::physics
 			return math::Vec3(0.0f);
 		}
 
-		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		if (jolt::PhysicsLevel* physLevel = reinterpret_cast<jolt::PhysicsLevel*>(jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get()))
 		{
 			return jolt::Cast(physLevel->System.GetBodyInterfaceNoLock().GetAngularVelocity(jolt::GetRigidBody(rbComponent).BodyHandle));
 		}
@@ -703,7 +703,7 @@ namespace hen::physics
 			return;
 		}
 
-		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		if (jolt::PhysicsLevel* physLevel = reinterpret_cast<jolt::PhysicsLevel*>(jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get()))
 		{
 			physLevel->System.GetBodyInterfaceNoLock().AddImpulse(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(impulse));
 		}
@@ -716,7 +716,7 @@ namespace hen::physics
 			return;
 		}
 
-		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		if (jolt::PhysicsLevel* physLevel = reinterpret_cast<jolt::PhysicsLevel*>(jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get()))
 		{
 			physLevel->System.GetBodyInterfaceNoLock().AddImpulse(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(impulse), jolt::Cast(position));
 		}
@@ -729,7 +729,7 @@ namespace hen::physics
 			return;
 		}
 
-		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		if (jolt::PhysicsLevel* physLevel = reinterpret_cast<jolt::PhysicsLevel*>(jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get()))
 		{
 			physLevel->System.GetBodyInterfaceNoLock().AddForce(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(force));
 		}
@@ -742,7 +742,7 @@ namespace hen::physics
 			return;
 		}
 
-		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		if (jolt::PhysicsLevel* physLevel = reinterpret_cast<jolt::PhysicsLevel*>(jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get()))
 		{
 			physLevel->System.GetBodyInterfaceNoLock().AddForce(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(force), jolt::Cast(position));
 		}
@@ -755,7 +755,7 @@ namespace hen::physics
 			return;
 		}
 
-		if (jolt::PhysicsLevel* physLevel = (jolt::PhysicsLevel*)jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get())
+		if (jolt::PhysicsLevel* physLevel = reinterpret_cast<jolt::PhysicsLevel*>(jolt::GetRigidBody(rbComponent).ParentPhysicsLevel.get()))
 		{
 			physLevel->System.GetBodyInterfaceNoLock().AddTorque(jolt::GetRigidBody(rbComponent).BodyHandle, jolt::Cast(torque));
 		}
