@@ -178,13 +178,11 @@ void ComponentWindow::Initialise()
                 std::string normalsText = "Normals: " + std::to_string(mesh.Normals.size());
                 std::string indicesText = "Indices: " + std::to_string(mesh.Indices.size());
                 std::string submeshText = "Submeshes: " + std::to_string(mesh.SubMeshes.size());
-                std::string materialText = "Materials: " + std::to_string(mesh.Materials.size());
 
                 ImGui::Text("%s", verticesText.c_str());
                 ImGui::Text("%s", normalsText.c_str());
                 ImGui::Text("%s", indicesText.c_str());
                 ImGui::Text("%s", submeshText.c_str());
-                ImGui::Text("%s", materialText.c_str());
 
                 ImGui::Spacing();
                 ImGui::Spacing();
@@ -203,8 +201,108 @@ void ComponentWindow::Initialise()
                 ImGui::Spacing();
                 ImGui::Spacing();
 
+                std::string diffuseText = "Diffuse Textures: " + std::to_string(material.DiffuseTextures.size());
+                std::string specularText = "Specular Textures: " + std::to_string(material.SpecularTextures.size());
+
+                ImGui::Text("%s", diffuseText.c_str());
+                ImGui::Text("%s", specularText.c_str());
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
                 ImGui::Text("Colour");
                 ImGui::ColorPicker3("", &material.Colour.x);
+
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                if (ImGui::TreeNode("Diffuse Textures"))
+                {
+                    for (size_t i = 0; i < material.DiffuseTextures.size(); ++i)
+                    {
+                        if (auto *texture = hen::renderer::GetTextureManager()->Get(material.DiffuseTextures[i]))
+                        {
+                            ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->ID)), ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1));
+
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            {
+                                ImGui::Text("Index: %zu", i);
+
+                                std::string buttonLabel = "Remove##difftexture_" + std::to_string(i);
+                                if (ImGui::Button(buttonLabel.c_str()))
+                                {
+                                    material.DiffuseTextures.erase(material.DiffuseTextures.begin() + i);
+
+                                    if (SelectedEntity.HasComponent<hen::level::MeshComponent>())
+                                    {
+                                        auto &mesh = SelectedEntity.GetComponent<hen::level::MeshComponent>();
+
+                                        for (auto &submesh : mesh.SubMeshes)
+                                        {
+                                            if (submesh.DiffuseIndex > i)
+                                            {
+                                                submesh.DiffuseIndex--;
+                                            }
+                                            else if (submesh.DiffuseIndex == i)
+                                            {
+                                                submesh.DiffuseIndex = UINT32_MAX;
+                                            }
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            }
+                            ImGui::EndGroup();
+                        }
+                    }
+                    ImGui::TreePop();
+                }
+
+                if (ImGui::TreeNode("Specular Textures"))
+                {
+                    for (size_t i = 0; i < material.SpecularTextures.size(); ++i)
+                    {
+                        if (auto *texture = hen::renderer::GetTextureManager()->Get(material.SpecularTextures[i]))
+                        {
+                            ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->ID)), ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1));
+
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+                            {
+                                ImGui::Text("Index: %zu", i);
+
+                                std::string buttonLabel = "Remove##spectexture_" + std::to_string(i);
+                                if (ImGui::Button(buttonLabel.c_str()))
+                                {
+                                    material.SpecularTextures.erase(material.SpecularTextures.begin() + i);
+
+                                    if (SelectedEntity.HasComponent<hen::level::MeshComponent>())
+                                    {
+                                        auto &mesh = SelectedEntity.GetComponent<hen::level::MeshComponent>();
+
+                                        for (auto &submesh : mesh.SubMeshes)
+                                        {
+                                            if (submesh.SpecularIndex > i)
+                                            {
+                                                submesh.SpecularIndex--;
+                                            }
+                                            else if (submesh.SpecularIndex == i)
+                                            {
+                                                submesh.SpecularIndex = UINT32_MAX;
+                                            }
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            }
+                            ImGui::EndGroup();
+                        }
+                    }
+                    ImGui::TreePop();
+                }
 
                 ImGui::Spacing();
                 ImGui::Spacing();

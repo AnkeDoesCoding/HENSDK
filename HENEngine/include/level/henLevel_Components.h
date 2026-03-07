@@ -29,8 +29,6 @@ namespace hen::level
     struct NameComponent
     {
         std::string Name = "unknown";
-
-        NameComponent() = default;
         
         NameComponent(const std::string& name)
             : Name(name)
@@ -165,14 +163,12 @@ namespace hen::level
 
     struct MaterialComponent
     {
-        renderer::TextureHandle DiffuseTexture;
-        renderer::TextureHandle SpecularTexture;
+        std::vector<renderer::TextureHandle> DiffuseTextures;
+        std::vector<renderer::TextureHandle> SpecularTextures;
+
         renderer::ShaderHandle Shader;
         
         math::Vec3 Colour = math::Vec3(1.0f); // multiplied by textures if there any and acts as fallback if no textures found
-
-        MaterialComponent() = default;
-        MaterialComponent(const MaterialComponent& other) = default;
     };
 
     struct MeshComponent
@@ -197,15 +193,19 @@ namespace hen::level
         {
             uint32_t IndexStart = UINT32_MAX;
             uint32_t IndexCount = UINT32_MAX;
-            uint32_t MaterialIndex = UINT32_MAX;
+
+            uint32_t DiffuseIndex = UINT32_MAX;
+            uint32_t SpecularIndex = UINT32_MAX;
         };
 
         std::vector<SubMesh> SubMeshes;
-        std::vector<MaterialComponent> Materials;
 
         graphics::RESOURCE_STATES State = graphics::RESOURCE_STATES::NOTREADY;
 
-        MeshComponent() = default;
+        ~MeshComponent()
+        {
+            DeleteRenderData();
+        }
 
         void CreateRenderData()
         {
@@ -284,14 +284,6 @@ namespace hen::level
 
         math::Vec3 Colour = math::Vec3(1.0f, 1.0f, 1.0f);
         math::Vec3 Ambient = math::Vec3(0.05f, 0.05f, 0.05f);
-
-        LightComponent() = default;
-
-        LightComponent(LIGHT_TYPES type, float intensity)
-            : Type(type), Intensity(intensity)
-        {
-
-        }
     };
 
     struct RigidBodyComponent

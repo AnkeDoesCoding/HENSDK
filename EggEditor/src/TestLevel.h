@@ -36,7 +36,8 @@ namespace testlevel
         auto& modelRB = ModelEnt.AddComponent<hen::level::RigidBodyComponent>();
 
         modelTransform.SetLocalScale(hen::math::Vec3(0.5f));
-        hen::jobsystem::Execute([&modelMesh] {importer::ImportModel("res/models/sponza/sponza.glb", modelMesh);});
+        
+        hen::jobsystem::Execute([&modelMesh, &modelMat] {importer::ImportModel("res/models/sponza/sponza.glb", modelMesh, modelMat);});
         modelMat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
         modelRB.Kinematic = true;
@@ -55,7 +56,8 @@ namespace testlevel
 
         cubeTransform.SetLocalScale(hen::math::Vec3(10.0f));
         cubeTransform.SetLocalPosition(hen::math::Vec3(20.0f, 100.0f, 0.0f));
-        hen::jobsystem::Execute([&cubeMesh] {importer::ImportModel("res/models/primitives/cube.glb", cubeMesh);});
+
+        importer::ImportModel("res/models/primitives/cube.glb", cubeMesh, cubeMat);
         cubeMat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
     }

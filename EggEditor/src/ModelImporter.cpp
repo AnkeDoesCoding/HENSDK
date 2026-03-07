@@ -180,7 +180,7 @@ namespace importer
         }
     }
 
-    void ImportModel(std::string path, hen::level::MeshComponent& meshComp)
+    void ImportModel(std::string path, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp)
     {
         hen::Timer timer;
 
@@ -401,12 +401,21 @@ namespace importer
                 if (prim.material >= 0 && prim.material < static_cast<int>(model.materials.size()))
                 {
                     const auto& material = model.materials[prim.material];
-                    hen::level::MaterialComponent materialComp; // TODO: FIX OWNERSHIP OF MATERIAL COMPONENT
 
-                    LoadTextureFromIndex(model, modelDir, material.pbrMetallicRoughness.baseColorTexture.index, materialComp.DiffuseTexture);
+                    hen::renderer::TextureHandle diffuseHandle;
 
-                    meshComp.Materials.push_back(materialComp);
-                    subMesh.MaterialIndex = static_cast<uint32_t>(meshComp.Materials.size()-1);
+                    LoadTextureFromIndex(model, modelDir, material.pbrMetallicRoughness.baseColorTexture.index, diffuseHandle);
+
+                    materialComp.DiffuseTextures.push_back(diffuseHandle);
+                    subMesh.DiffuseIndex = static_cast<uint32_t>(materialComp.DiffuseTextures.size() - 1);
+
+                    hen::renderer::TextureHandle specularHandle;
+
+                    LoadTextureFromIndex(model, modelDir, material.pbrMetallicRoughness.metallicRoughnessTexture.index, specularHandle);
+
+                    materialComp.SpecularTextures.push_back(specularHandle);
+                    subMesh.SpecularIndex = static_cast<uint32_t>(materialComp.SpecularTextures.size() - 1);
+
                 }
 
                 meshComp.SubMeshes.push_back(subMesh);

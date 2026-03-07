@@ -234,14 +234,14 @@ namespace hen::renderer
                         
                         data.SpotLights[spotLightIndex].Position = transformComp.LocalPosition;
                         data.SpotLights[spotLightIndex].Direction = transformComp.GetForwardVector(); 
-                        data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
                         data.SpotLights[spotLightIndex].Colour = math::Vec4(lightComp.Colour, 0.0f);
-                        data.SpotLights[spotLightIndex].Angles.x = math::Cos(math::Radians(lightComp.InnerCutOff));
-                        data.SpotLights[spotLightIndex].Angles.y = math::Cos(math::Radians(lightComp.OuterCutOff));
-                        data.SpotLights[spotLightIndex].Colour.w = lightComp.Intensity;
+                        data.SpotLights[spotLightIndex].Ambient = lightComp.Ambient;
                         data.SpotLights[spotLightIndex].Attenuation.x = 1.0f;
                         data.SpotLights[spotLightIndex].Attenuation.y = linear;
                         data.SpotLights[spotLightIndex].Attenuation.z = quadratic;
+                        data.SpotLights[spotLightIndex].Colour.w = lightComp.Intensity;
+                        data.SpotLights[spotLightIndex].Angles.x = math::Cos(math::Radians(lightComp.InnerCutOff));
+                        data.SpotLights[spotLightIndex].Angles.y = math::Cos(math::Radians(lightComp.OuterCutOff));
                     
                         RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.LocalPosition, math::Vec3(0.0f), transformComp.LocalScale, lightComp.Colour);
                     
@@ -254,9 +254,9 @@ namespace hen::renderer
                             continue;
                         }
                     
-                        data.DirLight.Ambient = lightComp.Ambient;
-                        data.DirLight.Colour = math::Vec4(lightComp.Colour, 0.0f);
                         data.DirLight.Direction = transformComp.GetForwardVector();
+                        data.DirLight.Colour = math::Vec4(lightComp.Colour, 0.0f);
+                        data.DirLight.Ambient = lightComp.Ambient;
                         data.DirLight.Colour.w = lightComp.Intensity;
                     
                         data.HasDirectionalLight = true;
@@ -267,6 +267,44 @@ namespace hen::renderer
             }
 
             LevelLightsUB.SetData(&data, sizeof(ShaderLights));
+
+            auto renderEntities = level->GetView<level::MeshComponent, level::MaterialComponent>();
+
+            for (auto entity : renderEntities)
+            {
+                auto& meshComp = entity.GetComponent<level::MeshComponent>();
+                auto& materialComp = entity.GetComponent<level::MaterialComponent>();
+
+                if (meshComp.State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                {
+                    meshComp.CreateRenderData();
+                }
+
+                for (auto& submesh : meshComp.SubMeshes)
+                {
+                    if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
+                    {
+                        if (auto* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
+                        {
+                            if (diffuse->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            {
+                                diffuse->CreateRenderData();
+                            }
+                        }
+                    }
+
+                    if (submesh.SpecularIndex < materialComp.SpecularTextures.size())
+                    {
+                        if (auto *specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
+                        {
+                            if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            {
+                                specular->CreateRenderData();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -287,30 +325,24 @@ namespace hen::renderer
 
                 int windowWidth, windowHeight;
                 SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
-
-                if (meshComp.State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+            
+                if (meshComp.State != graphics::RESOURCE_STATES::READYTORENDER)
                 {
-                    meshComp.CreateRenderData();
+                    continue;
                 }
 
-                if (meshComp.State == graphics::RESOURCE_STATES::READYTORENDER)
-                {
-                    meshComp.VertexArray.Bind();
+                meshComp.VertexArray.Bind();
 
-                    for (auto& submesh : meshComp.SubMeshes)
+                for (auto &submesh : meshComp.SubMeshes)
+                {
+                    if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
                     {
-                        if (auto* diffuse = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].DiffuseTexture))
+                        if (auto *diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
                         {
                             shader->SetVal("uMaterial.HasDiffuse", 1);
 
-                            if (diffuse->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
-                            {
-                                diffuse->CreateRenderData();
-                            }
-
                             if (diffuse->State == graphics::RESOURCE_STATES::READYTORENDER)
                             {
-
                                 glActiveTexture(GL_TEXTURE0);
                                 glBindTexture(GL_TEXTURE_2D, diffuse->ID);
                             }
@@ -319,15 +351,13 @@ namespace hen::renderer
                         {
                             shader->SetVal("uMaterial.HasDiffuse", 0);
                         }
+                    }
 
-                        if (auto* specular = CurrentTextureManager->Get(meshComp.Materials[submesh.MaterialIndex].SpecularTexture))
+                    if (submesh.SpecularIndex < materialComp.SpecularTextures.size())
+                    {
+                        if (auto *specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
                         {
                             shader->SetVal("uMaterial.HasSpecular", 1);
-
-                            if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
-                            {
-                                specular->CreateRenderData();
-                            }
 
                             if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
                             {
@@ -339,26 +369,23 @@ namespace hen::renderer
                         {
                             shader->SetVal("uMaterial.HasSpecular", 0);
                         }
-
-                        // gack
-                    
-                        shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
-                        shader->SetMat4("uView", Camera.GetViewMatrix());
-                        shader->SetMat4("uModel", transformComp.GetWorldMatrix());
-                        shader->SetVec3("uViewPos", Camera.Position);
-
-                        shader->SetVal("uMaterial.Diffuse", 0);
-                        shader->SetVal("uMaterial.Specular", 1);
-                        shader->SetVal("uMaterial.Shininess", 64.0f);
-                        shader->SetVec3("uMaterial.Colour", meshComp.Materials[submesh.MaterialIndex].Colour);
-
-                        CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
                     }
 
-                    meshComp.VertexArray.UnBind();
-                    shader->UnBind();
+                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+                    shader->SetMat4("uView", Camera.GetViewMatrix());
+                    shader->SetMat4("uModel", transformComp.GetWorldMatrix());
+                    shader->SetVec3("uViewPos", Camera.Position);
+
+                    shader->SetVal("uMaterial.Diffuse", 0);
+                    shader->SetVal("uMaterial.Specular", 1);
+                    shader->SetVal("uMaterial.Shininess", 32.0f);
+                    shader->SetVec3("uMaterial.Colour", materialComp.Colour);
+
+                    CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
                 }
 
+                meshComp.VertexArray.UnBind();
+                shader->UnBind();
             }
         }
     }
