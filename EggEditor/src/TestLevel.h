@@ -51,7 +51,7 @@ namespace testlevel
         auto& cubeRB = CubeEnt.AddComponent<hen::level::RigidBodyComponent>();
         auto& cubeMat = CubeEnt.AddComponent<hen::level::MaterialComponent>();
 
-        cubeRB.Mass = 100.0f;
+        cubeRB.Mass = 80.0f;
         cubeRB.Restitution = 0.2f;
 
         cubeTransform.SetLocalScale(hen::math::Vec3(10.0f));

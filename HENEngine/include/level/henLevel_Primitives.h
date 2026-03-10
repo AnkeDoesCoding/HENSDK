@@ -29,11 +29,11 @@ namespace hen::level::primitives
         math::Vec3 Origin = math::Vec3(0.0f);
         math::Vec3 Direction = math::Vec3(0.0f);
         float Minimum = 0.0f;
-        float Maximum = std::numeric_limits<float>::max();
+        float Maximum = 1000.0f;
 
-        Ray(const math::Vec3& origin, const math::Vec3& direction, const float min = 0.0f, const float max = std::numeric_limits<float>::max());
+        Ray(const math::Vec3& origin, const math::Vec3& direction, const float min, const float max);
+        Ray(const math::Vec2& mousePos, const float min, const float max);
         Ray(const math::Vec3& start, const math::Vec3& end);
-        Ray(const math::Vec2& mousePos);
     };
 
     struct RayResult

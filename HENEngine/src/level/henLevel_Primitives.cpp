@@ -1,5 +1,7 @@
 #include "level/henLevel_Primitives.h"
 
+#include "renderer/henRenderer.h"
+
 namespace hen::level::primitives
 {
     namespace cube
@@ -101,16 +103,32 @@ namespace hen::level::primitives
 
     }
 
+    Ray::Ray(const math::Vec2& mousePos, const float min, const float max)
+    {
+        int windowWidth, windowHeight;
+        SDL_GetWindowSize(renderer::GetRHC()->GetWindow(), &windowWidth, &windowHeight);
+
+        float ndcX = (2.0f * mousePos.x) / windowWidth - 1.0f;
+        float ndcY = 1.0f - (2.0f * mousePos.y) / windowHeight;
+
+        math::Vec4 rayClip(ndcX, ndcY, -1.0f, 1.0f);
+
+        math::Vec4 rayEye = math::Inverse(renderer::Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight))) * rayClip;
+        rayEye = math::Vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
+
+        math::Vec4 rayWorld = math::Inverse(renderer::Camera.GetViewMatrix()) * rayEye;
+        math::Vec3 rayDir = math::Normalise(math::Vec3(rayWorld.x, rayWorld.y, rayWorld.z));
+
+        Origin = renderer::Camera.Position;
+        Direction = rayDir;
+        Minimum = min;
+        Maximum = max;
+    }
+
     Ray::Ray(const math::Vec3& start, const math::Vec3& end)
     {
         Origin = start;
         Direction = math::Normalise(end - start);
         Maximum = math::Length(end - start);
     }
-
-    Ray::Ray(const math::Vec2& mousePos)
-    {
-        // TODO: IMPLEMENT
-    }
-    
 }

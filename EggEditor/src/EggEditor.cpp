@@ -7,14 +7,14 @@ static float MouseSensitivity = 4.0f;
 static float CameraVelocity = 0.0f;
 static float CameraSpeed = 1.0f;
 
+static bool hasLoadedLevel = false;
+
 void Editor::Initialise(SDL_Window* window)
 {
     hen::Application::Initialise(window);
 
     m_ComponentWindow.Initialise();
     m_LevelWindow.Initialise(&m_ComponentWindow);
-
-    testlevel::Load();
 }
 
 void Editor::Shutdown()
@@ -75,16 +75,20 @@ void Editor::Update(float deltaTime)
             hen::renderer::Camera.Position += hen::renderer::Camera.Right * CameraVelocity;            
         }
         
-        if (hen::input::Press(hen::input::BUTTON(hen::input::MOUSE_BUTTON_LEFT)))
+        if (hen::input::Press(hen::input::BUTTON(hen::input::MOUSE_BUTTON_LEFT)) && hen::input::Down(hen::input::KEYBOARD_BUTTON_LCONTROL))
         {
-            hen::level::primitives::Ray ray(hen::renderer::Camera.Position, hen::renderer::Camera.Front, 1.0f, 1000.0f);
+
+            hen::level::primitives::Ray ray(hen::input::GetPointerPos(), 0.0f, 1000.0f);
             hen::level::primitives::RayResult result = hen::physics::CastRay(ray);
+
+            testlevel::CubeEnt.GetComponent<hen::level::TransformComponent>().LocalPosition = result.HitPosition;
 
             if (result.HitEntity)
             {
                 hen::physics::AddImpulseAt(result.HitEntity->GetComponent<hen::level::RigidBodyComponent>(), hen::renderer::Camera.Front * 1000.0f, result.HitPosition);
             }
         }
+        
 
         if (hen::input::Down(hen::input::BUTTON(hen::input::MOUSE_BUTTON_RIGHT)))
         {
@@ -94,5 +98,11 @@ void Editor::Update(float deltaTime)
         {
             hen::input::UnLockMouse();
         }
+    }
+
+    if (!hasLoadedLevel)
+    {
+        testlevel::Load();
+        hasLoadedLevel = true;
     }
 }
