@@ -88,7 +88,7 @@ vec3 CalculateLighting(DirLight light, vec3 normal, vec3 viewDir)
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), uMaterial.Shininess);
 
-    vec3 ambient = light.Ambient;
+    vec3 ambient = light.Ambient * uMaterial.Colour;
     vec3 diffuse = uMaterial.Colour * light.Colour.xyz * diff * light.Colour.w;
     vec3 specular = uMaterial.Colour * light.Colour.xyz * spec * light.Colour.w;
 
@@ -118,7 +118,7 @@ vec3 CalculateLighting(PointLight light, vec3 normal, vec3 viewDir)
     float distance = length(light.Position - FragPos);
     float attenuation = 1.0 / (light.Attenuation.x + light.Attenuation.y * distance + light.Attenuation.z * (distance * distance));
 
-    vec3 ambient = light.Ambient;
+    vec3 ambient = light.Ambient * uMaterial.Colour;
     vec3 diffuse = uMaterial.Colour * light.Colour.xyz * diff * light.Colour.w;
     vec3 specular = uMaterial.Colour * light.Colour.xyz * spec * light.Colour.w;
 
@@ -156,7 +156,7 @@ vec3 CalculateLighting(SpotLight light, vec3 normal, vec3 viewDir)
     float epsilon = light.Angles.x - light.Angles.y;
     float intensity = clamp((theta - light.Angles.y) / epsilon, 0.0, 1.0);
 
-    vec3 ambient = light.Ambient;
+    vec3 ambient = light.Ambient * uMaterial.Colour;
     vec3 diffuse = uMaterial.Colour * light.Colour.xyz * diff * light.Colour.w;
     vec3 specular = uMaterial.Colour * light.Colour.xyz * spec * light.Colour.w;
 
@@ -185,6 +185,11 @@ void main()
 
     vec3 result;
 
+    if (texture(uMaterial.Diffuse, TexCoord).a < 0.5)
+    {
+        discard;
+    }
+
     if (uHasDirectionalLight == 1)
     {
         result = CalculateLighting(uDirLight, normal, viewDir);
@@ -201,5 +206,8 @@ void main()
     }
 
     FragColour =  vec4(result, 1.0);
+
+    float gamma = 2.2;
+    FragColour.rgb = pow(FragColour.rgb, vec3(1.0/gamma)); 
 } 
 

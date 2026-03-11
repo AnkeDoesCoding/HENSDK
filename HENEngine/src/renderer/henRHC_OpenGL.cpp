@@ -11,12 +11,9 @@
 namespace hen
 {
     RHC_OpenGL::RHC_OpenGL(SDL_Window* window)
+        : m_Window(window)
     {
-        m_Window = window;
-    }
 
-    RHC_OpenGL::~RHC_OpenGL()
-    {
     }
 
     std::string RHC_OpenGL::GetGPUName()
@@ -103,6 +100,50 @@ namespace hen
         glDisable(GL_DEPTH_TEST);
     }
 
+    void RHC_OpenGL::EnableDepthMask()
+    {
+        glDepthMask(GL_TRUE);
+    }
+
+    void RHC_OpenGL::DisableDepthMask()
+    {
+        glDepthMask(GL_FALSE);
+    }
+
+    void RHC_OpenGL::SetDepthMask(graphics::DEPTH_FUNCTIONS function)
+    {
+        switch (function)
+        {
+            case graphics::DEPTH_FUNCTIONS::ALWAYS:
+                glDepthFunc(GL_ALWAYS);
+                break;
+            case graphics::DEPTH_FUNCTIONS::NEVER:
+                glDepthFunc(GL_NEVER);
+                break;
+            case graphics::DEPTH_FUNCTIONS::EQUAL:
+                glDepthFunc(GL_EQUAL);
+                break;
+            case graphics::DEPTH_FUNCTIONS::NOT_EQUAL:
+                glDepthFunc(GL_NOTEQUAL);
+                break;
+            case graphics::DEPTH_FUNCTIONS::LESS:
+                glDepthFunc(GL_LESS);
+                break;
+            case graphics::DEPTH_FUNCTIONS::LESS_EQUAL:
+                glDepthFunc(GL_LEQUAL);
+                break;
+            case graphics::DEPTH_FUNCTIONS::GREATER:
+                glDepthFunc(GL_GREATER);
+                break;
+            case graphics::DEPTH_FUNCTIONS::GREATER_EQUAL:
+                glDepthFunc(GL_GEQUAL);
+                break;
+            default:
+                glDepthFunc(GL_ALWAYS);
+                break;
+        }
+    }
+
     void RHC_OpenGL::EnableVSync()
     {
         SDL_GL_SetSwapInterval(1);
@@ -123,16 +164,185 @@ namespace hen
         glDisable(GL_STENCIL_TEST);
     }
 
-    void RHC_OpenGL::EnableBackFaceCulling()
+    void RHC_OpenGL::EnableStencilMask()
     {
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+        glStencilMask(0xFF);
     }
 
-    void RHC_OpenGL::DisableBackFaceCulling()
+    void RHC_OpenGL::DisableStencilMask()
+    {
+        glStencilMask(0x00);
+    }
+
+    void RHC_OpenGL::SetStencilMask(graphics::DEPTH_FUNCTIONS function, int reference, uint32_t mask)
+    {
+        GLuint glFunc;
+
+        switch (function)
+        {
+            case graphics::DEPTH_FUNCTIONS::ALWAYS:
+                glFunc = GL_ALWAYS;
+                break;
+            case graphics::DEPTH_FUNCTIONS::NEVER:
+                glFunc = GL_NEVER;
+                break;
+            case graphics::DEPTH_FUNCTIONS::EQUAL:
+                glFunc = GL_EQUAL;
+                break;
+            case graphics::DEPTH_FUNCTIONS::NOT_EQUAL:
+                glFunc = GL_NOTEQUAL;
+                break;
+            case graphics::DEPTH_FUNCTIONS::LESS:
+                glFunc = GL_LESS;
+                break;
+            case graphics::DEPTH_FUNCTIONS::LESS_EQUAL:
+                glFunc = GL_LEQUAL;
+                break;
+            case graphics::DEPTH_FUNCTIONS::GREATER:
+                glFunc = GL_GREATER;
+                break;
+            case graphics::DEPTH_FUNCTIONS::GREATER_EQUAL:
+                glFunc = GL_GEQUAL;
+                break;
+            default:
+                glFunc = GL_ALWAYS;
+                break;
+        }
+
+        glStencilFunc(glFunc, reference, mask);
+    }
+
+    void RHC_OpenGL::SetStencilOperation(graphics::STENCIL_FUNCTIONS stencilFail, graphics::STENCIL_FUNCTIONS depthFail, graphics::STENCIL_FUNCTIONS pass)
+    {
+        GLuint glStencilFail;
+        GLuint glDepthFail;
+        GLuint glPass;
+
+        switch (stencilFail)
+        {
+            case graphics::STENCIL_FUNCTIONS::KEEP:
+                glStencilFail = GL_KEEP;
+                break;
+            case graphics::STENCIL_FUNCTIONS::ZERO:
+                glStencilFail = GL_ZERO;                        
+                break;
+            case graphics::STENCIL_FUNCTIONS::REPLACE:
+                glStencilFail = GL_REPLACE;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INCREASE:
+                glStencilFail = GL_INCR;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INCREASE_WRAP:
+                glStencilFail = GL_INCR_WRAP;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::DECREASE:
+                glStencilFail = GL_DECR;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::DECREASE_WRAP:
+                glStencilFail = GL_DECR_WRAP;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INVERT:
+                glStencilFail = GL_INVERT;                
+                break;
+            default:
+                glStencilFail = GL_KEEP;                
+                break;
+        }
+
+        switch (depthFail)
+        {
+            case graphics::STENCIL_FUNCTIONS::KEEP:
+                glDepthFail = GL_KEEP;
+                break;
+            case graphics::STENCIL_FUNCTIONS::ZERO:
+                glDepthFail = GL_ZERO;                        
+                break;
+            case graphics::STENCIL_FUNCTIONS::REPLACE:
+                glDepthFail = GL_REPLACE;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INCREASE:
+                glDepthFail = GL_INCR;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INCREASE_WRAP:
+                glDepthFail = GL_INCR_WRAP;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::DECREASE:
+                glDepthFail = GL_DECR;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::DECREASE_WRAP:
+                glDepthFail = GL_DECR_WRAP;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INVERT:
+                glDepthFail = GL_INVERT;                
+                break;
+            default:
+                glDepthFail = GL_KEEP;                
+                break;
+        }
+
+        switch (pass)
+        {
+            case graphics::STENCIL_FUNCTIONS::KEEP:
+                glPass = GL_KEEP;
+                break;
+            case graphics::STENCIL_FUNCTIONS::ZERO:
+                glPass = GL_ZERO;                        
+                break;
+            case graphics::STENCIL_FUNCTIONS::REPLACE:
+                glPass = GL_REPLACE;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INCREASE:
+                glPass = GL_INCR;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INCREASE_WRAP:
+                glPass = GL_INCR_WRAP;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::DECREASE:
+                glPass = GL_DECR;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::DECREASE_WRAP:
+                glPass = GL_DECR_WRAP;                
+                break;
+            case graphics::STENCIL_FUNCTIONS::INVERT:
+                glPass = GL_INVERT;                
+                break;
+            default:
+                glPass = GL_KEEP;                
+                break;
+        }
+
+        glStencilOp(glStencilFail, glDepthFail, glPass);
+    }
+
+    void RHC_OpenGL::EnableFaceCulling()
+    {
+        glEnable(GL_CULL_FACE);
+    }
+
+    void RHC_OpenGL::DisableFaceCulling()
     {
         glDisable(GL_CULL_FACE);
     }
+
+    void RHC_OpenGL::SetCulledFace(graphics::CULL_MODES face)
+    {
+        switch(face)
+        {
+            case graphics::CULL_MODES::FRONT_FACE:
+                glCullFace(GL_FRONT);
+                break;
+            case graphics::CULL_MODES::BACK_FACE:
+                glCullFace(GL_BACK);
+                break;
+            case graphics::CULL_MODES::FRONT_AND_BACK_FACE:
+                glCullFace(GL_FRONT_AND_BACK);
+                break;
+            default:
+                glCullFace(GL_FRONT);
+                break;
+        }
+    }
+
 
     SDL_Window* RHC_OpenGL::GetWindow() const
     {

@@ -54,7 +54,7 @@ namespace hen::graphics
 
     Texture::Texture()
     {
-
+        
     }
 
     Texture::~Texture()
@@ -69,7 +69,7 @@ namespace hen::graphics
 
     void Texture::Load(const char* path)
     {
-        State = RESOURCE_STATES::NOTREADY;
+        State = RESOURCE_STATES::NOT_READY;
 
         unsigned char* stbiData;
 
@@ -90,14 +90,20 @@ namespace hen::graphics
 
         stbi_image_free(stbiData);
 
-        State = RESOURCE_STATES::READYTOUPLOAD;
+        State = RESOURCE_STATES::READY_TO_UPLOAD;
 
         HEN_LOG("[hen::Texture] Successfully loaded texture from path:" + std::string(path));
     }
 
     void Texture::Load(const unsigned char* data, int size, int width, int height, int components)
     {
-        State = RESOURCE_STATES::NOTREADY;
+        State = RESOURCE_STATES::NOT_READY;
+
+        if (!data)
+        {
+            HEN_ERROR("[hen::Texture] Failed to load text from address: 0x" + std::to_string(reinterpret_cast<uintptr_t>(data)));
+            return;
+        }
 
         delete [] Data;
         Data = new unsigned char[size];
@@ -108,7 +114,7 @@ namespace hen::graphics
         Height = height;
         Components = components;
 
-        State = RESOURCE_STATES::READYTOUPLOAD;
+        State = RESOURCE_STATES::READY_TO_UPLOAD;
 
         HEN_LOG("[hen::Texture] Successfully loaded texture from address: 0x" + std::to_string(reinterpret_cast<uintptr_t>(data)));
     }
@@ -123,17 +129,17 @@ namespace hen::graphics
         if (Components == 1)
         {
             internalFormat = GL_R8;
-            dataFormat     = GL_RED;
+            dataFormat = GL_RED;
         }
         else if (Components == 3)
         {
-            internalFormat = GL_RGB8;
-            dataFormat     = GL_RGB;
+            internalFormat = GL_SRGB;
+            dataFormat = GL_RGB;
         }
-        else if (Components == 4)
+        else if (Components == 4)  
         {
-            internalFormat = GL_RGBA8;
-            dataFormat     = GL_RGBA;
+            internalFormat = GL_SRGB_ALPHA;
+            dataFormat = GL_RGBA;
         }
 
 
@@ -146,7 +152,7 @@ namespace hen::graphics
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        State = RESOURCE_STATES::READYTORENDER;
+        State = RESOURCE_STATES::READY_TO_RENDER;
     }
 
     BufferElement::BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised)

@@ -129,7 +129,8 @@ namespace hen::renderer
         
         HEN_ASSERT(CurrentRHC != nullptr, "RHC is nullptr");
 
-        CurrentRHC->EnableBackFaceCulling();
+        // CurrentRHC->EnableFaceCulling();
+        // CurrentRHC->SetCulledFace(graphics::CULL_MODES::BACK_FACE);
 
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();
@@ -273,7 +274,7 @@ namespace hen::renderer
                 auto& meshComp = entity.GetComponent<level::MeshComponent>();
                 auto& materialComp = entity.GetComponent<level::MaterialComponent>();
 
-                if (meshComp.State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                if (meshComp.State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                 {
                     meshComp.CreateRenderData();
                 }
@@ -284,7 +285,7 @@ namespace hen::renderer
                     {
                         if (auto* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
                         {
-                            if (diffuse->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            if (diffuse->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                             {
                                 diffuse->CreateRenderData();
                             }
@@ -295,7 +296,7 @@ namespace hen::renderer
                     {
                         if (auto *specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
                         {
-                            if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            if (specular->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                             {
                                 specular->CreateRenderData();
                             }
@@ -324,7 +325,7 @@ namespace hen::renderer
                 int windowWidth, windowHeight;
                 SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
             
-                if (meshComp.State != graphics::RESOURCE_STATES::READYTORENDER)
+                if (meshComp.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
                 {
                     continue;
                 }
@@ -339,7 +340,7 @@ namespace hen::renderer
                         {
                             shader->SetVal("uMaterial.HasDiffuse", 1);
 
-                            if (diffuse->State == graphics::RESOURCE_STATES::READYTORENDER)
+                            if (diffuse->State == graphics::RESOURCE_STATES::READY_TO_RENDER)
                             {
                                 glActiveTexture(GL_TEXTURE0);
                                 glBindTexture(GL_TEXTURE_2D, diffuse->ID);
@@ -357,7 +358,7 @@ namespace hen::renderer
                         {
                             shader->SetVal("uMaterial.HasSpecular", 1);
 
-                            if (specular->State == graphics::RESOURCE_STATES::READYTOUPLOAD)
+                            if (specular->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                             {
                                 glActiveTexture(GL_TEXTURE1);
                                 glBindTexture(GL_TEXTURE_2D, specular->ID);

@@ -479,7 +479,7 @@ namespace hen::physics
 
 					auto& meshComponent = entity.GetComponent<level::MeshComponent>();
 
-					if (meshComponent.State != graphics::RESOURCE_STATES::READYTORENDER)
+					if (meshComponent.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
 					{
 						HEN_WARN("[hen::physics] Entity: " + entity.GetComponent<level::NameComponent>().Name + "'s mesh isn't ready to be processed yet, will reattempt soon");
 						break;
@@ -513,7 +513,7 @@ namespace hen::physics
 
 					auto& meshComponent = entity.GetComponent<level::MeshComponent>();
 
-					if (meshComponent.State != graphics::RESOURCE_STATES::READYTORENDER)
+					if (meshComponent.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
 					{
 						HEN_WARN("[hen::physics] Entity: " + entity.GetComponent<level::NameComponent>().Name + "'s mesh isn't ready to be processed yet, will reattempt soon");
 						break;
@@ -561,9 +561,16 @@ namespace hen::physics
 
 			if (!shapeResult.IsValid())
 			{
-				std::string error = shapeResult.GetError().c_str();
-				HEN_ERROR("[hen::physics] Rigidbody creation for entity: " + entity.GetComponent<level::NameComponent>().Name + " failed: " + error);
-				return;
+			    if (shapeResult.HasError())
+			    {
+			        HEN_ERROR("[hen::physics] Rigidbody creation failed: " + std::string(shapeResult.GetError().c_str()));
+			    }
+			    else
+			    {
+			        HEN_ERROR("[hen::physics] Rigidbody creation failed: Unknown error");
+			    }
+				
+			    return;
 			}
 
 			PhysicsLevel& physicsLevel = GetPhysicsLevel(level);

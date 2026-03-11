@@ -422,7 +422,7 @@ namespace importer
             }
         }
         
-        meshComp.State = hen::graphics::RESOURCE_STATES::READYTOUPLOAD;
+        meshComp.State = hen::graphics::RESOURCE_STATES::READY_TO_UPLOAD;
 
         HEN_LOG("[importer] mesh import took " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }

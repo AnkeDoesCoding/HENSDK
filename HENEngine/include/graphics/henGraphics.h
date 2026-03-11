@@ -34,9 +34,40 @@ namespace hen::graphics
 
     enum class RESOURCE_STATES
     {
-        NOTREADY,
-        READYTOUPLOAD,
-        READYTORENDER
+        NOT_READY,
+        READY_TO_UPLOAD,
+        READY_TO_RENDER
+    };
+
+    enum class DEPTH_FUNCTIONS
+    {
+        ALWAYS,
+        NEVER,
+        EQUAL,
+        NOT_EQUAL,
+        LESS,
+        LESS_EQUAL,
+        GREATER,
+        GREATER_EQUAL
+    };
+
+    enum class STENCIL_FUNCTIONS
+    {
+        KEEP,
+        ZERO,
+        REPLACE,
+        INCREASE,
+        INCREASE_WRAP,
+        DECREASE,
+        DECREASE_WRAP,
+        INVERT
+    };
+
+    enum class CULL_MODES
+    {
+        FRONT_FACE,
+        BACK_FACE,
+        FRONT_AND_BACK_FACE
     };
 
     struct Texture

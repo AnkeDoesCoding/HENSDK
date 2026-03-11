@@ -201,7 +201,7 @@ namespace hen::level
 
         std::vector<SubMesh> SubMeshes;
 
-        graphics::RESOURCE_STATES State = graphics::RESOURCE_STATES::NOTREADY;
+        graphics::RESOURCE_STATES State = graphics::RESOURCE_STATES::NOT_READY;
 
         ~MeshComponent()
         {
@@ -249,7 +249,7 @@ namespace hen::level
             VertexArray.AddVertexBuffer(VertexBuffer);
             VertexArray.SetIndexBuffer(IndexBuffer);
 
-            State = graphics::RESOURCE_STATES::READYTORENDER;
+            State = graphics::RESOURCE_STATES::READY_TO_RENDER;
         }
 
         void DeleteRenderData()
@@ -269,7 +269,7 @@ namespace hen::level
                 IndexBuffer.reset();
             }
             
-            State = graphics::RESOURCE_STATES::NOTREADY;
+            State = graphics::RESOURCE_STATES::NOT_READY;
         }
 
     };

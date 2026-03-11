@@ -1,6 +1,8 @@
 #ifndef _HENRHC_H_
 #define _HENRHC_H_
 
+#include "graphics/henGraphics.h"
+
 #include <SDL3/SDL.h>
 
 #include <string>
@@ -10,8 +12,6 @@ namespace hen
     class RHC
     {
     public:
-        virtual ~RHC() = default;
-
         virtual std::string GetGPUName() = 0;
         virtual std::string GetGPUVendor() = 0;
         virtual std::string GetAPIVersion() = 0;
@@ -25,15 +25,23 @@ namespace hen
 
         virtual void EnableDepth() = 0;
         virtual void DisableDepth() = 0;
+        virtual void EnableDepthMask() = 0;
+        virtual void DisableDepthMask() = 0;
+        virtual void SetDepthMask(graphics::DEPTH_FUNCTIONS function) = 0;
 
         virtual void EnableVSync() = 0;
         virtual void DisableVSync() = 0;
 
         virtual void EnableStencil() = 0;
         virtual void DisableStencil() = 0;
+        virtual void EnableStencilMask() = 0;
+        virtual void DisableStencilMask() = 0;
+        virtual void SetStencilMask(graphics::DEPTH_FUNCTIONS function, int reference, uint32_t mask) = 0;
+        virtual void SetStencilOperation(graphics::STENCIL_FUNCTIONS stencilFail, graphics::STENCIL_FUNCTIONS depthFail, graphics::STENCIL_FUNCTIONS pass) = 0;
 
-        virtual void EnableBackFaceCulling() = 0;
-        virtual void DisableBackFaceCulling() = 0;
+        virtual void EnableFaceCulling() = 0;
+        virtual void DisableFaceCulling() = 0;
+        virtual void SetCulledFace(graphics::CULL_MODES face) = 0;
 
         virtual SDL_Window* GetWindow() const = 0;
         virtual void ResizeWindow() = 0;
