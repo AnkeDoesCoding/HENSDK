@@ -1,8 +1,8 @@
 #include "henGraphics_OpenGL.h"
 
-#include "vendor/glad/include/glad.h"
-
 #include "tools/henConsole.h"
+
+#include <glad/include/glad.h>
 
 #include <fstream>
 #include <sstream>

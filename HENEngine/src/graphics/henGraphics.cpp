@@ -1,11 +1,10 @@
 #include "graphics/henGraphics.h"
 
-#include "vendor/glad/include/glad.h"
-
 #include "src/graphics/henGraphics_OpenGL.h"
 #include "tools/henConsole.h"
 #include "renderer/henRenderer.h"
 
+#include <glad/include/glad.h>
 
 namespace hen::graphics
 {
@@ -78,8 +77,7 @@ namespace hen::graphics
 
         if (!stbiData)
         {
-            HEN_ERROR("Failed to load texture");
-
+            HEN_ERROR("[hen::Texture] Failed to load texture from path: " + std::string(path));
             return;
         }
 
@@ -93,6 +91,8 @@ namespace hen::graphics
         stbi_image_free(stbiData);
 
         State = RESOURCE_STATES::READYTOUPLOAD;
+
+        HEN_LOG("[hen::Texture] Successfully loaded texture from path:" + std::string(path));
     }
 
     void Texture::Load(const unsigned char* data, int size, int width, int height, int components)
@@ -109,6 +109,8 @@ namespace hen::graphics
         Components = components;
 
         State = RESOURCE_STATES::READYTOUPLOAD;
+
+        HEN_LOG("[hen::Texture] Successfully loaded texture from address: 0x" + std::to_string(reinterpret_cast<uintptr_t>(data)));
     }
 
     void Texture::CreateRenderData()
@@ -251,7 +253,7 @@ namespace hen::graphics
                 return std::make_unique<IndexBuffer_OpenGL>(size, count);
                 break;
             default:
-            return nullptr;
+                return nullptr;
                 break;
         }
     }
@@ -325,6 +327,7 @@ namespace hen::graphics
                 m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
                 break;
             default:
+                m_BackendImpl = nullptr;
                 break;
         }
     }
@@ -497,6 +500,7 @@ namespace hen::graphics
         {
             case renderer::BACKEND::OPENGL:
                 m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
+                HEN_LOG("[hen::Shader] Successfully loaded shader from paths: " + std::string(vsPath) + " / " + std::string(fsPath));
                 break;
             default:
                 m_BackendImpl = nullptr;

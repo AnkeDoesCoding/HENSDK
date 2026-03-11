@@ -1,9 +1,8 @@
 #ifndef _HENUI_H_
 #define _HENUI_H_
 
-#include "SDL3/SDL.h"
-
-#include "vendor/imgui/imgui.h"
+#include <SDL3/SDL.h>
+#include <imgui/imgui.h>
 
 #include <functional>
 #include <vector>

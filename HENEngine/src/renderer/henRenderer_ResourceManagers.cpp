@@ -1,5 +1,7 @@
 #include "renderer/henRenderer_ResourceManagers.h"
 
+#include "tools/henConsole.h"
+
 namespace hen::renderer
 {
     size_t HashStrings(const std::string& a, const std::string& b)
@@ -78,6 +80,8 @@ namespace hen::renderer
 
         m_PathToIndex[key] = index;
 
+        HEN_LOG("[hen::renderer::ShaderManager] Successfully cached shader");
+
         return ShaderHandle{ index, m_Shaders[index].Generation };
     }
 
@@ -152,6 +156,8 @@ namespace hen::renderer
 
         m_PathToIndex[key] = index;
 
+        HEN_LOG("[hen::renderer::TextureManager] Successfully cached texture");
+
         return TextureHandle{ index, m_Textures[index].Generation };
     }
 
@@ -186,6 +192,8 @@ namespace hen::renderer
         }
 
         m_PathToIndex[key] = index;
+
+        HEN_LOG("[hen::renderer::TextureManager] Successfully cached texture");
 
         return TextureHandle{ index, m_Textures[index].Generation };
     }

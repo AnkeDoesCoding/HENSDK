@@ -1,5 +1,7 @@
 #include "core/henArguments.h"
 
+#include "tools/henConsole.h"
+
 #include <unordered_set>
 
 namespace hen::arguments
@@ -12,6 +14,8 @@ namespace hen::arguments
 		{
 			Arguments.insert(std::string(argumentVector[i]));
 		}
+
+        HEN_LOG("[hen::arguments] Successfully parsed " + std::to_string(argumentCount) + " argument(s)");
     }
 
     bool HasArgument(const std::string& argument)

@@ -146,6 +146,7 @@ namespace hen::jobsystem
     {
         if (jobCount == 0 || groupSize == 0)
 		{
+            HEN_WARN("[hen::jobsystem] Couldn't dispatch jobs due to job count or group size being 0");
 			return;
 		}
 

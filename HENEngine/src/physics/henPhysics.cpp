@@ -1,25 +1,5 @@
 #include "physics/henPhysics.h"
 
-#include "vendor/JoltPhysics/Jolt/Jolt.h"
-#include "vendor/JoltPhysics/Jolt/RegisterTypes.h"
-#include "vendor/JoltPhysics/Jolt/Core/Factory.h"
-#include "vendor/JoltPhysics/Jolt/Core/TempAllocator.h"
-#include "vendor/JoltPhysics/Jolt/Core/JobSystemThreadPool.h"
-#include "vendor/JoltPhysics/Jolt/Physics/PhysicsSettings.h"
-#include "vendor/JoltPhysics/Jolt/Physics/PhysicsSystem.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Body/BodyCreationSettings.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/BoxShape.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/SphereShape.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CapsuleShape.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/CylinderShape.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/MeshShape.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/Shape/ConvexHullShape.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/RayCast.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/CastResult.h"
-#include "vendor/JoltPhysics/Jolt/Physics/Collision/CollisionCollectorImpl.h"
-
-JPH_SUPPRESS_WARNINGS
-
 #include "core/henTimer.h"
 #include "core/henMath.h"
 #include "core/henCVar.h"
@@ -28,6 +8,26 @@ JPH_SUPPRESS_WARNINGS
 #include "tools/henConsole.h"
 
 #include <thread>
+
+#include <JoltPhysics/Jolt/Jolt.h>
+#include <JoltPhysics/Jolt/RegisterTypes.h>
+#include <JoltPhysics/Jolt/Core/Factory.h>
+#include <JoltPhysics/Jolt/Core/TempAllocator.h>
+#include <JoltPhysics/Jolt/Core/JobSystemThreadPool.h>
+#include <JoltPhysics/Jolt/Physics/PhysicsSettings.h>
+#include <JoltPhysics/Jolt/Physics/PhysicsSystem.h>
+#include <JoltPhysics/Jolt/Physics/Body/BodyCreationSettings.h>
+#include <JoltPhysics/Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <JoltPhysics/Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <JoltPhysics/Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <JoltPhysics/Jolt/Physics/Collision/Shape/CylinderShape.h>
+#include <JoltPhysics/Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <JoltPhysics/Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <JoltPhysics/Jolt/Physics/Collision/RayCast.h>
+#include <JoltPhysics/Jolt/Physics/Collision/CastResult.h>
+#include <JoltPhysics/Jolt/Physics/Collision/CollisionCollectorImpl.h>
+
+JPH_SUPPRESS_WARNINGS
 
 using namespace JPH::literals;
 
@@ -481,6 +481,7 @@ namespace hen::physics
 
 					if (meshComponent.State != graphics::RESOURCE_STATES::READYTORENDER)
 					{
+						HEN_WARN("[hen::physics] Entity: " + entity.GetComponent<level::NameComponent>().Name + "'s mesh isn't ready to be processed yet, will reattempt soon");
 						break;
 					}
 
@@ -514,6 +515,7 @@ namespace hen::physics
 
 					if (meshComponent.State != graphics::RESOURCE_STATES::READYTORENDER)
 					{
+						HEN_WARN("[hen::physics] Entity: " + entity.GetComponent<level::NameComponent>().Name + "'s mesh isn't ready to be processed yet, will reattempt soon");
 						break;
 					}
 
@@ -560,7 +562,7 @@ namespace hen::physics
 			if (!shapeResult.IsValid())
 			{
 				std::string error = shapeResult.GetError().c_str();
-				HEN_ERROR("[hen::physics] Rigidbody creation failed: " + error);
+				HEN_ERROR("[hen::physics] Rigidbody creation for entity: " + entity.GetComponent<level::NameComponent>().Name + " failed: " + error);
 				return;
 			}
 
@@ -593,7 +595,7 @@ namespace hen::physics
 
 			if (newBody.IsInvalid())
 			{
-				HEN_ERROR("[hen::physics] Failed to create rigidbody");
+				HEN_ERROR("[hen::physics] Failed to create rigidbody for entity: " + entity.GetComponent<level::NameComponent>().Name);
 				return;
 			}
 
@@ -662,6 +664,7 @@ namespace hen::physics
 			
 			if (!entity.HasComponent<level::TransformComponent>())
 			{
+				HEN_WARN("[hen::physics] Entity: " + entity.GetComponent<level::NameComponent>().Name + " doesn't have a transform component");
 				return;
 			}
 
@@ -781,6 +784,7 @@ namespace hen::physics
 
 			if (!entity.HasComponent<level::TransformComponent>())
 			{
+				HEN_WARN("[hen::physics] Entity: " + entity.GetComponent<level::NameComponent>().Name + " doesn't have a transform component");
 				return;
 			}
 
@@ -839,6 +843,7 @@ namespace hen::physics
 	{
 		if (!rbComponent.PhysicsObject)
 		{
+			HEN_ERROR("[hen::physics] Rigidbody component provided doesn't have a rigidbody");
 			return math::Vec3(0.0f);
 		}
 
@@ -854,6 +859,7 @@ namespace hen::physics
 	{
 		if (!rbComponent.PhysicsObject)
 		{
+			HEN_ERROR("[hen::physics] Rigidbody component provided doesn't have a rigidbody");
 			return;
 		}
 
@@ -867,6 +873,7 @@ namespace hen::physics
 	{
 		if (!rbComponent.PhysicsObject)
 		{
+			HEN_ERROR("[hen::physics] Rigidbody component provided doesn't have a rigidbody");
 			return;
 		}
 
@@ -880,6 +887,7 @@ namespace hen::physics
 	{
 		if (!rbComponent.PhysicsObject)
 		{
+			HEN_ERROR("[hen::physics] Rigidbody component provided doesn't have a rigidbody");
 			return;
 		}
 
@@ -893,6 +901,7 @@ namespace hen::physics
 	{
 		if (!rbComponent.PhysicsObject)
 		{
+			HEN_ERROR("[hen::physics] Rigidbody component provided doesn't have a rigidbody");
 			return;
 		}
 
@@ -906,6 +915,7 @@ namespace hen::physics
 	{
 		if (!rbComponent.PhysicsObject)
 		{
+			HEN_ERROR("[hen::physics] Rigidbody component provided doesn't have a rigidbody");
 			return;
 		}
 
@@ -915,9 +925,9 @@ namespace hen::physics
 		}
 	}
 	
-	level::primitives::RayResult CastRay(const level::primitives::Ray& ray)
+	level::RayResult CastRay(const level::Ray& ray)
 	{
-		level::primitives::RayResult result;
+		level::RayResult result;
 
 		level::Level* currentLevel = level::GetActiveLevel();
 

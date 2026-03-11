@@ -1,7 +1,5 @@
 #include "renderer/henRenderer.h"
 
-#include "vendor/glad/include/glad.h"
-
 #include "graphics/henGraphics.h"
 #include "core/henArguments.h"
 #include "core/henTimer.h"
@@ -10,6 +8,8 @@
 #include "src/renderer/henRHC_OpenGL.h"
 #include "tools/henConsole.h"
 #include "ui/henUI.h"
+
+#include <glad/include/glad.h>
 
 namespace hen::renderer
 {   
@@ -106,8 +106,6 @@ namespace hen::renderer
     {
         Timer timer;
 
-        HEN_ASSERT(window != nullptr, "Window is nullptr");
-
         if (arguments::HasArgument("vulkan"))
         {
             CurrentBackend = BACKEND::VULKAN;
@@ -143,10 +141,10 @@ namespace hen::renderer
 
         LevelLightsUB.Create(sizeof(ShaderLights), 1);
 
-        PrimitiveCubeVB = graphics::VertexBuffer::Create(sizeof(level::primitives::cube::Vertices), level::primitives::cube::Vertices);
-        PrimitiveCubeIB = graphics::IndexBuffer::Create(sizeof(level::primitives::cube::Indices), level::primitives::cube::Indices);
-        PrimitiveSphereVB = graphics::VertexBuffer::Create(sizeof(level::primitives::sphere::Vertices), level::primitives::sphere::Vertices);
-        PrimitiveSphereIB = graphics::IndexBuffer::Create(sizeof(level::primitives::sphere::Indices), level::primitives::sphere::Indices);
+        PrimitiveCubeVB = graphics::VertexBuffer::Create(sizeof(level::cube::Vertices), level::cube::Vertices);
+        PrimitiveCubeIB = graphics::IndexBuffer::Create(sizeof(level::cube::Indices), level::cube::Indices);
+        PrimitiveSphereVB = graphics::VertexBuffer::Create(sizeof(level::sphere::Vertices), level::sphere::Vertices);
+        PrimitiveSphereIB = graphics::IndexBuffer::Create(sizeof(level::sphere::Indices), level::sphere::Indices);
 
         Initialised = true;
 

@@ -1,7 +1,7 @@
 #ifndef _HENAPPLICATION_H_
 #define _HENAPPLICATION_H_
 
-#include "SDL3/SDL.h"
+#include <SDL3/SDL.h>
 
 namespace hen
 {

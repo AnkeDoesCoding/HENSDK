@@ -78,10 +78,8 @@ void Editor::Update(float deltaTime)
         if (hen::input::Press(hen::input::BUTTON(hen::input::MOUSE_BUTTON_LEFT)) && hen::input::Down(hen::input::KEYBOARD_BUTTON_LCONTROL))
         {
 
-            hen::level::primitives::Ray ray(hen::input::GetPointerPos(), 0.0f, 1000.0f);
-            hen::level::primitives::RayResult result = hen::physics::CastRay(ray);
-
-            testlevel::CubeEnt.GetComponent<hen::level::TransformComponent>().LocalPosition = result.HitPosition;
+            hen::level::Ray ray(hen::input::GetPointerPos(), 0.0f, 1000.0f);
+            hen::level::RayResult result = hen::physics::CastRay(ray);
 
             if (result.HitEntity)
             {

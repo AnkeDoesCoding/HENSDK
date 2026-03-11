@@ -1,11 +1,11 @@
 #include "ui/henUI.h"
 
-#include "vendor/imgui/imgui.h"
-#include "vendor/imgui/backends/imgui_impl_sdl3.h"
-#include "vendor/imgui/backends/imgui_impl_opengl3.h"
-
 #include "renderer/henRenderer.h"
 #include "core/henCVar.h"
+
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_sdl3.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
 
 namespace hen::ui
 {

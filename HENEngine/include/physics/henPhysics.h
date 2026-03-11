@@ -22,7 +22,7 @@ namespace hen::physics
 
     void AddTorque(level::RigidBodyComponent& rbComponent, const math::Vec3& torque);
     
-    level::primitives::RayResult CastRay(const level::primitives::Ray& ray);
+    level::RayResult CastRay(const level::Ray& ray);
 
     extern bool Initialised;
 }

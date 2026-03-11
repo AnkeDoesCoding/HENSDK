@@ -55,6 +55,8 @@ namespace hen
         HEN_ASSERT(window != nullptr, "Window is nullptr");
 
         Window = window;
+        SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
+
 
         renderer::Initialise(window);
 
@@ -89,6 +91,25 @@ namespace hen
 
         Initialised = true;
 
+        std::string infoStr;
+        infoStr += "[hen::Application] Initialised with HEN Engine " + version::Version;
+            
+        #if PLATFORM_WINDOWS
+            infoStr += " WINDOWS_";
+        #elif PLATFORM_LINUX
+            infoStr += " LINUX_";
+        #endif // !PLATFORM_WINDOWS
+
+        #if DEBUG
+            infoStr += "DEBUG";
+        #elif RELEASE
+            infoStr += "RELEASE";
+        #endif // !DEBUG
+
+        infoStr += " in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms";
+
+        HEN_LOG(infoStr);
+
         #if PLATFORM_WINDOWS
             char cpuName[256] = {0};
             DWORD size = sizeof(cpuName);
@@ -120,32 +141,11 @@ namespace hen
         #endif // !PLATFORM_LINUX
 
         HEN_LOG("[hen::Application] Detected hardware: \n\n------------------------------------\nCPU \n------------------------------------ \n " + CPUName + "\n " + std::to_string(std::thread::hardware_concurrency()) + " Threads \n\n------------------------------------\nGPU \n------------------------------------ \n " + renderer::GetRHC()->GetGPUName() + "\n " + renderer::GetRHC()->GetGPUVendor() + "\n " + renderer::GetRHC()->GetAPIVersion());
-
-        std::string infoStr;
-        infoStr += "[hen::Application] Initialised with HEN Engine " + version::Version;
-            
-        #if PLATFORM_WINDOWS
-            infoStr += " WINDOWS_";
-        #elif PLATFORM_LINUX
-            infoStr += " LINUX_";
-        #endif // !PLATFORM_WINDOWS
-
-        #if DEBUG
-            infoStr += "DEBUG";
-        #elif RELEASE
-            infoStr += "RELEASE";
-        #endif // !DEBUG
-
-        infoStr += " in " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms";
-
-        SDL_SetWindowFullscreen(Window, cvar_Fullscreen.GetBool());
-
-        HEN_LOG(infoStr);
     }
 
     void Application::Shutdown()
     {
-        HEN_LOG("[hen::Application] Shutting down...");
+        HEN_LOG("[hen::Application] Shutting down all subsystems...");
 
         ui::GetIMGUIManager()->Shutdown();
         cvar::GetSystem()->Shutdown();
@@ -188,11 +188,6 @@ namespace hen
 
     void Application::Update(float deltaTime)
     {
-        if (!Initialised)
-        {
-            return;
-        }
-
         input::Update();
         physics::Update(deltaTime);
 

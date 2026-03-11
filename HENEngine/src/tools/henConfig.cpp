@@ -36,7 +36,7 @@ namespace hen::config
     {
         if (Sections.size() == 0)
         {
-            HEN_ERROR("[hen::config] Config file '" + Name + "' doesn't have any sections or keys");
+            HEN_WARN("[hen::config] Config file: " + Name + " doesn't have any keys");
             return false;
         }
 
@@ -57,7 +57,7 @@ namespace hen::config
     {
         if (!HasKey(sectionName, keyName))
         {
-            HEN_WARN("[hen::config] Config file '" + Name + "' doesn't have key '" + keyName + "'");
+            HEN_WARN("[hen::config] Config file: " + Name + " doesn't have key: " + keyName);
             return 0;
         }
 
@@ -78,7 +78,7 @@ namespace hen::config
     {
         if (!HasKey(sectionName, keyName))
         {
-            HEN_WARN("[hen::config] Config file '" + Name + "' doesn't have key '" + keyName + "'");
+            HEN_WARN("[hen::config] Config file: " + Name + " doesn't have key: " + keyName);
             return false;
         }
 
@@ -99,7 +99,7 @@ namespace hen::config
     {
         if (!HasKey(sectionName, keyName))
         {
-            HEN_WARN("[hen::config] Config file '" + Name + "' doesn't have key '" + keyName + "'");
+            HEN_WARN("[hen::config] Config file: " + Name + " doesn't have key: " + keyName);
             return 0.0f;
         }
 
@@ -120,7 +120,7 @@ namespace hen::config
     {
         if (!HasKey(sectionName, keyName))
         {
-            HEN_WARN("[hen::config] Config file '" + Name + "' doesn't have key '" + keyName + "'");
+            HEN_WARN("[hen::config] Config file: " + Name + " doesn't have key:" + keyName);
             return "";
         }
 
@@ -234,6 +234,7 @@ namespace hen::config
 
         if (!file.is_open())
         {
+            HEN_ERROR("[hen::config] Failed to open config file: " + name);
             return;
         }
 
@@ -275,7 +276,7 @@ namespace hen::config
 
         if (!file.is_open())
         {
-            HEN_WARN("[hen::config] Failed to write config file '" + name + "'");
+            HEN_WARN("[hen::config] Failed to write to config file:" + name);
             return;
         }
 

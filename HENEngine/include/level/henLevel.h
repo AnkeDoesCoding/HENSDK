@@ -1,24 +1,58 @@
 #ifndef _HENLEVEL_H_
 #define _HENLEVEL_H_
 
-#include "vendor/entt/include/entt.hpp"
-
-#include "tools/henConsole.h"
+#include "core/henMath.h"
 #include "level/henLevel_Components.h"
-#include "level/henLevel_Primitives.h"
+#include "tools/henConsole.h"
+
+#include <entt/include/entt.hpp>
+
+#include <cstdint>
 
 namespace hen::level
 {
+    namespace cube
+    {
+        extern float Vertices[144];
+        extern uint32_t Indices[36];
+    }
+
+    namespace sphere
+    {
+        extern float Vertices[156];
+        extern uint32_t Indices[144];
+    }
+
+    class Entity;
+
+    template<typename... Components>
+    class View;
+
     enum class PRIMITIVE_TYPES
     {
         CUBE,
         SPHERE
     };
 
-    class Entity;
+    struct Ray
+    {
+        math::Vec3 Origin = math::Vec3(0.0f);
+        math::Vec3 Direction = math::Vec3(0.0f);
+        float Minimum = 0.0f;
+        float Maximum = 1000.0f;
 
-    template<typename... Components>
-    class View;
+        Ray(const math::Vec3& origin, const math::Vec3& direction, const float min, const float max);
+        Ray(const math::Vec2& mousePos, const float min, const float max);
+        Ray(const math::Vec3& start, const math::Vec3& end);
+    };
+
+    struct RayResult
+    {
+        bool Hit = false;
+        Entity* HitEntity = nullptr;
+        math::Vec3 HitPosition = math::Vec3(0.0f);
+        math::Vec3 HitNormal = math::Vec3(0.0f);
+    };
 
     class Level
     {

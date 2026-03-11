@@ -58,7 +58,7 @@ namespace hen::console
             return false;
         }
 
-        HEN_WARN("[hen::console] Invalid bool string: " + inputString);
+        HEN_ERROR("[hen::console] Invalid bool string: " + inputString);
         return false;
     }
 
@@ -110,7 +110,7 @@ namespace hen::console
             {
                 if ((cvar->Flag & cvar::FLAGS_PROTECTED) && cvar::cvar_ProtectionEnabled.GetBool())
                 {
-                    HEN_WARN("[hen::console] Protection is enabled, type protection_enabled 0 to disable it");
+                    HEN_WARN("[hen::console] CVar: " + cvar->Name + " is protected by protection_enabled");
                     return;
                 }
 
@@ -141,7 +141,7 @@ namespace hen::console
                 }
                 catch (...) 
                 {
-                    HEN_ERROR("[hen::console] Invalid type for " + cvar->Name);
+                    HEN_ERROR("[hen::console] Invalid type for CVar: " + cvar->Name);
                     return;
                 }
 
@@ -289,17 +289,17 @@ namespace hen::console
                             line.erase(pos, toRemove.length());
                         }
 
-                        Log("[User] " + line, LOGLEVEL::INFO);
+                        HEN_LOG("[User] " + line);
 
                     }
                     else if (line.find("list") != std::string::npos)
                     {
-                        Log("[User] " + line, LOGLEVEL::INFO);
-                        Log(cvar::GetSystem()->ListCVars());
+                        HEN_LOG("[User] " + line);
+                        HEN_LOG(cvar::GetSystem()->ListCVars());
                     }
                     else if (line.find("quit") != std::string::npos)
                     {
-                        Log("[User] " + line, LOGLEVEL::INFO);
+                        HEN_LOG("[User] " + line);
 
                         SDL_Event event;
                         event.type = SDL_EVENT_QUIT;
@@ -307,7 +307,7 @@ namespace hen::console
                     }
                     else
                     {
-                        Log("[User] " + line, LOGLEVEL::INFO);
+                        HEN_LOG("[User] " + line);
 
                         Execute(line);
                     }
@@ -432,7 +432,7 @@ namespace hen::console
         switch (level)
         {
         case LOGLEVEL::INFO:
-            levelText = "";
+            levelText = "INFO: ";
             textColour = "\x1b[37m";
             break;
         case LOGLEVEL::WARNING:
@@ -444,7 +444,7 @@ namespace hen::console
             textColour = "\x1b[31m";
             break;
         case LOGLEVEL::ASSERT:
-            levelText = "ASSERTION FAILED: ";
+            levelText = "ASSERTION: ";
             textColour = "\x1b[31m";
             break;
         default:

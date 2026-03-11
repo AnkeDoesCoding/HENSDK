@@ -1,9 +1,9 @@
 #ifndef _HENINPUT_H_
 #define _HENINPUT_H_
 
-#include "SDL3/SDL.h"
-
 #include "core/henMath.h"
+
+#include <SDL3/SDL.h>
 
 namespace hen::input
 {

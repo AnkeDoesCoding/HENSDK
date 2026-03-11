@@ -52,14 +52,13 @@ namespace hen::cvar
         {
             Pending().push_back(this);
         }   
-
     }
 
     void CVar::Set(VALUE_TYPE newValue)
     {
         if ((Flag & FLAGS_PROTECTED) && cvar_ProtectionEnabled.GetBool())
         {
-            HEN_WARN("[hen::cvar] CVar " + Name + " is a protected CVar");
+            HEN_WARN("[hen::cvar] CVar: " + Name + " is a protected CVar");
             return;
         }
 
@@ -69,8 +68,6 @@ namespace hen::cvar
         {
             OnChange();
         }  
-
-        
     }
 
     int CVar::GetInt() const

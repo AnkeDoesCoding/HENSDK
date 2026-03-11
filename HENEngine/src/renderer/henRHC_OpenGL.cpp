@@ -1,10 +1,10 @@
 #include "henRHC_OpenGL.h"
 
-#include "vendor/glad/include/glad.h"
-
 #include "core/henArguments.h"
 #include "core/henTimer.h"
 #include "tools/henConsole.h"
+
+#include <glad/include/glad.h>
 
 #include <cmath>
 

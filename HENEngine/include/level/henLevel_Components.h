@@ -4,6 +4,7 @@
 #include "core/henMath.h"
 #include "graphics/henGraphics.h"
 #include "renderer/henRenderer_ResourceManagers.h"
+#include "tools/henConsole.h"
 
 #include <string>
 

@@ -1,7 +1,7 @@
 #ifndef _HENRHC_H_
 #define _HENRHC_H_
 
-#include "SDL3/SDL.h"
+#include <SDL3/SDL.h>
 
 #include <string>
 
