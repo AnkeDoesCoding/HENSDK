@@ -332,12 +332,10 @@ namespace hen::renderer
 
                     shader->SetMat4("uView", view);
                     shader->SetMat4("uModel", model);
-
-                    shader->SetVec3("uLightDir", math::Vec3(0.5f, 1.0f, 0.5f));
-                    shader->SetVec3("uLightColour", math::Vec3(1.0f, 1.0f, 1.0f));
-                    shader->SetVal("uLightIntensity", 1.0f);
-
                     shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+
+                    shader->SetVec3("uViewPos", Camera.Position / cvar_SkyboxScale.GetFloat());
+                    shader->SetVal("uSkyboxScale", cvar_SkyboxScale.GetFloat());
 
                     level->Skybox.Mesh.VertexArray.Bind();
                     CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
