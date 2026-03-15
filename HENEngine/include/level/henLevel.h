@@ -4,6 +4,7 @@
 #include "core/henMath.h"
 #include "level/henLevel_Components.h"
 #include "tools/henConsole.h"
+#include "renderer/henRenderer_ResourceManagers.h"
 
 #include <entt/include/entt.hpp>
 
@@ -75,6 +76,14 @@ namespace hen::level
         math::Vec3 Gravity = math::Vec3(0.0f, -20.0f, 0.0f); // -9.81 felt too floaty even though it was physically correct
         
         std::shared_ptr<void> PhysicsLevel;  // I dont really like this shared void ptr approach
+
+        struct Skybox
+        {
+            MeshComponent Mesh;
+            MaterialComponent Material;
+            
+            renderer::TextureHandle Cubemap;
+        } Skybox;
 
     private:
         entt::registry m_Registry;

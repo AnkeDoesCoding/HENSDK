@@ -25,6 +25,7 @@ namespace hen::renderer
     static std::shared_ptr<graphics::IndexBuffer> PrimitiveSphereIB;
 
     static ShaderHandle PrimitiveShader;
+    static ShaderHandle SkyboxShader;
 
     struct alignas(16) ShaderDirLight 
     {
@@ -102,6 +103,8 @@ namespace hen::renderer
         Camera.FarPlane = cvar_FarPlane.GetFloat();
     });
 
+    cvar::CVar cvar_SkyboxScale("r_skybox_scale", 64.0f);
+
     void Initialise(SDL_Window* window)
     {
         Timer timer;
@@ -129,8 +132,7 @@ namespace hen::renderer
         
         HEN_ASSERT(CurrentRHC != nullptr, "RHC is nullptr");
 
-        // CurrentRHC->EnableFaceCulling();
-        // CurrentRHC->SetCulledFace(graphics::CULL_MODES::BACK_FACE);
+        CurrentRHC->EnableDepth();
 
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();
@@ -139,6 +141,7 @@ namespace hen::renderer
         GetTextureManager() = CurrentTextureManager.get();
 
         PrimitiveShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/PrimitiveShaderVS.glsl", "res/engine/shaders/GLSL/PrimitiveShaderFS.glsl");
+        SkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/SkyboxShaderVS.glsl", "res/engine/shaders/GLSL/SkyboxShaderFS.glsl");
 
         LevelLightsUB.Create(sizeof(ShaderLights), 1);
 
@@ -156,8 +159,6 @@ namespace hen::renderer
     {
         CurrentRHC->Clear();
 
-        CurrentRHC->EnableDepth();
-
         if (auto level = level::GetActiveLevel())
         {
             Camera.SetDirty(level->Up);
@@ -166,8 +167,6 @@ namespace hen::renderer
         PreRender();
 
         Render();
-
-        CurrentRHC->DisableDepth();
 
         ui::GetIMGUIManager()->BeginFrame();
 
@@ -304,13 +303,52 @@ namespace hen::renderer
                     }
                 }
             }
+
+            if (level->Skybox.Mesh.State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
+            {
+                level->Skybox.Mesh.CreateRenderData();
+            }
         }
     }
 
     void Render()
     {
         if (auto level = level::GetActiveLevel())
-        {
+        {   
+            int windowWidth, windowHeight;
+            SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
+
+            if (level->Skybox.Mesh.State == graphics::RESOURCE_STATES::READY_TO_RENDER)
+            {
+                for (auto submesh : level->Skybox.Mesh.SubMeshes)
+                {
+                    auto* shader = CurrentShaderManager->Get(SkyboxShader);
+
+                    shader->Bind();
+
+                    math::Matrix4 model = math::Translate(math::Matrix4(1.0f), math::Vec3(0.0f));
+
+                    math::Matrix4 view = math::LookAt(Camera.Position / cvar_SkyboxScale.GetFloat(), (Camera.Position + Camera.Front) / cvar_SkyboxScale.GetFloat(), math::Vec3(0.0f, 1.0f, 0.0f));
+
+                    shader->SetMat4("uView", view);
+                    shader->SetMat4("uModel", model);
+
+                    shader->SetVec3("uLightDir", math::Vec3(0.5f, 1.0f, 0.5f));
+                    shader->SetVec3("uLightColour", math::Vec3(1.0f, 1.0f, 1.0f));
+                    shader->SetVal("uLightIntensity", 1.0f);
+
+                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+
+                    level->Skybox.Mesh.VertexArray.Bind();
+                    CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
+                    level->Skybox.Mesh.VertexArray.UnBind();
+
+                    shader->UnBind();
+                }
+
+                CurrentRHC->ClearDepth();
+            }
+
             auto litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
 
             for (auto entity : litEntities)
@@ -321,9 +359,6 @@ namespace hen::renderer
 
                 auto* shader = CurrentShaderManager->Get(materialComp.Shader);
                 shader->Bind();
-
-                int windowWidth, windowHeight;
-                SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
             
                 if (meshComp.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
                 {

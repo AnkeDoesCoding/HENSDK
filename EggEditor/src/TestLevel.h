@@ -60,6 +60,10 @@ namespace testlevel
         importer::ImportModel("res/models/primitives/cube.glb", cubeMesh, cubeMat);
         cubeMat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
+        // Level skybox
+
+        importer::ImportModel("res/models/skybox/skybox.glb", TestLevel.Skybox.Mesh, cubeMat);
+
     }
 }
 
