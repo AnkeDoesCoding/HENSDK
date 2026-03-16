@@ -9,6 +9,8 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  CC: clang
+  CXX: clang++
   BUILD_TYPE: Release
 
 jobs:
