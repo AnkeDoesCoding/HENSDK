@@ -138,7 +138,6 @@ namespace importer
         return true;
     }
 
-
     template<typename T>
     void CopyIndices(const unsigned char* data, size_t count, uint32_t start, std::vector<uint32_t>& out)
     {
@@ -155,15 +154,12 @@ namespace importer
         {
             return;
         }
-                    
         int src = model.textures[index].source;
         if (src < 0 || src >= static_cast<int>(model.images.size()))
         {
             return;
         }
-                    
         const auto& img = model.images[src];
-                    
         // external textures
         if (!img.uri.empty())
         {
@@ -171,7 +167,6 @@ namespace importer
             handle = hen::renderer::GetTextureManager()->Load(full.string().c_str());
             return;
         }
-                    
         // embedded textures
         if (!img.image.empty())
         {
@@ -180,69 +175,56 @@ namespace importer
         }
     }
 
-    void ImportModel(std::string path, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp)
+    hen::math::Matrix4 GetNodeTransform(const tinygltf::Node& node)
     {
-        hen::Timer timer;
-
-        tinygltf::TinyGLTF loader;
-        tinygltf::Model model;
-        std::string err, warn;
-
-        loader.SetStoreOriginalJSONForExtrasAndExtensions(false);
-        loader.SetPreserveImageChannels(false);
-
-        bool ok = false;
-        if (path.size() >= 4 && path.substr(path.size() - 4) == ".glb")
+        if (node.matrix.size() == 16)
         {
-            ok = loader.LoadBinaryFromFile(&model, &err, &warn, path, true);
-        }
-        else
-        {
-            ok = loader.LoadASCIIFromFile(&model, &err, &warn, path, true);
+            return hen::math::MakeMatrix4(node.matrix.data());
         }
 
-        if (!warn.empty())
+        hen::math::Matrix4 T(1.0f);
+        hen::math::Matrix4 R(1.0f);
+        hen::math::Matrix4 S(1.0f);
+
+        if (node.translation.size() == 3)
         {
-            HEN_WARN("[gltf] " + warn);
+            T = hen::math::Translate(hen::math::Matrix4(1.0f), hen::math::Vec3(
+                static_cast<float>(node.translation[0]),
+                static_cast<float>(node.translation[1]),
+                static_cast<float>(node.translation[2])));
         }
 
-        if (!ok)
+        if (node.rotation.size() == 4)
         {
-            HEN_ERROR("[gltf] " + err);
-            return;
+            hen::math::Quat q(
+                static_cast<float>(node.rotation[3]),
+                static_cast<float>(node.rotation[0]),
+                static_cast<float>(node.rotation[1]),
+                static_cast<float>(node.rotation[2]));
+            R = hen::math::ToMatrix4(q);
         }
 
-        std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
-
-        uint32_t totalVertexCount = 0;
-        size_t totalIndexCount = 0;
-
-        for (const auto& gltfMesh : model.meshes)
+        if (node.scale.size() == 3)
         {
-            for (const auto& prim : gltfMesh.primitives)
-            {
-                if (prim.mode != TINYGLTF_MODE_TRIANGLES) continue;
-                if (prim.attributes.find("POSITION") == prim.attributes.end()) continue;
-
-                const auto& accPos = model.accessors.at(prim.attributes.at("POSITION"));
-                totalVertexCount += static_cast<uint32_t>(accPos.count);
-
-                if (prim.indices < 0)
-                    totalIndexCount += accPos.count;
-                else
-                    totalIndexCount += model.accessors[prim.indices].count;
-            }
+            S = hen::math::Scale(hen::math::Matrix4(1.0f), hen::math::Vec3(
+                static_cast<float>(node.scale[0]),
+                static_cast<float>(node.scale[1]),
+                static_cast<float>(node.scale[2])));
         }
 
+        return T * R * S;
+    }
 
-        meshComp.Vertices.reserve(totalVertexCount);
-        meshComp.Normals.reserve(totalVertexCount);
-        meshComp.TextureCoordinates.reserve(totalVertexCount);
-        meshComp.Indices.reserve(totalIndexCount);
+    void ProcessNode(tinygltf::Model& model, int nodeIndex, const hen::math::Matrix4& parentTransform, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp, std::filesystem::path& modelDir)
+    {
+        const tinygltf::Node& node = model.nodes[nodeIndex];
+        const hen::math::Matrix4 worldTransform = parentTransform * GetNodeTransform(node);
 
-        for (const tinygltf::Mesh& gltfMesh : model.meshes)
+        if (node.mesh >= 0)
         {
-            for (const tinygltf::Primitive& prim : gltfMesh.primitives)
+            const hen::math::Matrix3 normalMatrix = hen::math::Matrix3(hen::math::Transpose(hen::math::Inverse(worldTransform)));
+
+            for (const tinygltf::Primitive& prim : model.meshes[node.mesh].primitives)
             {
                 if (prim.mode != TINYGLTF_MODE_TRIANGLES)
                 {
@@ -276,18 +258,19 @@ namespace importer
                 for (uint32_t i = 0; i < vertexCount; ++i)
                 {
                     const float* p = &pos[i * 3];
-                    meshComp.Vertices.emplace_back(p[0], p[1], p[2]);
+                    hen::math::Vec3 v = hen::math::Vec3(worldTransform * hen::math::Vec4(p[0], p[1], p[2], 1.0f));
+                    meshComp.Vertices.emplace_back(v.x, v.y, v.z);
                 }
 
                 // normals
 
                 std::vector<float> normals;
-                bool hasNormals = (prim.attributes.find("NORMAL") != prim.attributes.end());
+                bool hasNormals = prim.attributes.find("NORMAL") != prim.attributes.end();
 
                 if (hasNormals)
                 {
                     const tinygltf::Accessor& accNorm = model.accessors[prim.attributes.at("NORMAL")];
-                    if (!ReadAccessorAsFloats(normals, model, accNorm) || (accNorm.count != accPos.count))
+                    if (!ReadAccessorAsFloats(normals, model, accNorm) || accNorm.count != accPos.count)
                     {
                         hasNormals = false;
                     }
@@ -295,11 +278,11 @@ namespace importer
 
                 if (hasNormals)
                 {
-                    
                     for (uint32_t i = 0; i < vertexCount; i++)
                     {
                         const float* n = &normals[i * 3];
-                        meshComp.Normals.emplace_back(n[0], n[1], n[2]);
+                        hen::math::Vec3 xn = hen::math::Normalise(normalMatrix * hen::math::Vec3(n[0], n[1], n[2]));
+                        meshComp.Normals.emplace_back(xn.x, xn.y, xn.z);
                     }
                 }
                 else
@@ -313,12 +296,12 @@ namespace importer
                 // texture coordinates
 
                 std::vector<float> texCoords;
-                bool hasTexCoords = (prim.attributes.find("TEXCOORD_0") != prim.attributes.end());
+                bool hasTexCoords = prim.attributes.find("TEXCOORD_0") != prim.attributes.end();
 
                 if (hasTexCoords)
                 {
                     const tinygltf::Accessor& accUV = model.accessors[prim.attributes.at("TEXCOORD_0")];
-                    if (!ReadAccessorAsFloats(texCoords, model, accUV) || (accUV.count != accPos.count))
+                    if (!ReadAccessorAsFloats(texCoords, model, accUV) || accUV.count != accPos.count)
                     {
                         hasTexCoords = false;
                     }
@@ -363,15 +346,14 @@ namespace importer
                     {
                         const tinygltf::BufferView& viewIdx = model.bufferViews[accIdx.bufferView];
                         const tinygltf::Buffer& bufIdx = model.buffers[viewIdx.buffer];
-                                            
+
                         const unsigned char* basePtr = bufIdx.data.data() + viewIdx.byteOffset + accIdx.byteOffset;
-                                            
+
                         size_t stride = (viewIdx.byteStride != 0) ? viewIdx.byteStride : tinygltf::GetComponentSizeInBytes(accIdx.componentType);
-                                            
+
                         for (size_t i = 0; i < accIdx.count; ++i)
                         {
                             const unsigned char* ptr = basePtr + i * stride;
-                        
                             uint32_t idx = 0;
                             switch (accIdx.componentType)
                             {
@@ -388,7 +370,7 @@ namespace importer
                                     HEN_ERROR("[gltf] unsupported index component type");
                                     break;
                             }
-                        
+
                             meshComp.Indices.push_back(vertexStart + idx);
                         }
 
@@ -421,10 +403,85 @@ namespace importer
                 meshComp.SubMeshes.push_back(subMesh);
             }
         }
-        
+
+        for (int childIndex : node.children)
+        {
+            ProcessNode(model, childIndex, worldTransform, meshComp, materialComp, modelDir);
+        }
+    }
+
+    void ImportModel(std::string path, hen::level::MeshComponent& meshComp, hen::level::MaterialComponent& materialComp)
+    {
+        hen::Timer timer;
+
+        tinygltf::TinyGLTF loader;
+        tinygltf::Model model;
+        std::string err, warn;
+
+        loader.SetStoreOriginalJSONForExtrasAndExtensions(false);
+        loader.SetPreserveImageChannels(false);
+
+        bool ok = false;
+        if (path.size() >= 4 && path.substr(path.size() - 4) == ".glb")
+        {
+            ok = loader.LoadBinaryFromFile(&model, &err, &warn, path, true);
+        }
+        else
+        {
+            ok = loader.LoadASCIIFromFile(&model, &err, &warn, path, true);
+        }
+
+        if (!warn.empty())
+        {
+            HEN_WARN("[gltf] " + warn);
+        }
+
+        if (!ok)
+        {
+            HEN_ERROR("[gltf] " + err);
+            return;
+        }
+
+        std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
+
+        uint32_t totalVertexCount = 0;
+        size_t totalIndexCount = 0;
+
+        for (const auto& gltfMesh : model.meshes)
+        {
+            for (const auto& prim : gltfMesh.primitives)
+            {
+                if (prim.mode != TINYGLTF_MODE_TRIANGLES)
+                {
+                    continue;
+                }
+
+                if (prim.attributes.find("POSITION") == prim.attributes.end())
+                {
+                    continue;
+                }
+
+                const auto& accPos = model.accessors.at(prim.attributes.at("POSITION"));
+                totalVertexCount += static_cast<uint32_t>(accPos.count);
+                totalIndexCount += (prim.indices < 0) ? accPos.count : model.accessors[prim.indices].count;
+            }
+        }
+
+        meshComp.Vertices.reserve(totalVertexCount);
+        meshComp.Normals.reserve(totalVertexCount);
+        meshComp.TextureCoordinates.reserve(totalVertexCount);
+        meshComp.Indices.reserve(totalIndexCount);
+
+        const tinygltf::Scene& scene = model.scenes[model.defaultScene >= 0 ? model.defaultScene : 0];
+
+        for (int rootNode : scene.nodes)
+        {
+            ProcessNode(model, rootNode, hen::math::Matrix4(1.0f), meshComp, materialComp, modelDir);
+        }
+
         meshComp.State = hen::graphics::RESOURCE_STATES::READY_TO_UPLOAD;
 
         HEN_LOG("[importer] mesh import took " + std::to_string(static_cast<int>(std::round(timer.ElapsedMilliseconds()))) + " ms");
     }
-    
+
 }

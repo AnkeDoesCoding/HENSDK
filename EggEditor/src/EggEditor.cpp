@@ -83,7 +83,7 @@ void Editor::Update(float deltaTime)
 
             if (result.HitEntity)
             {
-                hen::physics::AddImpulseAt(result.HitEntity->GetComponent<hen::level::RigidBodyComponent>(), hen::renderer::Camera.Front * 1000.0f, result.HitPosition);
+                hen::physics::AddImpulseAt(result.HitEntity->GetComponent<hen::level::RigidBodyComponent>(), hen::renderer::Camera.Front * 100.0f, result.HitPosition);
             }
         }
         
