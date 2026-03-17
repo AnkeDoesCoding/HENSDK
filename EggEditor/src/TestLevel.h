@@ -34,8 +34,6 @@ namespace testlevel
         auto& modelMat = ModelEnt.AddComponent<hen::level::MaterialComponent>();
         auto& modelMesh = ModelEnt.AddComponent<hen::level::MeshComponent>();
         auto& modelRB = ModelEnt.AddComponent<hen::level::RigidBodyComponent>();
-
-        modelTransform.SetLocalScale(hen::math::Vec3(0.5f));
         
         hen::jobsystem::Execute([&modelMesh, &modelMat] {importer::ImportModel("res/models/sponza/sponza.glb", modelMesh, modelMat);});
         modelMat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
@@ -51,10 +49,9 @@ namespace testlevel
         auto& cubeRB = CubeEnt.AddComponent<hen::level::RigidBodyComponent>();
         auto& cubeMat = CubeEnt.AddComponent<hen::level::MaterialComponent>();
 
-        cubeRB.Mass = 80.0f;
+        cubeRB.Mass = 10.0f;
         cubeRB.Restitution = 0.2f;
 
-        cubeTransform.SetLocalScale(hen::math::Vec3(10.0f));
         cubeTransform.SetLocalPosition(hen::math::Vec3(20.0f, 100.0f, 0.0f));
 
         importer::ImportModel("res/models/primitives/cube.glb", cubeMesh, cubeMat);
@@ -64,6 +61,17 @@ namespace testlevel
 
         importer::ImportModel("res/models/skybox/skybox.glb", TestLevel.Skybox.Mesh, cubeMat);
 
+        std::vector<std::string> faces
+        {
+            "res/engine/textures/cityskybox/right.jpg",
+            "res/engine/textures/cityskybox/left.jpg",
+            "res/engine/textures/cityskybox/top.jpg",
+            "res/engine/textures/cityskybox/bottom.jpg",
+            "res/engine/textures/cityskybox/front.jpg",
+            "res/engine/textures/cityskybox/back.jpg"
+        };
+
+        TestLevel.Skybox.Cubemap = hen::renderer::GetTextureManager()->Load(faces);
     }
 }
 

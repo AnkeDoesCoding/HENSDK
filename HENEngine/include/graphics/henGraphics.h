@@ -76,6 +76,7 @@ namespace hen::graphics
         int Height;
         int Components;
         unsigned char* Data = nullptr;
+        std::vector<unsigned char*> CubemapData;
         uint32_t ID = 0;
         RESOURCE_STATES State;
 
@@ -85,6 +86,7 @@ namespace hen::graphics
 
         void Load(const char* path);
         void Load(const unsigned char* data, int size, int width, int height, int components);
+        void Load(std::vector<std::string> faces);
 
         void CreateRenderData();
         void Destroy();
@@ -102,7 +104,6 @@ namespace hen::graphics
             
             return *this;
         }
-
     };
 
     struct BufferElement

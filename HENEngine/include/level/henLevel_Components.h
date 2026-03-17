@@ -302,13 +302,13 @@ namespace hen::level
         struct CapsuleParams
         {
             float Radius = 1.0f;
-            float Height = 1.0f;
+            float Height = 2.0f;
         } Capsule;
 
         struct CylinderParams
         {
             float Radius = 1.0f;
-            float Height = 1.0f;
+            float Height = 2.0f;
         } Cylinder;
 
         COLLISIONSHAPES Shape = COLLISIONSHAPES::BOX;

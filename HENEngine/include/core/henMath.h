@@ -3,6 +3,7 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -99,9 +100,19 @@ namespace hen::math
         return glm::translate(matrix, vector);
     }
 
+    inline Matrix4 Transpose(Matrix4 matrix)
+    {
+        return glm::transpose(matrix);
+    }
+
     inline Matrix4 Inverse(Matrix4 matrix)
     {
         return glm::inverse(matrix);
+    }
+
+    inline Matrix4 MakeMatrix4(const double* data)
+    {
+        return glm::make_mat4(data);
     }
 }
 

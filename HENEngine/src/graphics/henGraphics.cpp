@@ -71,13 +71,12 @@ namespace hen::graphics
     {
         State = RESOURCE_STATES::NOT_READY;
 
-        unsigned char* stbiData;
-
-        stbiData = stbi_load(path, &Width, &Height, &Components, 0);
+        unsigned char* stbiData = stbi_load(path, &Width, &Height, &Components, 0);
 
         if (!stbiData)
         {
             HEN_ERROR("[hen::Texture] Failed to load texture from path: " + std::string(path));
+            stbi_image_free(stbiData);
             return;
         }
 
@@ -93,6 +92,41 @@ namespace hen::graphics
         State = RESOURCE_STATES::READY_TO_UPLOAD;
 
         HEN_LOG("[hen::Texture] Successfully loaded texture from path:" + std::string(path));
+    }
+
+    void Texture::Load(std::vector<std::string> faces)
+    {
+        State = RESOURCE_STATES::NOT_READY;
+
+        CubemapData.resize(6);
+
+        for (uint32_t i = 0; i < faces.size(); i++)
+        {
+            unsigned char* stbiData = stbi_load(faces[i].c_str(), &Width, &Height, &Components, 0);
+            size_t dataSize = (size_t)(Width * Height * Components);
+
+            if (!stbiData)
+            {
+                HEN_ERROR("[hen::Texture] Failed to load cubemap texture from path: " + std::string(faces[i].c_str()));
+                stbi_image_free(stbiData);
+                return;
+            }
+
+            if (CubemapData[i])
+            {
+                delete [] CubemapData[i];
+            }
+            
+            CubemapData[i] = new unsigned char[dataSize];
+
+            memcpy(CubemapData[i], stbiData, dataSize);
+
+            stbi_image_free(stbiData);
+        }
+
+        State = RESOURCE_STATES::READY_TO_UPLOAD;
+
+        HEN_LOG("[hen::Texture] Successfully loaded cubemap texture");
     }
 
     void Texture::Load(const unsigned char* data, int size, int width, int height, int components)
@@ -142,16 +176,33 @@ namespace hen::graphics
             dataFormat = GL_RGBA;
         }
 
+        if (CubemapData.empty())
+        {
+            glBindTexture(GL_TEXTURE_2D, ID);
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, Data);
+            glGenerateMipmap(GL_TEXTURE_2D);
 
-        glBindTexture(GL_TEXTURE_2D, ID);
-        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, Data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, ID);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+            for (uint32_t i = 0; i < 6; i++)
+            {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, CubemapData[i]);
+            }
+        
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+        
         State = RESOURCE_STATES::READY_TO_RENDER;
     }
 

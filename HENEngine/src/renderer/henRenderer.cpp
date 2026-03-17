@@ -23,9 +23,56 @@ namespace hen::renderer
     static std::shared_ptr<graphics::IndexBuffer> PrimitiveCubeIB;  
     static std::shared_ptr<graphics::VertexBuffer> PrimitiveSphereVB;
     static std::shared_ptr<graphics::IndexBuffer> PrimitiveSphereIB;
+    static std::shared_ptr<graphics::VertexBuffer> SkyboxVB;
 
     static ShaderHandle PrimitiveShader;
     static ShaderHandle SkyboxShader;
+    static ShaderHandle TwoDimensionalSkyboxShader;
+
+    static float SkyboxVertices[] = 
+    {
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f
+    };
 
     struct alignas(16) ShaderDirLight 
     {
@@ -103,7 +150,7 @@ namespace hen::renderer
         Camera.FarPlane = cvar_FarPlane.GetFloat();
     });
 
-    cvar::CVar cvar_SkyboxScale("r_skybox_scale", 64.0f);
+    cvar::CVar cvar_SkyboxScale("r_skybox_scale", 16.0f);
 
     void Initialise(SDL_Window* window)
     {
@@ -141,7 +188,8 @@ namespace hen::renderer
         GetTextureManager() = CurrentTextureManager.get();
 
         PrimitiveShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/PrimitiveShaderVS.glsl", "res/engine/shaders/GLSL/PrimitiveShaderFS.glsl");
-        SkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/SkyboxShaderVS.glsl", "res/engine/shaders/GLSL/SkyboxShaderFS.glsl");
+        SkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/3DSkyboxShaderVS.glsl", "res/engine/shaders/GLSL/3DSkyboxShaderFS.glsl");
+        TwoDimensionalSkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/SkyboxShaderVS.glsl", "res/engine/shaders/GLSL/SkyboxShaderFS.glsl");
 
         LevelLightsUB.Create(sizeof(ShaderLights), 1);
 
@@ -149,6 +197,7 @@ namespace hen::renderer
         PrimitiveCubeIB = graphics::IndexBuffer::Create(sizeof(level::cube::Indices), level::cube::Indices);
         PrimitiveSphereVB = graphics::VertexBuffer::Create(sizeof(level::sphere::Vertices), level::sphere::Vertices);
         PrimitiveSphereIB = graphics::IndexBuffer::Create(sizeof(level::sphere::Indices), level::sphere::Indices);
+        SkyboxVB = graphics::VertexBuffer::Create(sizeof(SkyboxVertices), SkyboxVertices);
 
         Initialised = true;
 
@@ -308,6 +357,14 @@ namespace hen::renderer
             {
                 level->Skybox.Mesh.CreateRenderData();
             }
+
+            if (auto* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
+            {
+                if (skyboxCubemap->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
+                {
+                    skyboxCubemap->CreateRenderData();
+                }
+            }
         }
     }
 
@@ -320,35 +377,80 @@ namespace hen::renderer
 
             if (level->Skybox.Mesh.State == graphics::RESOURCE_STATES::READY_TO_RENDER)
             {
+                auto* shader = CurrentShaderManager->Get(SkyboxShader);
+                
+                shader->Bind();
+
                 for (auto submesh : level->Skybox.Mesh.SubMeshes)
                 {
-                    auto* shader = CurrentShaderManager->Get(SkyboxShader);
-
-                    shader->Bind();
-
-                    math::Matrix4 model = math::Translate(math::Matrix4(1.0f), math::Vec3(0.0f));
-
-                    math::Matrix4 view = math::LookAt(Camera.Position / cvar_SkyboxScale.GetFloat(), (Camera.Position + Camera.Front) / cvar_SkyboxScale.GetFloat(), math::Vec3(0.0f, 1.0f, 0.0f));
+                    math::Matrix4 model = math::Translate(math::Matrix4(1.0f), math::Vec3(0.0f));  
+                    math::Matrix4 view = math::LookAt(Camera.Position / cvar_SkyboxScale.GetFloat(), (Camera.Position + Camera.Front) / cvar_SkyboxScale.GetFloat(), level->Up);
 
                     shader->SetMat4("uView", view);
                     shader->SetMat4("uModel", model);
                     shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
-
+                
                     shader->SetVec3("uViewPos", Camera.Position / cvar_SkyboxScale.GetFloat());
                     shader->SetVal("uSkyboxScale", cvar_SkyboxScale.GetFloat());
-
+                
                     level->Skybox.Mesh.VertexArray.Bind();
                     CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
                     level->Skybox.Mesh.VertexArray.UnBind();
-
-                    shader->UnBind();
                 }
 
-                CurrentRHC->ClearDepth();
+                shader->UnBind();
             }
 
-            auto litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
+            if (auto* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
+            {
+                CurrentRHC->SetDepthMask(graphics::DEPTH_FUNCTIONS::LESS_EQUAL);
 
+                auto* shader = CurrentShaderManager->Get(TwoDimensionalSkyboxShader);
+                shader->Bind();
+
+                static graphics::VertexArray skyboxVA;
+                static bool initalised = false;
+                static graphics::BufferLayout layout =
+                {
+                    {graphics::SHADER_PRIMITIVES::FLOAT3, "aPos"}
+                };
+
+                if (!initalised)
+                {
+                    skyboxVA.Create();
+                    SkyboxVB->SetLayout(layout);
+                    skyboxVA.AddVertexBuffer(SkyboxVB);
+
+                    initalised = true;
+                }
+
+                if (auto* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
+                {
+                    if (skyboxCubemap->State == graphics::RESOURCE_STATES::READY_TO_RENDER)
+                    {
+                        glActiveTexture(GL_TEXTURE0);
+                        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap->ID);
+                    }
+                }
+
+                math::Matrix4 view = glm::mat3(Camera.GetViewMatrix());
+
+                shader->SetMat4("uView", view);
+                shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+                shader->SetVal("uSkyboxCubemap", 0);
+
+                skyboxVA.Bind();
+                CurrentRHC->DrawArrays(sizeof(SkyboxVertices), 0);
+                skyboxVA.UnBind();
+
+                shader->UnBind();
+
+                CurrentRHC->SetDepthMask(graphics::DEPTH_FUNCTIONS::LESS); 
+            }
+
+            CurrentRHC->ClearDepth();
+
+            auto litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
             for (auto entity : litEntities)
             {
                 auto& transformComp = entity.GetComponent<level::TransformComponent>();

@@ -17,7 +17,7 @@ namespace hen::level
         extern float Vertices[144];
         extern uint32_t Indices[36];
     }
-
+    
     namespace sphere
     {
         extern float Vertices[156];
@@ -73,7 +73,7 @@ namespace hen::level
 
     public:
         math::Vec3 Up = math::Vec3(0.0f, 1.0f, 0.0f);
-        math::Vec3 Gravity = math::Vec3(0.0f, -20.0f, 0.0f); // -9.81 felt too floaty even though it was physically correct
+        math::Vec3 Gravity = math::Vec3(0.0f, -9.81f, 0.0f); // -9.81 felt too floaty even though it was physically correct
         
         std::shared_ptr<void> PhysicsLevel;  // I dont really like this shared void ptr approach
 
