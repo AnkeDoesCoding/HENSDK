@@ -198,6 +198,43 @@ namespace hen::renderer
         return TextureHandle{ index, m_Textures[index].Generation };
     }
 
+    TextureHandle TextureManager::Load(std::vector<std::string> faces)
+    {
+        size_t key = HashString(faces[0]);
+
+        auto it = m_PathToIndex.find(key);
+        if (it != m_PathToIndex.end())
+        {
+            uint32_t index = it->second;
+            return TextureHandle{ index, m_Textures[index].Generation };
+        }
+
+        uint32_t index;
+        if (!m_FreeList.empty())
+        {
+            index = m_FreeList.back();
+            m_FreeList.pop_back();
+            
+            m_Textures[index].Texture.Load(faces); 
+            m_Textures[index].Alive = true;
+            m_Textures[index].Generation++;
+        }
+        else
+        {
+            index = static_cast<uint32_t>(m_Textures.size());
+            m_Textures.emplace_back();                         
+            m_Textures[index].Texture.Load(faces);  
+            m_Textures[index].Alive = true;
+            m_Textures[index].Generation = 1;
+        }
+
+        m_PathToIndex[key] = index;
+
+        HEN_LOG("[hen::renderer::TextureManager] Successfully cached texture");
+
+        return TextureHandle{ index, m_Textures[index].Generation };
+    }
+
     graphics::Texture* TextureManager::Get(const TextureHandle& handle)
     {
         if (!handle.IsValid() || handle.Index >= m_Textures.size() || !m_Textures[handle.Index].Alive)

@@ -100,6 +100,11 @@ namespace hen
         glDisable(GL_DEPTH_TEST);
     }
 
+    void RHC_OpenGL::ClearDepth()
+    {
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+
     void RHC_OpenGL::EnableDepthMask()
     {
         glDepthMask(GL_TRUE);

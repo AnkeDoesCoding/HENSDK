@@ -25,6 +25,7 @@ namespace hen
 
         virtual void EnableDepth() = 0;
         virtual void DisableDepth() = 0;
+        virtual void ClearDepth() = 0;
         virtual void EnableDepthMask() = 0;
         virtual void DisableDepthMask() = 0;
         virtual void SetDepthMask(graphics::DEPTH_FUNCTIONS function) = 0;

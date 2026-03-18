@@ -23,6 +23,7 @@ namespace hen
 
         void EnableDepth() override;
         void DisableDepth() override;
+        void ClearDepth() override;
         void EnableDepthMask() override;
         void DisableDepthMask() override;
         void SetDepthMask(graphics::DEPTH_FUNCTIONS function) override;

@@ -63,7 +63,6 @@ struct PointLight
 };
   
 uniform vec3 uViewPos;
-
 uniform Material uMaterial;
 
 layout(std140, binding = 1) uniform uLights
@@ -205,7 +204,7 @@ void main()
         result += CalculateLighting(uSpotLights[i], normal, viewDir);
     }
 
-    FragColour =  vec4(result, 1.0);
+    FragColour = vec4(result, 1.0);
 
     float gamma = 2.2;
     FragColour.rgb = pow(FragColour.rgb, vec3(1.0/gamma)); 
