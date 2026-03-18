@@ -208,7 +208,7 @@ namespace hen::renderer
     {
         CurrentRHC->Clear();
 
-        if (auto level = level::GetActiveLevel())
+        if (level::Level* level = level::GetActiveLevel())
         {
             Camera.SetDirty(level->Up);
         }
@@ -226,7 +226,7 @@ namespace hen::renderer
 
     void PreRender()
     {
-        if (auto level = level::GetActiveLevel())
+        if (level::Level* level = level::GetActiveLevel())
         {
             ShaderLights data;
             data.NumberOfPointLights = 0;
@@ -239,12 +239,12 @@ namespace hen::renderer
             float linear;
             float quadratic; 
 
-            auto lights = level->GetView<level::TransformComponent, level::LightComponent>();
+            level::View lights = level->GetView<level::TransformComponent, level::LightComponent>();
 
-            for (auto light : lights)
+            for (level::Entity light : lights)
             {
-                auto& transformComp = light.GetComponent<level::TransformComponent>();
-                auto& lightComp = light.GetComponent<level::LightComponent>();
+                level::TransformComponent& transformComp = light.GetComponent<level::TransformComponent>();
+                level::LightComponent& lightComp = light.GetComponent<level::LightComponent>();
 
                 switch (lightComp.Type)
                 {
@@ -315,12 +315,12 @@ namespace hen::renderer
 
             LevelLightsUB.SetData(&data, sizeof(ShaderLights));
 
-            auto renderEntities = level->GetView<level::MeshComponent, level::MaterialComponent>();
+            level::View renderEntities = level->GetView<level::MeshComponent, level::MaterialComponent>();
 
-            for (auto entity : renderEntities)
+            for (level::Entity entity : renderEntities)
             {
-                auto& meshComp = entity.GetComponent<level::MeshComponent>();
-                auto& materialComp = entity.GetComponent<level::MaterialComponent>();
+                level::MeshComponent& meshComp = entity.GetComponent<level::MeshComponent>();
+                level::MaterialComponent& materialComp = entity.GetComponent<level::MaterialComponent>();
 
                 if (meshComp.State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                 {
@@ -331,7 +331,7 @@ namespace hen::renderer
                 {
                     if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
                     {
-                        if (auto* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
+                        if (graphics::Texture* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
                         {
                             if (diffuse->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                             {
@@ -342,7 +342,7 @@ namespace hen::renderer
 
                     if (submesh.SpecularIndex < materialComp.SpecularTextures.size())
                     {
-                        if (auto *specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
+                        if (graphics::Texture* specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
                         {
                             if (specular->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                             {
@@ -358,7 +358,7 @@ namespace hen::renderer
                 level->Skybox.Mesh.CreateRenderData();
             }
 
-            if (auto* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
+            if (graphics::Texture* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
             {
                 if (skyboxCubemap->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                 {
@@ -370,42 +370,88 @@ namespace hen::renderer
 
     void Render()
     {
-        if (auto level = level::GetActiveLevel())
+        if (level::Level* level = level::GetActiveLevel())
         {   
             int windowWidth, windowHeight;
             SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
 
             if (level->Skybox.Mesh.State == graphics::RESOURCE_STATES::READY_TO_RENDER)
             {
-                auto* shader = CurrentShaderManager->Get(SkyboxShader);
-                
+                graphics::Shader* shader = CurrentShaderManager->Get(SkyboxShader);
                 shader->Bind();
 
-                for (auto submesh : level->Skybox.Mesh.SubMeshes)
+                level->Skybox.Mesh.VertexArray.Bind();
+
+                for (auto& submesh : level->Skybox.Mesh.SubMeshes)
                 {
+                    if (submesh.DiffuseIndex < level->Skybox.Material.DiffuseTextures.size())
+                    {
+                        if (graphics::Texture* diffuse = CurrentTextureManager->Get(level->Skybox.Material.DiffuseTextures[submesh.DiffuseIndex]))
+                        {
+                            shader->SetVal("uMaterial.HasDiffuse", 1);
+
+                            if (diffuse->State == graphics::RESOURCE_STATES::READY_TO_RENDER)
+                            {
+                                glActiveTexture(GL_TEXTURE0);
+                                glBindTexture(GL_TEXTURE_2D, diffuse->ID);
+                            }
+                        }
+                        else
+                        {
+                            shader->SetVal("uMaterial.HasDiffuse", 0);
+                        }
+                    }
+
+                    if (submesh.SpecularIndex < level->Skybox.Material.SpecularTextures.size())
+                    {
+                        if (graphics::Texture* specular = CurrentTextureManager->Get(level->Skybox.Material.SpecularTextures[submesh.SpecularIndex]))
+                        {
+                            shader->SetVal("uMaterial.HasSpecular", 1);
+
+                            if (specular->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
+                            {
+                                glActiveTexture(GL_TEXTURE1);
+                                glBindTexture(GL_TEXTURE_2D, specular->ID);
+                            }
+                        }
+                        else
+                        {
+                            shader->SetVal("uMaterial.HasSpecular", 0);
+                        }
+                    }
+
                     math::Matrix4 model = math::Translate(math::Matrix4(1.0f), math::Vec3(0.0f));  
                     math::Matrix4 view = math::LookAt(Camera.Position / cvar_SkyboxScale.GetFloat(), (Camera.Position + Camera.Front) / cvar_SkyboxScale.GetFloat(), level->Up);
 
+                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
                     shader->SetMat4("uView", view);
                     shader->SetMat4("uModel", model);
-                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
-                
                     shader->SetVec3("uViewPos", Camera.Position / cvar_SkyboxScale.GetFloat());
                     shader->SetVal("uSkyboxScale", cvar_SkyboxScale.GetFloat());
-                
-                    level->Skybox.Mesh.VertexArray.Bind();
+
+                    shader->SetVal("uMaterial.Diffuse", 0);
+                    shader->SetVal("uMaterial.Specular", 1);
+                    shader->SetVal("uMaterial.Shininess", 32.0f);
+                    shader->SetVec3("uMaterial.Colour",  level->Skybox.Material.Colour);
+
                     CurrentRHC->DrawElements(submesh.IndexCount, submesh.IndexStart);
-                    level->Skybox.Mesh.VertexArray.UnBind();
                 }
+
+                level->Skybox.Mesh.VertexArray.UnBind();
 
                 shader->UnBind();
             }
 
-            if (auto* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
+            if (graphics::Texture* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
             {
+                if (skyboxCubemap->State != graphics::RESOURCE_STATES::READY_TO_RENDER)
+                {
+                    return;
+                }
+
                 CurrentRHC->SetDepthMask(graphics::DEPTH_FUNCTIONS::LESS_EQUAL);
 
-                auto* shader = CurrentShaderManager->Get(TwoDimensionalSkyboxShader);
+                graphics::Shader* shader = CurrentShaderManager->Get(TwoDimensionalSkyboxShader);
                 shader->Bind();
 
                 static graphics::VertexArray skyboxVA;
@@ -424,14 +470,8 @@ namespace hen::renderer
                     initalised = true;
                 }
 
-                if (auto* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
-                {
-                    if (skyboxCubemap->State == graphics::RESOURCE_STATES::READY_TO_RENDER)
-                    {
-                        glActiveTexture(GL_TEXTURE0);
-                        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap->ID);
-                    }
-                }
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap->ID);
 
                 math::Matrix4 view = glm::mat3(Camera.GetViewMatrix());
 
@@ -450,14 +490,15 @@ namespace hen::renderer
 
             CurrentRHC->ClearDepth();
 
-            auto litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
-            for (auto entity : litEntities)
-            {
-                auto& transformComp = entity.GetComponent<level::TransformComponent>();
-                auto& meshComp = entity.GetComponent<level::MeshComponent>();
-                auto& materialComp = entity.GetComponent<level::MaterialComponent>();
+            level::View litEntities = level->GetView<level::TransformComponent, level::MeshComponent, level::MaterialComponent>();
 
-                auto* shader = CurrentShaderManager->Get(materialComp.Shader);
+            for (level::Entity entity : litEntities)
+            {
+                level::TransformComponent& transformComp = entity.GetComponent<level::TransformComponent>();
+                level::MeshComponent& meshComp = entity.GetComponent<level::MeshComponent>();
+                level::MaterialComponent& materialComp = entity.GetComponent<level::MaterialComponent>();
+
+                graphics::Shader* shader = CurrentShaderManager->Get(materialComp.Shader);
                 shader->Bind();
             
                 if (meshComp.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
@@ -467,11 +508,11 @@ namespace hen::renderer
 
                 meshComp.VertexArray.Bind();
 
-                for (auto &submesh : meshComp.SubMeshes)
+                for (auto& submesh : meshComp.SubMeshes)
                 {
                     if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
                     {
-                        if (auto *diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
+                        if (graphics::Texture* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
                         {
                             shader->SetVal("uMaterial.HasDiffuse", 1);
 
@@ -489,7 +530,7 @@ namespace hen::renderer
 
                     if (submesh.SpecularIndex < materialComp.SpecularTextures.size())
                     {
-                        if (auto *specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
+                        if (graphics::Texture* specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
                         {
                             shader->SetVal("uMaterial.HasSpecular", 1);
 
@@ -556,7 +597,7 @@ namespace hen::renderer
         math::Matrix4 model = math::Translate(math::Matrix4(1.0f), position) * rotationMatrix;
         model = math::Scale(model, scale);
 
-        auto* shader = CurrentShaderManager->Get(PrimitiveShader);
+        graphics::Shader* shader = CurrentShaderManager->Get(PrimitiveShader);
 
         shader->Bind();
 

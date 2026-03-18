@@ -4,14 +4,30 @@ out vec4 FragColour;
 in vec3 FragPos;  
 in vec3 Normal;  
 in vec2 TexCoord;
-in vec3 SkyDir;
 
 #define MAX_POINT_LIGHTS 100
 #define MAX_SPOT_LIGHTS 100
 
+struct Material 
+{
+    sampler2D Diffuse;
+    sampler2D Specular;    
+
+    vec3 Colour;
+    float Shininess;
+
+    int HasDiffuse;
+    int HasSpecular;
+}; 
+
+// vec4 Colour (x, y, z, w {intensity})
+// vec4 Attenuation (x {constant}, y {linear}, z {quadratic}, w {unused})
+// vec4 Angles (x {innercuttoff}, y {outercuttoff}, z {unused}, w {unused})
+
 struct DirLight 
 {
     vec4 Colour;
+    
     vec3 Ambient;
     float Pad0;
     vec3 Direction;
@@ -21,25 +37,34 @@ struct DirLight
 struct SpotLight 
 {
     vec4 Colour;
+
     vec3 Ambient;
     float Pad0;
     vec3 Position;
     float Pad1;
     vec3 Direction;
     float Pad2;
+
     vec4 Angles;
+
     vec4 Attenuation;
 };
 
 struct PointLight
 {
     vec4 Colour;
+
     vec3 Ambient;
     float Pad0;
     vec3 Position; 
     float Pad1;
+
     vec4 Attenuation;
 };
+
+uniform vec3 uViewPos;
+uniform float uSkyboxScale;
+uniform Material uMaterial;
 
 layout(std140, binding = 1) uniform uLights
 {
@@ -54,18 +79,31 @@ layout(std140, binding = 1) uniform uLights
     int uHasDirectionalLight;
 };
 
-uniform vec3 uViewPos;
-uniform float uSkyboxScale;
-
 vec3 CalculateLighting(DirLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.Direction);
+
     float diff = max(dot(normal, lightDir), 0.0);
-    
-    vec3 diffuse = light.Colour.xyz * diff * light.Colour.w;
-    vec3 ambient = light.Ambient;
-    
-    return (ambient + diffuse);
+
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), uMaterial.Shininess);
+
+    vec3 ambient = light.Ambient * uMaterial.Colour;
+    vec3 diffuse = uMaterial.Colour * light.Colour.xyz * diff * light.Colour.w;
+    vec3 specular = uMaterial.Colour * light.Colour.xyz * spec * light.Colour.w;
+
+    if (uMaterial.HasDiffuse == 1)
+    {
+        diffuse *= vec3(texture(uMaterial.Diffuse, TexCoord));
+        ambient *= vec3(texture(uMaterial.Diffuse, TexCoord));
+    }
+
+    if (uMaterial.HasSpecular == 1)
+    {
+        specular *= vec3(texture(uMaterial.Specular, TexCoord));
+    }
+
+    return (ambient + diffuse + specular);
 }
 
 vec3 CalculateLighting(PointLight light, vec3 normal, vec3 viewDir)
@@ -73,15 +111,35 @@ vec3 CalculateLighting(PointLight light, vec3 normal, vec3 viewDir)
     vec3 scaledLightPos = light.Position / uSkyboxScale;
 
     vec3 lightDir = normalize(scaledLightPos - FragPos);
+
     float diff = max(dot(normal, lightDir), 0.0);
+
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), uMaterial.Shininess);
     
     float distance = length(scaledLightPos - FragPos) * uSkyboxScale;
     float attenuation = 1.0 / (light.Attenuation.x + (light.Attenuation.y) * distance + light.Attenuation.z * (distance * distance));
     
-    vec3 diffuse = light.Colour.xyz * diff * light.Colour.w;
-    vec3 ambient = light.Ambient;
+    vec3 ambient = light.Ambient * uMaterial.Colour;
+    vec3 diffuse = uMaterial.Colour * light.Colour.xyz * diff * light.Colour.w;
+    vec3 specular = uMaterial.Colour * light.Colour.xyz * spec * light.Colour.w;
     
-    return (ambient + diffuse) * attenuation;
+    if (uMaterial.HasDiffuse == 1)
+    {
+        diffuse *= vec3(texture(uMaterial.Diffuse, TexCoord));
+        ambient *= vec3(texture(uMaterial.Diffuse, TexCoord));
+    }
+
+    if (uMaterial.HasSpecular == 1)
+    {
+        specular *= vec3(texture(uMaterial.Specular, TexCoord));
+    }
+
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+
+    return (ambient + diffuse + specular);
 }
 
 vec3 CalculateLighting(SpotLight light, vec3 normal, vec3 viewDir)
@@ -89,19 +147,39 @@ vec3 CalculateLighting(SpotLight light, vec3 normal, vec3 viewDir)
     vec3 scaledLightPos = light.Position / uSkyboxScale;
 
     vec3 lightDir = normalize(scaledLightPos - FragPos);
+
     float diff = max(dot(normal, lightDir), 0.0);
     
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), uMaterial.Shininess);
+
     float distance = length(scaledLightPos - FragPos) * uSkyboxScale;
     float attenuation = 1.0 / (light.Attenuation.x + light.Attenuation.y * distance + light.Attenuation.z * (distance * distance));
     
     float theta = dot(lightDir, normalize(-light.Direction));
     float epsilon = light.Angles.x - light.Angles.y;
     float intensity = clamp((theta - light.Angles.y) / epsilon, 0.0, 1.0);
-    
-    vec3 diffuse = light.Colour.xyz * diff * light.Colour.w;
-    vec3 ambient = light.Ambient;
-    
-    return (ambient + diffuse) * attenuation * intensity;
+
+    vec3 ambient = light.Ambient * uMaterial.Colour;
+    vec3 diffuse = uMaterial.Colour * light.Colour.xyz * diff * light.Colour.w;
+    vec3 specular = uMaterial.Colour * light.Colour.xyz * spec * light.Colour.w;
+
+    if (uMaterial.HasDiffuse == 1)
+    {
+        diffuse *= vec3(texture(uMaterial.Diffuse, TexCoord));
+        ambient *= vec3(texture(uMaterial.Diffuse, TexCoord));
+    }
+
+    if (uMaterial.HasSpecular == 1)
+    {
+        specular *= vec3(texture(uMaterial.Specular, TexCoord));
+    }
+
+    ambient *= attenuation * intensity;
+    diffuse *= attenuation * intensity;
+    specular *= attenuation * intensity;
+
+    return (ambient + diffuse + specular);
 }
 
 void main()
@@ -127,4 +205,7 @@ void main()
     }
     
     FragColour = vec4(result, 1.0);
+
+    float gamma = 2.2;
+    FragColour.rgb = pow(FragColour.rgb, vec3(1.0/gamma)); 
 }

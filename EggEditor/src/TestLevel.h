@@ -59,7 +59,7 @@ namespace testlevel
 
         // Level skybox
 
-        importer::ImportModel("res/models/skybox/skybox.glb", TestLevel.Skybox.Mesh, cubeMat);
+        importer::ImportModel("res/models/skybox/skybox.glb", TestLevel.Skybox.Mesh, TestLevel.Skybox.Material);
 
         std::vector<std::string> faces
         {
