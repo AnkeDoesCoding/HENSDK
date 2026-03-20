@@ -5,11 +5,27 @@
 
 namespace hen::graphics
 {
+    class Texture_OpenGL : public Texture::Backend
+    {
+    public:
+        ~Texture_OpenGL() override;
+
+        uint32_t GetID() const override;
+
+        void CreateRenderData(int width, int height, int components, unsigned char* data) override;
+        void CreateRenderData(int width, int height, int components, std::vector<unsigned char*> data) override;
+
+    private:
+        uint32_t m_ID;
+    };
+
     class VertexBuffer_OpenGL : public VertexBuffer
     {
     public:
         VertexBuffer_OpenGL(uint32_t size, float* vertices);
         ~VertexBuffer_OpenGL() override;
+
+        uint32_t GetID() const override;
 
         void Bind() const override;
         void UnBind() const override;
@@ -30,6 +46,7 @@ namespace hen::graphics
         ~IndexBuffer_OpenGL() override;
 
         uint32_t GetCount() const override;
+        uint32_t GetID() const override;
 
         void Bind() const override;
         void UnBind() const override;

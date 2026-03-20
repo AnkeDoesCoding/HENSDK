@@ -70,42 +70,6 @@ namespace hen::graphics
         FRONT_AND_BACK_FACE
     };
 
-    struct Texture
-    {
-        int Width;
-        int Height;
-        int Components;
-        unsigned char* Data = nullptr;
-        std::vector<unsigned char*> CubemapData;
-        uint32_t ID = 0;
-        RESOURCE_STATES State;
-
-        Texture();
-        ~Texture();
-        Texture(Texture&& other) noexcept;
-
-        void Load(const char* path);
-        void Load(const unsigned char* data, int size, int width, int height, int components);
-        void Load(std::vector<std::string> faces);
-
-        void CreateRenderData();
-        void Destroy();
-
-        Texture& operator=(Texture&& other) noexcept
-        {
-            using std::swap;
-
-            swap(Width, other.Width);
-            swap(Height, other.Height);
-            swap(Components, other.Components);
-            swap(Data, other.Data);
-            swap(ID, other.ID);
-            swap(State, other.State);
-            
-            return *this;
-        }
-    };
-
     struct BufferElement
     {
         std::string Name;
@@ -119,6 +83,59 @@ namespace hen::graphics
         uint32_t GetComponentCount() const;
     };
 
+    class Texture
+    {
+    public:
+        Texture();
+        ~Texture();
+        Texture(Texture&& other) noexcept;
+
+        bool IsBackendValid() const;
+
+        uint32_t GetID() const;
+
+        void Load(const char* path);
+        void Load(const unsigned char* data, int size, int width, int height, int components);
+        void Load(std::vector<std::string> faces);
+
+        void CreateRenderData();
+
+        Texture& operator=(Texture&& other) noexcept
+        {
+            using std::swap;
+
+            swap(Width, other.Width);
+            swap(Height, other.Height);
+            swap(Components, other.Components);
+            // swap(CubemapData, other.Data);
+            swap(Data, other.Data);
+            swap(m_BackendImpl, other.m_BackendImpl);
+            swap(State, other.State);
+            
+            return *this;
+        }
+
+    public:
+        struct Backend
+        {
+            virtual ~Backend() = default;
+
+            virtual uint32_t GetID() const = 0;
+
+            virtual void CreateRenderData(int width, int height, int components, unsigned char* data) = 0;
+            virtual void CreateRenderData(int width, int height, int components, std::vector<unsigned char*> data) = 0;
+        };
+
+        int Width;
+        int Height;
+        int Components;
+        unsigned char* Data = nullptr;
+        std::vector<unsigned char*> CubemapData;
+        RESOURCE_STATES State;
+
+    private:
+        std::unique_ptr<Backend> m_BackendImpl;
+    };
 
     class BufferLayout
     {
@@ -151,6 +168,8 @@ namespace hen::graphics
     public:
         virtual ~VertexBuffer() = default;
 
+        virtual uint32_t GetID() const = 0;
+
         virtual void Bind() const = 0;
         virtual void UnBind() const = 0;
 
@@ -167,6 +186,7 @@ namespace hen::graphics
 
         virtual void Bind() const = 0;
         virtual void UnBind() const = 0;
+        virtual uint32_t GetID() const = 0;
 
         virtual uint32_t GetCount() const = 0;
 

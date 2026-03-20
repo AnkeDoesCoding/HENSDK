@@ -52,63 +52,58 @@ namespace hen::ui
 
     }
 
-    void IMGUIManager::BeginFrame()
+    void IMGUIManager::Render()
     {
-        if (Initialised)
+        if (!Initialised)
         {
-            ImGui_ImplSDL3_NewFrame();
-            switch (renderer::CurrentBackend)
-            {
-                case renderer::BACKEND::OPENGL:
-                    ImGui_ImplOpenGL3_NewFrame();
-                    break;
-                default:
-                    break;
-            }
-            ImGui::NewFrame();
-
-            ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
-                ImGuiWindowFlags_NoBackground;
-
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->Pos);
-            ImGui::SetNextWindowSize(viewport->Size);
-            ImGui::SetNextWindowViewport(viewport->ID);
-
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-            ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
-            ImGui::PopStyleVar(3);
-
-            ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
-            ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-            ImGui::End();
-
-
-            for (auto& callback : m_Callbacks)
-            {
-                callback();
-            }
+            return;
         }
-    }
 
-    void IMGUIManager::EndFrame()
-    {
-        if (Initialised)
+        ImGui_ImplSDL3_NewFrame();
+        switch (renderer::CurrentBackend)
         {
-            ImGui::Render();
+            case renderer::BACKEND::OPENGL:
+                ImGui_ImplOpenGL3_NewFrame();
+                break;
+            default:
+                break;
+        }
+        ImGui::NewFrame();
 
-            switch (renderer::CurrentBackend)
-            {
-                case renderer::BACKEND::OPENGL:
-                    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-                    break;
-                default:
-                    break;
-            }
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+            ImGuiWindowFlags_NoBackground;
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
+        ImGui::PopStyleVar(3);
+
+        ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
+        ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGui::End();
+
+        for (auto& callback : m_Callbacks)
+        {
+            callback();
+        }
+
+        ImGui::Render();
+
+        switch (renderer::CurrentBackend)
+        {
+            case renderer::BACKEND::OPENGL:
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+                break;
+            default:
+                break;
         }
     }
 

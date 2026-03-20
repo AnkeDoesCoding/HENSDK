@@ -17,8 +17,7 @@ namespace hen::ui
         void Initialise(SDL_Window* window);
         void Shutdown();
 
-        void BeginFrame();
-        void EndFrame();
+        void Render();
 
         void ProcessEvent(const SDL_Event& event);
 

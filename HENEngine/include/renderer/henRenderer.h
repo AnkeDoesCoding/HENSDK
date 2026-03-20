@@ -18,7 +18,7 @@ namespace hen::renderer
     void Initialise(SDL_Window* window);
     void Run();
 
-    void PreRender();
+    void PrepareResources();
     void Render();
     void RenderPrimitive(level::PRIMITIVE_TYPES primitve, math::Vec3 position, math::Vec3 rotation, math::Vec3 scale, math::Vec3 colour);
 

@@ -10,6 +10,70 @@
 
 namespace hen
 {
+    void MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+    {
+        std::string sourceStr;
+        std::string typeStr;
+
+        console::LOGLEVEL level;
+
+        switch (source)
+        {
+        case GL_DEBUG_SOURCE_API:
+            sourceStr = "OpenGL";
+            break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            sourceStr = "Window system";
+            break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            sourceStr = "Shader compiler";
+            break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            sourceStr = "Third party";
+            break;
+        case GL_DEBUG_SOURCE_APPLICATION:
+            sourceStr = "HEN Engine";
+            break;
+        case GL_DEBUG_SOURCE_OTHER:
+            sourceStr = "Other";
+            break;
+        }
+
+        switch (type)
+        {
+        case GL_DEBUG_TYPE_ERROR:
+            typeStr = "an error";
+            level = console::LOGLEVEL::ERROR;
+            break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            typeStr = "deprecated behaviour";
+            level = console::LOGLEVEL::WARNING;
+            break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            typeStr = "undefined behaviour";
+            level = console::LOGLEVEL::ERROR;
+            break;
+        case GL_DEBUG_TYPE_PORTABILITY:
+            typeStr = "a portability issue";
+            level = console::LOGLEVEL::WARNING;
+            break;
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            typeStr = "a performance issue";
+            level = console::LOGLEVEL::WARNING;
+            break;
+        case GL_DEBUG_TYPE_MARKER:
+            typeStr = "a marker";
+            level = console::LOGLEVEL::WARNING;
+            break;
+        case GL_DEBUG_TYPE_OTHER:
+            typeStr = "something";
+            level = console::LOGLEVEL::ERROR;
+            break;
+        }
+
+        console::Log("[hen::RHC_OpenGL] " + sourceStr + " encountered " + typeStr + ": " + std::string(message) + " (" + std::to_string(static_cast<int>(id)) + ")", level);
+    }
+
     RHC_OpenGL::RHC_OpenGL(SDL_Window* window)
         : m_Window(window)
     {
@@ -38,9 +102,10 @@ namespace hen
     {
         Timer timer;
 
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -61,7 +126,17 @@ namespace hen
 
         HEN_ASSERT(loadGL, "Failed to load OpenGL context");
 
-        SDL_GL_SetSwapInterval(0); // create with vysnc off
+        SDL_GL_SetSwapInterval(1);
+
+        if (arguments::HasArgument("debugcontext"))
+        {
+            glEnable(GL_DEBUG_OUTPUT);
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+            glDebugMessageCallback(MessageCallback, nullptr);
+            glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+
+        }
 
         Initialised = true;
 
@@ -70,7 +145,7 @@ namespace hen
 
     void RHC_OpenGL::Clear()
     {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // just clear everything even if it aint enabled
     }
 
@@ -86,8 +161,7 @@ namespace hen
 
     void RHC_OpenGL::DrawArrays(uint32_t count, uint32_t offset)
     {
-        glDrawArrays(GL_TRIANGLES, offset, count);
-        
+        glDrawArrays(GL_TRIANGLES, static_cast<GLint>(offset), static_cast<GLsizei>(count));
     }
 
     void RHC_OpenGL::EnableDepth()
@@ -117,36 +191,40 @@ namespace hen
 
     void RHC_OpenGL::SetDepthMask(graphics::DEPTH_FUNCTIONS function)
     {
+        GLuint glFunc;
+
         switch (function)
         {
             case graphics::DEPTH_FUNCTIONS::ALWAYS:
-                glDepthFunc(GL_ALWAYS);
+                glFunc = GL_ALWAYS;
                 break;
             case graphics::DEPTH_FUNCTIONS::NEVER:
-                glDepthFunc(GL_NEVER);
+                glFunc = GL_NEVER;
                 break;
             case graphics::DEPTH_FUNCTIONS::EQUAL:
-                glDepthFunc(GL_EQUAL);
+                glFunc = GL_EQUAL;
                 break;
             case graphics::DEPTH_FUNCTIONS::NOT_EQUAL:
-                glDepthFunc(GL_NOTEQUAL);
+                glFunc = GL_NOTEQUAL;
                 break;
             case graphics::DEPTH_FUNCTIONS::LESS:
-                glDepthFunc(GL_LESS);
+                glFunc = GL_LESS;
                 break;
             case graphics::DEPTH_FUNCTIONS::LESS_EQUAL:
-                glDepthFunc(GL_LEQUAL);
+                glFunc = GL_LEQUAL;
                 break;
             case graphics::DEPTH_FUNCTIONS::GREATER:
-                glDepthFunc(GL_GREATER);
+                glFunc = GL_GREATER;
                 break;
             case graphics::DEPTH_FUNCTIONS::GREATER_EQUAL:
-                glDepthFunc(GL_GEQUAL);
+                glFunc = GL_GEQUAL;
                 break;
             default:
-                glDepthFunc(GL_ALWAYS);
+                glFunc = GL_ALWAYS;
                 break;
         }
+
+        glDepthFunc(glFunc);
     }
 
     void RHC_OpenGL::EnableVSync()

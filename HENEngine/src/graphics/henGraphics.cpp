@@ -54,17 +54,37 @@ namespace hen::graphics
 
     Texture::Texture()
     {
-        
+
     }
 
     Texture::~Texture()
     {
+        if (IsBackendValid())
+        {
+            m_BackendImpl.reset();
+        }
+
         delete [] Data;
     }
 
     Texture::Texture(Texture&& other) noexcept
     {
         *this = std::move(other);
+    }
+
+    bool Texture::IsBackendValid() const
+    {
+        return m_BackendImpl != nullptr;
+    }
+
+    uint32_t Texture::GetID() const
+    {
+        if (IsBackendValid())
+        {
+            return m_BackendImpl->GetID();
+        }
+
+        return 0;
     }
 
     void Texture::Load(const char* path)
@@ -154,55 +174,29 @@ namespace hen::graphics
     }
 
     void Texture::CreateRenderData()
-    {
-        glGenTextures(1, &ID);
-
-        GLenum internalFormat = 0;
-        GLenum dataFormat = 0;
-
-        if (Components == 1)
+    {     
+        if (!IsBackendValid())
         {
-            internalFormat = GL_R8;
-            dataFormat = GL_RED;
-        }
-        else if (Components == 3)
-        {
-            internalFormat = GL_SRGB;
-            dataFormat = GL_RGB;
-        }
-        else if (Components == 4)  
-        {
-            internalFormat = GL_SRGB_ALPHA;
-            dataFormat = GL_RGBA;
+            switch (renderer::CurrentBackend)
+            {
+                case renderer::BACKEND::OPENGL:
+                    m_BackendImpl = std::make_unique<Texture_OpenGL>();
+                    break;
+                default:
+                    m_BackendImpl = nullptr;
+                    return;
+            }
         }
 
         if (CubemapData.empty())
         {
-            glBindTexture(GL_TEXTURE_2D, ID);
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, Data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            m_BackendImpl->CreateRenderData(Width, Height, Components, Data);
         }
         else
         {
-            glBindTexture(GL_TEXTURE_CUBE_MAP, ID);
-
-            for (uint32_t i = 0; i < 6; i++)
-            {
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, Width, Height, 0, dataFormat, GL_UNSIGNED_BYTE, CubemapData[i]);
-            }
-        
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            m_BackendImpl->CreateRenderData(Width, Height, Components, CubemapData);
         }
-        
+
         State = RESOURCE_STATES::READY_TO_RENDER;
     }
 

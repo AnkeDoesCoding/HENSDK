@@ -222,7 +222,7 @@ void ComponentWindow::Initialise()
                     {
                         if (auto *texture = hen::renderer::GetTextureManager()->Get(material.DiffuseTextures[i]))
                         {
-                            ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->ID)), ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1));
+                            ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->GetID())), ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1));
 
                             ImGui::SameLine();
                             ImGui::BeginGroup();
@@ -266,7 +266,7 @@ void ComponentWindow::Initialise()
                     {
                         if (auto *texture = hen::renderer::GetTextureManager()->Get(material.SpecularTextures[i]))
                         {
-                            ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->ID)), ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1));
+                            ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->GetID())), ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1));
 
                             ImGui::SameLine();
                             ImGui::BeginGroup();

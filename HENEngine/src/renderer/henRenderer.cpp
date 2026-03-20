@@ -11,6 +11,8 @@
 
 #include <glad/include/glad.h>
 
+#define SKYBOX_SCALE 16.0f
+
 namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
@@ -129,7 +131,7 @@ namespace hen::renderer
     BACKEND CurrentBackend = BACKEND::OPENGL;
     level::CameraComponent Camera(90.0f, math::Vec3(0.0f, 10.0f, 0.0f), math::Vec3(0.0f));
 
-    cvar::CVar cvar_VSync("r_vsync", false, cvar::FLAGS_ARCHIVE, []()
+    cvar::CVar cvar_VSync("r_vsync", true, cvar::FLAGS_ARCHIVE, []()
     {
         cvar_VSync.GetBool() ? CurrentRHC->EnableVSync() : CurrentRHC->DisableVSync();
     });  
@@ -150,8 +152,6 @@ namespace hen::renderer
         Camera.FarPlane = cvar_FarPlane.GetFloat();
     });
 
-    cvar::CVar cvar_SkyboxScale("r_skybox_scale", 16.0f);
-
     void Initialise(SDL_Window* window)
     {
         Timer timer;
@@ -166,7 +166,6 @@ namespace hen::renderer
             case BACKEND::OPENGL:
                 CurrentRHC = std::make_unique<RHC_OpenGL>(window);
                 GetRHC() = CurrentRHC.get();    
-                CurrentRHC->Initialise();
                 break;
             case BACKEND::VULKAN: 
                 CurrentRHC = nullptr; // hehe, set that mf to nullptr as a fuck you
@@ -178,6 +177,8 @@ namespace hen::renderer
         }
         
         HEN_ASSERT(CurrentRHC != nullptr, "RHC is nullptr");
+
+        CurrentRHC->Initialise();
 
         CurrentRHC->EnableDepth();
 
@@ -213,18 +214,16 @@ namespace hen::renderer
             Camera.SetDirty(level->Up);
         }
 
-        PreRender();
+        PrepareResources();
 
         Render();
 
-        ui::GetIMGUIManager()->BeginFrame();
-
-        ui::GetIMGUIManager()->EndFrame();
+        ui::GetIMGUIManager()->Render();
 
         CurrentRHC->Present();
     }
 
-    void PreRender()
+    void PrepareResources()
     {
         if (level::Level* level = level::GetActiveLevel())
         {
@@ -392,8 +391,7 @@ namespace hen::renderer
 
                             if (diffuse->State == graphics::RESOURCE_STATES::READY_TO_RENDER)
                             {
-                                glActiveTexture(GL_TEXTURE0);
-                                glBindTexture(GL_TEXTURE_2D, diffuse->ID);
+                                glBindTextureUnit(0, diffuse->GetID());
                             }
                         }
                         else
@@ -410,8 +408,8 @@ namespace hen::renderer
 
                             if (specular->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                             {
-                                glActiveTexture(GL_TEXTURE1);
-                                glBindTexture(GL_TEXTURE_2D, specular->ID);
+                                glBindTextureUnit(1, specular->GetID());
+
                             }
                         }
                         else
@@ -421,13 +419,13 @@ namespace hen::renderer
                     }
 
                     math::Matrix4 model = math::Translate(math::Matrix4(1.0f), math::Vec3(0.0f));  
-                    math::Matrix4 view = math::LookAt(Camera.Position / cvar_SkyboxScale.GetFloat(), (Camera.Position + Camera.Front) / cvar_SkyboxScale.GetFloat(), level->Up);
+                    math::Matrix4 view = math::LookAt(Camera.Position / SKYBOX_SCALE, (Camera.Position + Camera.Front) / SKYBOX_SCALE, level->Up);
 
                     shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
                     shader->SetMat4("uView", view);
                     shader->SetMat4("uModel", model);
-                    shader->SetVec3("uViewPos", Camera.Position / cvar_SkyboxScale.GetFloat());
-                    shader->SetVal("uSkyboxScale", cvar_SkyboxScale.GetFloat());
+                    shader->SetVec3("uViewPos", Camera.Position / SKYBOX_SCALE);
+                    shader->SetVal("uSkyboxScale", SKYBOX_SCALE);
 
                     shader->SetVal("uMaterial.Diffuse", 0);
                     shader->SetVal("uMaterial.Specular", 1);
@@ -470,8 +468,7 @@ namespace hen::renderer
                     initalised = true;
                 }
 
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap->ID);
+                glBindTextureUnit(0, skyboxCubemap->GetID());
 
                 math::Matrix4 view = glm::mat3(Camera.GetViewMatrix());
 
@@ -518,8 +515,7 @@ namespace hen::renderer
 
                             if (diffuse->State == graphics::RESOURCE_STATES::READY_TO_RENDER)
                             {
-                                glActiveTexture(GL_TEXTURE0);
-                                glBindTexture(GL_TEXTURE_2D, diffuse->ID);
+                                glBindTextureUnit(0, diffuse->GetID());
                             }
                         }
                         else
@@ -536,8 +532,7 @@ namespace hen::renderer
 
                             if (specular->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
                             {
-                                glActiveTexture(GL_TEXTURE1);
-                                glBindTexture(GL_TEXTURE_2D, specular->ID);
+                                glBindTextureUnit(1, specular->GetID());
                             }
                         }
                         else
