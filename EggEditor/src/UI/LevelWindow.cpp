@@ -6,7 +6,7 @@ void LevelWindow::Initialise(ComponentWindow* compWindow)
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([&]() 
     {
-        ImGui::Begin("Level");
+        ImGui::Begin("Entities");
 
         if (auto level = hen::level::GetActiveLevel())
         {
@@ -30,6 +30,15 @@ void LevelWindow::Initialise(ComponentWindow* compWindow)
             }
         }
 
+        ImGui::End();
+
+        ImGui::Begin("Level");
+
+        if (auto level = hen::level::GetActiveLevel())
+        {
+            ImGui::DragFloat3("Gravity", &level->Gravity.x, 0.01f);
+        }
+        
         ImGui::End();
     });
 }

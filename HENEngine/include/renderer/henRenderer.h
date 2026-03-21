@@ -9,7 +9,7 @@
 
 namespace hen::renderer
 {
-    enum class BACKEND
+    enum class BACKENDS
     {
         OPENGL,
         VULKAN
@@ -29,7 +29,7 @@ namespace hen::renderer
 	}
     
     extern bool Initialised;
-    extern BACKEND CurrentBackend;
+    extern BACKENDS CurrentBackend;
     extern level::CameraComponent Camera;
     
 }

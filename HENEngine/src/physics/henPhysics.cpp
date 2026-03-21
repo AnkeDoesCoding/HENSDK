@@ -392,7 +392,7 @@ namespace hen::physics
 		{
 			if (level.PhysicsLevel == nullptr)
 			{
-				auto physLevel = std::make_shared<PhysicsLevel>();
+				std::shared_ptr<PhysicsLevel> physLevel = std::make_shared<PhysicsLevel>();
 
 				physLevel->System.Init(MaxBodies, NumberBodyMutexes, MaxBodyPairs, MaxContactConstraints, physLevel->BroadPhaseLayerInterface, physLevel->ObjectBroadPhaseLayerFilter, physLevel->ObjectObjectLayerFilter);
 				physLevel->System.OptimizeBroadPhase();
@@ -431,8 +431,8 @@ namespace hen::physics
 				return;
 			}
 
-			auto& transformComp = entity.GetComponent<level::TransformComponent>();
-			auto& rigidBodyComp = entity.GetComponent<level::RigidBodyComponent>();
+			level::TransformComponent& transformComp = entity.GetComponent<level::TransformComponent>();
+			level::RigidBodyComponent& rigidBodyComp = entity.GetComponent<level::RigidBodyComponent>();
 
 			switch (rigidBodyComp.Shape)
 			{
@@ -477,7 +477,7 @@ namespace hen::physics
 						break;
 					}
 
-					auto& meshComponent = entity.GetComponent<level::MeshComponent>();
+					level::MeshComponent& meshComponent = entity.GetComponent<level::MeshComponent>();
 
 					if (meshComponent.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
 					{
@@ -487,7 +487,7 @@ namespace hen::physics
 
 					Array<Vec3> points;
 					points.reserve(meshComponent.Vertices.size());
-					for (auto& pos : meshComponent.Vertices)
+					for (math::Vec3& pos : meshComponent.Vertices)
 					{
 						points.push_back(Vec3(pos.x * transformComp.LocalScale.x, pos.y * transformComp.LocalScale.y, pos.z * transformComp.LocalScale.z));
 					}
@@ -511,7 +511,7 @@ namespace hen::physics
 						break;
 					}
 
-					auto& meshComponent = entity.GetComponent<level::MeshComponent>();
+					level::MeshComponent& meshComponent = entity.GetComponent<level::MeshComponent>();
 
 					if (meshComponent.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
 					{
@@ -523,7 +523,7 @@ namespace hen::physics
 
 					for (uint32_t submeshIndex = 0; submeshIndex < meshComponent.SubMeshes.size(); submeshIndex++)
     				{
-    				    const auto& submesh = meshComponent.SubMeshes[submeshIndex];
+    				    const level::MeshComponent::SubMesh& submesh = meshComponent.SubMeshes[submeshIndex];
 					
     				    HEN_ASSERT(submesh.IndexStart + submesh.IndexCount <= meshComponent.Indices.size(), "Submesh indices out of bounds");
 					
@@ -534,9 +534,9 @@ namespace hen::physics
     				        Triangle tri;
     				        tri.mMaterialIndex = 0; // hen doesnt support phys materials ffs
 
-    				        const auto& v0 = meshComponent.Vertices[indices[index + 0]] * transformComp.LocalScale;
-    				        const auto& v1 = meshComponent.Vertices[indices[index + 1]] * transformComp.LocalScale;
-    				        const auto& v2 = meshComponent.Vertices[indices[index + 2]] * transformComp.LocalScale;
+    				        const math::Vec3& v0 = meshComponent.Vertices[indices[index + 0]] * transformComp.LocalScale;
+    				        const math::Vec3& v1 = meshComponent.Vertices[indices[index + 1]] * transformComp.LocalScale;
+    				        const math::Vec3& v2 = meshComponent.Vertices[indices[index + 2]] * transformComp.LocalScale;
 						
     				        tri.mV[0] = Float3(v0.x, v0.y, v0.z);
     				        tri.mV[1] = Float3(v1.x, v1.y, v1.z);
@@ -663,11 +663,11 @@ namespace hen::physics
 
 		physLevel.System.SetGravity(jolt::Cast(currentLevel.Gravity));
 
-		auto rbView = currentLevel.GetView<level::RigidBodyComponent>();
+		level::View rbView = currentLevel.GetView<level::RigidBodyComponent>();
 
 		jobsystem::Dispatch(rbView.Size(), 64, [&rbView, &physLevel, deltaTime](jobsystem::DispatchArgs args)
 		{
-			auto entity = rbView[args.JobIndex];
+			level::Entity entity = rbView[args.JobIndex];
 			
 			if (!entity.HasComponent<level::TransformComponent>())
 			{
@@ -675,8 +675,8 @@ namespace hen::physics
 				return;
 			}
 
-			auto& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
-			auto& transformComponent = entity.GetComponent<level::TransformComponent>();
+			level::RigidBodyComponent& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
+			level::TransformComponent& transformComponent = entity.GetComponent<level::TransformComponent>();
 
 			if (rbComponent.PhysicsObject == nullptr)
 			{
@@ -757,8 +757,8 @@ namespace hen::physics
     	        {
     	            jobsystem::Dispatch(rbView.Size(), 64, [&rbView, &physLevel](jobsystem::DispatchArgs args)
     	            {
-    	                auto entity = rbView[args.JobIndex];
-    	                auto& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
+    	                level::Entity entity = rbView[args.JobIndex];
+    	                level::RigidBodyComponent& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
     	                jolt::RigidBody& physObj = jolt::GetRigidBody(rbComponent);
 
     	                if (physObj.BodyHandle.IsInvalid())
@@ -787,7 +787,7 @@ namespace hen::physics
 
 		jobsystem::Dispatch(rbView.Size(), 64, [&rbView, &physLevel](jobsystem::DispatchArgs args) 
 		{
-			auto entity = rbView[args.JobIndex];
+			level::Entity entity = rbView[args.JobIndex];
 
 			if (!entity.HasComponent<level::TransformComponent>())
 			{
@@ -795,8 +795,8 @@ namespace hen::physics
 				return;
 			}
 
-			auto& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
-			auto& transformComponent = entity.GetComponent<level::TransformComponent>();
+			level::RigidBodyComponent& rbComponent = entity.GetComponent<level::RigidBodyComponent>();
+			level::TransformComponent& transformComponent = entity.GetComponent<level::TransformComponent>();
 
 			jolt::RigidBody& physObj = jolt::GetRigidBody(rbComponent);
 

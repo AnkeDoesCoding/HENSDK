@@ -128,7 +128,7 @@ namespace hen::renderer
     };
 
     bool Initialised = false;
-    BACKEND CurrentBackend = BACKEND::OPENGL;
+    BACKENDS CurrentBackend = BACKENDS::OPENGL;
     level::CameraComponent Camera(90.0f, math::Vec3(0.0f, 10.0f, 0.0f), math::Vec3(0.0f));
 
     cvar::CVar cvar_VSync("r_vsync", true, cvar::FLAGS_ARCHIVE, []()
@@ -158,21 +158,21 @@ namespace hen::renderer
 
         if (arguments::HasArgument("vulkan"))
         {
-            CurrentBackend = BACKEND::VULKAN;
+            CurrentBackend = BACKENDS::VULKAN;
         }
 
         switch (CurrentBackend)
         {
-            case BACKEND::OPENGL:
+            case BACKENDS::OPENGL:
                 CurrentRHC = std::make_unique<RHC_OpenGL>(window);
                 GetRHC() = CurrentRHC.get();    
                 break;
-            case BACKEND::VULKAN: 
+            case BACKENDS::VULKAN: 
                 CurrentRHC = nullptr; // hehe, set that mf to nullptr as a fuck you
-                HEN_ERROR("[hen::renderer] BACKEND::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
+                HEN_ERROR("[hen::renderer] BACKENDS::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
                 CurrentRHC = nullptr;
-                HEN_ERROR("[hen::renderer] BACKEND::????? how the fuck did we get here?");
+                HEN_ERROR("[hen::renderer] BACKENDS::????? how the fuck did we get here?");
                 break;
         }
         
@@ -209,10 +209,7 @@ namespace hen::renderer
     {
         CurrentRHC->Clear();
 
-        if (level::Level* level = level::GetActiveLevel())
-        {
-            Camera.SetDirty(level->Up);
-        }
+        Camera.SetDirty();
 
         PrepareResources();
 
@@ -326,7 +323,7 @@ namespace hen::renderer
                     meshComp.CreateRenderData();
                 }
 
-                for (auto& submesh : meshComp.SubMeshes)
+                for (level::MeshComponent::SubMesh& submesh : meshComp.SubMeshes)
                 {
                     if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
                     {
@@ -381,7 +378,7 @@ namespace hen::renderer
 
                 level->Skybox.Mesh.VertexArray.Bind();
 
-                for (auto& submesh : level->Skybox.Mesh.SubMeshes)
+                for (level::MeshComponent::SubMesh& submesh : level->Skybox.Mesh.SubMeshes)
                 {
                     if (submesh.DiffuseIndex < level->Skybox.Material.DiffuseTextures.size())
                     {
@@ -419,7 +416,7 @@ namespace hen::renderer
                     }
 
                     math::Matrix4 model = math::Translate(math::Matrix4(1.0f), math::Vec3(0.0f));  
-                    math::Matrix4 view = math::LookAt(Camera.Position / SKYBOX_SCALE, (Camera.Position + Camera.Front) / SKYBOX_SCALE, level->Up);
+                    math::Matrix4 view = math::LookAt(Camera.Position / SKYBOX_SCALE, (Camera.Position + Camera.Front) / SKYBOX_SCALE, math::Vec3(0.0f, 1.0f, 0.0f));
 
                     shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
                     shader->SetMat4("uView", view);
@@ -505,7 +502,7 @@ namespace hen::renderer
 
                 meshComp.VertexArray.Bind();
 
-                for (auto& submesh : meshComp.SubMeshes)
+                for (level::MeshComponent::SubMesh& submesh : meshComp.SubMeshes)
                 {
                     if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
                     {

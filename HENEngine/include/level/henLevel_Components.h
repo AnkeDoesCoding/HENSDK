@@ -10,6 +10,8 @@
 
 namespace hen::level
 {
+    class Entity;
+
     enum class LIGHT_TYPES
     {
         POINT,
@@ -44,24 +46,23 @@ namespace hen::level
         math::Quat LocalRotation = math::Quat(1.0f, 0.0f, 0.0f, 0.0f);
         math::Vec3 LocalScale = math::Vec3(1.0f);
 
-        mutable math::Matrix4 World = math::Matrix4(1.0f);
+        mutable math::Matrix4 LocalMatrix = math::Matrix4(1.0f);
         mutable bool Dirty = true;
 
         math::Matrix4 GetLocalMatrix() const
         {
-            return math::Translate(math::Matrix4(1.0f), LocalPosition) * math::ToMatrix4(LocalRotation) * math::Scale(math::Matrix4(1.0f), LocalScale);
-        }
-
-        const math::Matrix4& GetWorldMatrix() const
-        {
             if (Dirty)
             {
-                math::Matrix4 local = GetLocalMatrix();
-                World = local;
+                LocalMatrix = math::Translate(math::Matrix4(1.0f), LocalPosition) * math::ToMatrix4(LocalRotation) * math::Scale(math::Matrix4(1.0f), LocalScale);
                 Dirty = false;
             }
 
-            return World;
+            return LocalMatrix;
+        }
+
+        const math::Matrix4 GetWorldMatrix() const // TODO: IMPLEMENT
+        {
+            return GetLocalMatrix();
         }
 
         math::Vec3 GetForwardVector() const
@@ -77,6 +78,21 @@ namespace hen::level
         math::Vec3 GetUpVector() const
         {
             return math::Normalise(LocalRotation * math::Vec3(0.0f, 1.0f, 0.0f));
+        }
+
+        math::Vec3 GetWorldPosition() const // TODO: IMPLEMENT
+        {
+            return math::Vec3(0.0f);
+        }
+
+        math::Vec3 GetWorldRotation() const // TODO: IMPLEMENT
+        {
+            return math::Vec3(0.0f);
+        }
+
+        math::Vec3 GetWorldScale() const // TODO: IMPLEMENT
+        {
+            return math::Vec3(0.0f);
         }
 
         void SetLocalPosition(const math::Vec3& pos)
@@ -112,7 +128,6 @@ namespace hen::level
         {
             Dirty = true;
         }
-
     };
 
     struct CameraComponent
@@ -145,7 +160,7 @@ namespace hen::level
             return math::Perspective(math::Radians(FOV), x / y, NearPlane, FarPlane);
         }
 
-        void SetDirty(const math::Vec3& levelUp)
+        void SetDirty()
         {
             math::Vec3 front;
 
@@ -156,7 +171,7 @@ namespace hen::level
             front.z = sin(math::Radians(Rotation.y)) * cos(math::Radians(Rotation.x));
             Front = math::Normalise(front);
 
-            Right = math::Normalise(math::Cross(Front, levelUp));
+            Right = math::Normalise(math::Cross(Front, math::Vec3(0.0f, 1.0f, 0.0f)));
             Up = math::Normalise(math::Cross(Right, Front));
         }
 
@@ -323,7 +338,7 @@ namespace hen::level
         float Mass = 1.0f;
         float Friction = 0.5f;
         float Restitution = 0.05f;
-        float LinearDamping = 0.05f;
+        float LinearDamping = 0.03f;
         float AngularDamping = 0.05f;
         float Bouyancy = 1.5f;
 

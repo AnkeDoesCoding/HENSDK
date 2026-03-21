@@ -102,9 +102,9 @@ namespace hen::cvar
 
         config::Parse(CVarConfig, "cvars.ini");
 
-        for (const auto& section : CVarConfig.Sections)
+        for (const config::Section& section : CVarConfig.Sections)
         {
-            for (const auto& key : section.Keys)
+            for (const config::Key& key : section.Keys)
             {
                 std::string cvarName = section.Name + "_" + key.Name;
 

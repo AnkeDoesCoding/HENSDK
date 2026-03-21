@@ -84,7 +84,7 @@ namespace hen::jobsystem
         FinishedLabel.store(0);
         CurrentLabel.store(0);
 
-        auto numberOfCores = std::thread::hardware_concurrency();
+        uint32_t numberOfCores = std::thread::hardware_concurrency();
         NumberOfThreads = std::max(1u, numberOfCores);
 
         for (uint32_t i = 0; i < NumberOfThreads; ++i)

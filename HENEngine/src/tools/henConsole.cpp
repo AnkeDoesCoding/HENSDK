@@ -23,7 +23,7 @@ namespace hen::console
     {
         std::string Message;
         std::string Time;
-        LOGLEVEL Level;
+        LOG_LEVELS Level;
     };
 
     static std::ofstream LogFile{};
@@ -100,7 +100,7 @@ namespace hen::console
 
         std::string cvarName = tokens[0];
 
-        if (auto* cvar = cvar::GetSystem()->GetCVar(cvarName))
+        if (cvar::CVar* cvar = cvar::GetSystem()->GetCVar(cvarName))
         {
             if (tokens.size() == 1)
             {
@@ -234,19 +234,19 @@ namespace hen::console
             float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         
             ImGui::BeginChild("Scrolling Region", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
-            for(auto &entry : Entries)
+            for(LogEntry& entry : Entries)
             {
                 ImVec4 color;
                 switch (entry.Level)
                 {
-                case LOGLEVEL::INFO:
+                case LOG_LEVELS::INFO:
                     color = ImVec4(1,1,1,1);
                     break;
-                case LOGLEVEL::WARNING:
+                case LOG_LEVELS::WARNING:
                     color = ImVec4(1,1,0,1);
                     break;
-                case LOGLEVEL::ERROR:
-                case LOGLEVEL::ASSERT:
+                case LOG_LEVELS::ERROR:
+                case LOG_LEVELS::ASSERT:
                     color = ImVec4(1,0,0,1);                    
                     break;
                 default:
@@ -320,7 +320,7 @@ namespace hen::console
         
             ImGui::PopItemWidth();
         
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
+            ImDrawList* drawList = ImGui::GetForegroundDrawList();
 
             std::string currentInput(InputBuffer);
             if (!currentInput.empty())
@@ -331,7 +331,7 @@ namespace hen::console
                 AutocompleteMatches.clear();
                 AutocompleteDisplay.clear();
             
-                for (auto& name : allCVarNames)
+                for (std::string& name : allCVarNames)
                 {
                     if (name.find(currentInput) == 0 && system.GetCVar(name))
                     {
@@ -365,7 +365,7 @@ namespace hen::console
                     float overlayHeight = AutocompleteDisplay.size() * lineHeight;
                     float maxWidth = 0.0f;
                 
-                    for (auto& m : AutocompleteDisplay)
+                    for (std::string& m : AutocompleteDisplay)
                     {
                         float w = ImGui::CalcTextSize(m.c_str()).x;
                         if (w > maxWidth) 
@@ -424,26 +424,26 @@ namespace hen::console
         Locked = lock;
     }
 
-    void Log(const std::string& message, LOGLEVEL level) 
+    void Log(const std::string& message, LOG_LEVELS level) 
     {
         std::string levelText;
         std::string textColour;
     
         switch (level)
         {
-        case LOGLEVEL::INFO:
+        case LOG_LEVELS::INFO:
             levelText = "INFO: ";
             textColour = "\x1b[37m";
             break;
-        case LOGLEVEL::WARNING:
+        case LOG_LEVELS::WARNING:
             levelText = "WARNING: ";
             textColour = "\x1b[33m";
             break;
-        case LOGLEVEL::ERROR:
+        case LOG_LEVELS::ERROR:
             levelText = "ERROR: ";
             textColour = "\x1b[31m";
             break;
-        case LOGLEVEL::ASSERT:
+        case LOG_LEVELS::ASSERT:
             levelText = "ASSERTION: ";
             textColour = "\x1b[31m";
             break;

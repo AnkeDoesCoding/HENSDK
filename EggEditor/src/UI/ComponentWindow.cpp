@@ -140,8 +140,16 @@ void ComponentWindow::Initialise()
                 ImGui::InputFloat("Mass", &rigidBody.Mass);
                 ImGui::InputFloat("Friction", &rigidBody.Friction);
                 ImGui::InputFloat("Restituiton", &rigidBody.Restitution);
-                ImGui::InputFloat("LinearDamping", &rigidBody.LinearDamping);
-                ImGui::InputFloat("AngularDamping", &rigidBody.AngularDamping);
+
+                if (ImGui::InputFloat("LinearDamping", &rigidBody.LinearDamping))
+                {
+                    rigidBody.SetDirty();
+                }
+
+                if (ImGui::InputFloat("AngularDamping", &rigidBody.AngularDamping))
+                {
+                    rigidBody.SetDirty();
+                }
 
                 ImGui::Spacing();
                 ImGui::Spacing();
@@ -220,7 +228,7 @@ void ComponentWindow::Initialise()
                 {
                     for (size_t i = 0; i < material.DiffuseTextures.size(); ++i)
                     {
-                        if (auto *texture = hen::renderer::GetTextureManager()->Get(material.DiffuseTextures[i]))
+                        if (auto* texture = hen::renderer::GetTextureManager()->Get(material.DiffuseTextures[i]))
                         {
                             ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->GetID())), ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1));
 

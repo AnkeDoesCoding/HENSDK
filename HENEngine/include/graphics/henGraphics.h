@@ -25,7 +25,7 @@ namespace hen::graphics
         BOOL
     };
 
-    enum class SHADER_TYPES
+    enum class SHADER_STAGES
     {
         PROGRAM,
         VERTEX,

@@ -179,7 +179,7 @@ namespace hen::graphics
         {
             switch (renderer::CurrentBackend)
             {
-                case renderer::BACKEND::OPENGL:
+                case renderer::BACKENDS::OPENGL:
                     m_BackendImpl = std::make_unique<Texture_OpenGL>();
                     break;
                 default:
@@ -287,7 +287,7 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 return std::make_unique<VertexBuffer_OpenGL>(size, vertices);
                 break;
             default:
@@ -300,7 +300,7 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 return std::make_unique<IndexBuffer_OpenGL>(size, count);
                 break;
             default:
@@ -374,7 +374,7 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
                 break;
             default:
@@ -392,7 +392,7 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 m_BackendImpl = std::make_unique<UniformBuffer_OpenGL>(size, binding);
                 break;
             default:
@@ -549,7 +549,7 @@ namespace hen::graphics
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
                 HEN_LOG("[hen::Shader] Successfully loaded shader from paths: " + std::string(vsPath) + " / " + std::string(fsPath));
                 break;

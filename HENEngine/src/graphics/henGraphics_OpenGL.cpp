@@ -215,11 +215,11 @@ namespace hen::graphics
     {
         HEN_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex buffer has no layout");
 
-        const auto& layout = vertexBuffer->GetLayout();
+        const graphics::BufferLayout& layout = vertexBuffer->GetLayout();
         
         glVertexArrayVertexBuffer(m_ID, 0, vertexBuffer->GetID(), 0, layout.GetStride());
 
-        for (const auto& element : layout)
+        for (const graphics::BufferElement& element : layout)
         {
             glEnableVertexArrayAttrib(m_ID, m_VertexBufferIndex);
             glVertexArrayAttribFormat(m_ID, m_VertexBufferIndex, element.GetComponentCount(), ShaderPrimitiveToOpenGLType(element.Type), element.Normalised ? GL_TRUE : GL_FALSE, static_cast<GLuint>(element.Offset));
@@ -338,18 +338,18 @@ namespace hen::graphics
         vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, 1, &vsCode, nullptr);
         glCompileShader(vertexShader);
-        CheckForCompileErrors(vertexShader, SHADER_TYPES::VERTEX);
+        CheckForCompileErrors(vertexShader, SHADER_STAGES::VERTEX);
 
         fragShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragShader, 1, &fsCode, nullptr);
         glCompileShader(fragShader);
-        CheckForCompileErrors(fragShader, SHADER_TYPES::FRAGMENT);
+        CheckForCompileErrors(fragShader, SHADER_STAGES::FRAGMENT);
 
         m_ID = glCreateProgram();
         glAttachShader(m_ID, vertexShader);
         glAttachShader(m_ID, fragShader);
         glLinkProgram(m_ID);
-        CheckForCompileErrors(m_ID, SHADER_TYPES::PROGRAM);
+        CheckForCompileErrors(m_ID, SHADER_STAGES::PROGRAM);
 
         glDeleteShader(vertexShader);
         glDeleteShader(fragShader);
@@ -415,14 +415,14 @@ namespace hen::graphics
         glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
-    void Shader_OpenGL::CheckForCompileErrors(uint32_t shader, SHADER_TYPES type)
+    void Shader_OpenGL::CheckForCompileErrors(uint32_t shader, SHADER_STAGES type)
     {
         int success;
         char infoLog[1024];
         
         switch (type)
         {
-            case SHADER_TYPES::FRAGMENT:
+            case SHADER_STAGES::FRAGMENT:
                 glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
                 if (!success)
                 {
@@ -432,7 +432,7 @@ namespace hen::graphics
                     HEN_ERROR(msg);
                 }
                 break;
-            case SHADER_TYPES::VERTEX:
+            case SHADER_STAGES::VERTEX:
                 glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
                 if (!success)
                 {
@@ -442,7 +442,7 @@ namespace hen::graphics
                     HEN_ERROR(msg);
                 }
                 break;
-            case SHADER_TYPES::PROGRAM:
+            case SHADER_STAGES::PROGRAM:
                 glGetProgramiv(shader, GL_LINK_STATUS, &success);
                 if (!success)
                 {

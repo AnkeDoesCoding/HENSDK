@@ -21,9 +21,13 @@ namespace hen::ui
         ImGui::StyleColorsDark();
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+        ImGuiStyle& style = ImGui::GetStyle();
+        style.Colors[ImGuiCol_FrameBg] = ImVec4(style.Colors[ImGuiCol_FrameBg].x, style.Colors[ImGuiCol_FrameBg].y, style.Colors[ImGuiCol_FrameBg].z, 1.0f);
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(style.Colors[ImGuiCol_WindowBg].x, style.Colors[ImGuiCol_WindowBg].y, style.Colors[ImGuiCol_WindowBg].z, 1.0f);
+
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 ImGui_ImplSDL3_InitForOpenGL(window, SDL_GL_GetCurrentContext());
                 ImGui_ImplOpenGL3_Init("#version 460");
                 break;
@@ -38,10 +42,10 @@ namespace hen::ui
     {
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 ImGui_ImplOpenGL3_Shutdown();
                 break;
-            case renderer::BACKEND::VULKAN:
+            case renderer::BACKENDS::VULKAN:
                 break;
             default:
                 break;
@@ -62,7 +66,7 @@ namespace hen::ui
         ImGui_ImplSDL3_NewFrame();
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 ImGui_ImplOpenGL3_NewFrame();
                 break;
             default:
@@ -90,7 +94,7 @@ namespace hen::ui
         ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
         ImGui::End();
 
-        for (auto& callback : m_Callbacks)
+        for (ui::UIDrawCallback& callback : m_Callbacks)
         {
             callback();
         }
@@ -99,7 +103,7 @@ namespace hen::ui
 
         switch (renderer::CurrentBackend)
         {
-            case renderer::BACKEND::OPENGL:
+            case renderer::BACKENDS::OPENGL:
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                 break;
             default:

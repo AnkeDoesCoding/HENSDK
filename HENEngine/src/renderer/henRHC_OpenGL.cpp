@@ -15,7 +15,7 @@ namespace hen
         std::string sourceStr;
         std::string typeStr;
 
-        console::LOGLEVEL level;
+        console::LOG_LEVELS level;
 
         switch (source)
         {
@@ -43,31 +43,31 @@ namespace hen
         {
         case GL_DEBUG_TYPE_ERROR:
             typeStr = "an error";
-            level = console::LOGLEVEL::ERROR;
+            level = console::LOG_LEVELS::ERROR;
             break;
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
             typeStr = "deprecated behaviour";
-            level = console::LOGLEVEL::WARNING;
+            level = console::LOG_LEVELS::WARNING;
             break;
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
             typeStr = "undefined behaviour";
-            level = console::LOGLEVEL::ERROR;
+            level = console::LOG_LEVELS::ERROR;
             break;
         case GL_DEBUG_TYPE_PORTABILITY:
             typeStr = "a portability issue";
-            level = console::LOGLEVEL::WARNING;
+            level = console::LOG_LEVELS::WARNING;
             break;
         case GL_DEBUG_TYPE_PERFORMANCE:
             typeStr = "a performance issue";
-            level = console::LOGLEVEL::WARNING;
+            level = console::LOG_LEVELS::WARNING;
             break;
         case GL_DEBUG_TYPE_MARKER:
             typeStr = "a marker";
-            level = console::LOGLEVEL::WARNING;
+            level = console::LOG_LEVELS::WARNING;
             break;
         case GL_DEBUG_TYPE_OTHER:
             typeStr = "something";
-            level = console::LOGLEVEL::ERROR;
+            level = console::LOG_LEVELS::ERROR;
             break;
         }
 

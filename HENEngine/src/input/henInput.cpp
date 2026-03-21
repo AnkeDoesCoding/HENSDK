@@ -328,7 +328,7 @@ namespace hen::input
 			}
 		}
 
-        for(auto& event : Events)
+        for(SDL_Event& event : Events)
         {
             HandleSDLEvent(event);
         }

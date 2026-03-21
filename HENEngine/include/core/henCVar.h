@@ -13,7 +13,7 @@ namespace hen::cvar
     enum FLAGS
     {
         FLAGS_NONE = 0,
-        FLAGS_ARCHIVE = 1 << 0, // TODO: IMPLEMENT
+        FLAGS_ARCHIVE = 1 << 0,
         FLAGS_PROTECTED = 1 << 1
     };
 

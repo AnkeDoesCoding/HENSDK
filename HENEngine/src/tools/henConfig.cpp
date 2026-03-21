@@ -20,7 +20,7 @@ namespace hen::config
 
     static Section& GetSection(File& file, const std::string& name)
     {
-        for (auto& section : file.Sections)
+        for (Section& section : file.Sections)
         {
             if (section.Name == name)
             {
@@ -42,7 +42,7 @@ namespace hen::config
 
         Section& section = GetSection(*this, sectionName);
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -63,7 +63,7 @@ namespace hen::config
 
         Section& section = GetSection(*this, sectionName);
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -84,7 +84,7 @@ namespace hen::config
 
         Section& section = GetSection(*this, sectionName);
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -105,7 +105,7 @@ namespace hen::config
 
         Section& section = GetSection(*this, sectionName);
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -126,7 +126,7 @@ namespace hen::config
 
         Section& section = GetSection(*this, sectionName);
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -150,7 +150,7 @@ namespace hen::config
             section.Keys.push_back(newKey);
         }
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -172,7 +172,7 @@ namespace hen::config
             section.Keys.push_back(newKey);
         }
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -194,7 +194,7 @@ namespace hen::config
             section.Keys.push_back(newKey);
         }
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -216,7 +216,7 @@ namespace hen::config
             section.Keys.push_back(newKey);
         }
 
-        for (auto& key : section.Keys)
+        for (Key& key : section.Keys)
         {
             if (key.Name == keyName)
             {
@@ -256,7 +256,7 @@ namespace hen::config
                 continue;
             }
 
-            auto eqPos = line.find('=');
+            size_t eqPos = line.find('=');
             if (eqPos == std::string::npos || !currentSection)
             {
                 continue;
@@ -280,11 +280,11 @@ namespace hen::config
             return;
         }
 
-        for (const auto& section : configFile.Sections)
+        for (const Section& section : configFile.Sections)
         {
             file << "[" << section.Name << "]\n";
 
-            for (const auto& key : section.Keys)
+            for (const Key& key : section.Keys)
             {
                 file << key.Name << " = " << key.Value << "\n";
             }
