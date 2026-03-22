@@ -105,15 +105,20 @@ namespace hen::level
 
     Ray::Ray(const math::Vec2& mousePos, const float min, const float max)
     {
-        int windowWidth, windowHeight;
-        SDL_GetWindowSize(renderer::GetRHC()->GetWindow(), &windowWidth, &windowHeight);
+        int windowHeight;
+        SDL_GetWindowSize(renderer::GetRHC()->GetWindow(), NULL, &windowHeight);
 
-        float ndcX = (2.0f * mousePos.x) / windowWidth - 1.0f;
-        float ndcY = 1.0f - (2.0f * mousePos.y) / windowHeight;
+        graphics::Viewport viewport = renderer::GetRHC()->GetViewport();
+
+        float localX = mousePos.x - viewport.Position.x;
+        float localY = mousePos.y - (windowHeight - viewport.Position.y - viewport.Size.y);;
+
+        float ndcX = (2.0f * localX) / viewport.Size.x - 1.0f;
+        float ndcY = 1.0f - (2.0f * localY) / viewport.Size.y;
 
         math::Vec4 rayClip(ndcX, ndcY, -1.0f, 1.0f);
 
-        math::Vec4 rayEye = math::Inverse(renderer::Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight))) * rayClip;
+        math::Vec4 rayEye = math::Inverse(renderer::Camera.GetProjection(static_cast<float>(viewport.Size.x), static_cast<float>(viewport.Size.y))) * rayClip;
         rayEye = math::Vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
 
         math::Vec4 rayWorld = math::Inverse(renderer::Camera.GetViewMatrix()) * rayEye;

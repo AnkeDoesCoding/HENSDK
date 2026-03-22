@@ -202,12 +202,4 @@ namespace hen
         input::ProcessEvent(event);
         CurrentImGuiManager->ProcessEvent(event);
     }
-
-    void Application::ResizeWindow()
-    {
-        if (renderer::GetRHC() != nullptr)
-        {
-            renderer::GetRHC()->ResizeWindow();
-        }
-    }
 } 

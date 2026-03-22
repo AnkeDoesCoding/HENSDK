@@ -18,8 +18,6 @@ namespace hen
 
         void ProcessEvent(const SDL_Event& event);
         
-        void ResizeWindow();
-
     public:
         bool Initialised = false;
     };

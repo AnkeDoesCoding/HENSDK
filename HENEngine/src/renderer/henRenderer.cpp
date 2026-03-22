@@ -368,8 +368,7 @@ namespace hen::renderer
     {
         if (level::Level* level = level::GetActiveLevel())
         {   
-            int windowWidth, windowHeight;
-            SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
+            graphics::Viewport viewport = CurrentRHC->GetViewport();
 
             if (level->Skybox.Mesh.State == graphics::RESOURCE_STATES::READY_TO_RENDER)
             {
@@ -418,7 +417,7 @@ namespace hen::renderer
                     math::Matrix4 model = math::Translate(math::Matrix4(1.0f), math::Vec3(0.0f));  
                     math::Matrix4 view = math::LookAt(Camera.Position / SKYBOX_SCALE, (Camera.Position + Camera.Front) / SKYBOX_SCALE, math::Vec3(0.0f, 1.0f, 0.0f));
 
-                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(viewport.Size.x), static_cast<float>(viewport.Size.y)));
                     shader->SetMat4("uView", view);
                     shader->SetMat4("uModel", model);
                     shader->SetVec3("uViewPos", Camera.Position / SKYBOX_SCALE);
@@ -470,7 +469,7 @@ namespace hen::renderer
                 math::Matrix4 view = glm::mat3(Camera.GetViewMatrix());
 
                 shader->SetMat4("uView", view);
-                shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+                shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(viewport.Size.x), static_cast<float>(viewport.Size.y)));
                 shader->SetVal("uSkyboxCubemap", 0);
 
                 skyboxVA.Bind();
@@ -538,7 +537,7 @@ namespace hen::renderer
                         }
                     }
 
-                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+                    shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(viewport.Size.x), static_cast<float>(viewport.Size.y)));
                     shader->SetMat4("uView", Camera.GetViewMatrix());
                     shader->SetMat4("uModel", transformComp.GetWorldMatrix());
                     shader->SetVec3("uViewPos", Camera.Position);
@@ -593,11 +592,10 @@ namespace hen::renderer
 
         shader->Bind();
 
-        int windowWidth, windowHeight;
-        SDL_GetWindowSize(CurrentRHC->GetWindow(), &windowWidth, &windowHeight);
+        graphics::Viewport viewport = CurrentRHC->GetViewport();
 
         shader->SetVec3("uColour", colour);
-        shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
+        shader->SetMat4("uProjection", Camera.GetProjection(static_cast<float>(viewport.Size.x), static_cast<float>(viewport.Size.y)));
         shader->SetMat4("uView", Camera.GetViewMatrix());
         shader->SetMat4("uModel", model);
 

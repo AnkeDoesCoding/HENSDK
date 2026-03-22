@@ -31,11 +31,6 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event)
         return SDL_APP_SUCCESS; 
     }
 
-    if (event->type == SDL_EVENT_WINDOW_RESIZED) 
-    {
-        EggEditor.ResizeWindow();
-    }
-
     EggEditor.ProcessEvent(*event);
     return SDL_APP_CONTINUE;
 }

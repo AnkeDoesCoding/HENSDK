@@ -45,7 +45,9 @@ namespace hen
         virtual void SetCulledFace(graphics::CULL_MODES face) = 0;
 
         virtual SDL_Window* GetWindow() const = 0;
-        virtual void ResizeWindow() = 0;
+
+        virtual void ResizeViewport(int posX, int posY, int width, int height) = 0;
+        virtual graphics::Viewport GetViewport() const = 0;
     };
    
 }

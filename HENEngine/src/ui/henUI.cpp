@@ -9,6 +9,8 @@
 
 namespace hen::ui
 {
+    static uint32_t DockSpaceID = 0;
+
     cvar::CVar cvar_ScalingFactor("ui_scaling_factor", 1.0f, cvar::FLAGS_ARCHIVE, []()
     {
         ImGui::GetIO().FontGlobalScale = ImGui::GetIO().FontGlobalScale * cvar_ScalingFactor.GetFloat();
@@ -87,11 +89,11 @@ namespace hen::ui
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
+        ImGui::Begin("InvisibleDockspace", nullptr, windowFlags);
         ImGui::PopStyleVar(3);
 
-        ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
-        ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        DockSpaceID = ImGui::GetID("MainDockSpace");
+        ImGui::DockSpace(DockSpaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
         ImGui::End();
 
         for (ui::UIDrawCallback& callback : m_Callbacks)
@@ -120,5 +122,10 @@ namespace hen::ui
     {
 
         m_Callbacks.push_back(std::move(callback));
+    }
+
+    uint32_t IMGUIManager::GetDockSpaceID()
+    {
+        return DockSpaceID;
     }
 }

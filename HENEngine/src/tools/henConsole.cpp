@@ -11,7 +11,7 @@
 #include <mutex>
 
 #define TIME_FORMAT "%H:%M:%S"
-#define MAX_DISPLAYED_LOGS 20000
+#define MAX_DISPLAYED_LOGS 40000
 
 namespace hen::console
 {

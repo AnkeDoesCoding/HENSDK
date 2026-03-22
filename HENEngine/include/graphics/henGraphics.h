@@ -70,6 +70,12 @@ namespace hen::graphics
         FRONT_AND_BACK_FACE
     };
 
+    struct Viewport
+    {
+        math::Vec2 Position;
+        math::Vec2 Size;
+    };  
+
     struct BufferElement
     {
         std::string Name;

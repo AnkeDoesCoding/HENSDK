@@ -103,4 +103,17 @@ void Editor::Update(float deltaTime)
         testlevel::Load();
         hasLoadedLevel = true;
     }
+
+    int windowWidth, windowHeight;
+    SDL_GetWindowSize(hen::renderer::GetRHC()->GetWindow(), &windowWidth, &windowHeight);
+
+    ImGuiDockNode* node = ImGui::DockBuilderGetCentralNode(hen::ui::GetIMGUIManager()->GetDockSpaceID());
+
+    if (!node)
+    {
+        hen::renderer::GetRHC()->ResizeViewport(0, 0, windowWidth, windowHeight);
+        return;
+    }
+
+    hen::renderer::GetRHC()->ResizeViewport(node->Pos.x, windowHeight - node->Pos.y - node->Size.y, node->Size.x, node->Size.y);
 }

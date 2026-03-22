@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 
 #include <functional>
 #include <vector>
@@ -22,6 +23,8 @@ namespace hen::ui
         void ProcessEvent(const SDL_Event& event);
 
         void RegisterDrawCallback(UIDrawCallback callback);
+
+        uint32_t GetDockSpaceID();
     
     public: 
         bool Initialised = false;

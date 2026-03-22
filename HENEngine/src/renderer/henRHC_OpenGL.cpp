@@ -432,12 +432,18 @@ namespace hen
         return m_Window;
     }
 
-    void RHC_OpenGL::ResizeWindow()
+    void RHC_OpenGL::ResizeViewport(int posX, int posY, int width, int height)
     {
-        int newWidth, newHeight;
-        SDL_GetWindowSize(m_Window, &newWidth, &newHeight);
+        glViewport(posX, posY, width, height);
 
-        glViewport(0, 0, newWidth, newHeight);
+        m_Viewport.Position.x = posX;
+        m_Viewport.Position.y = posY;
+        m_Viewport.Size.x = width;
+        m_Viewport.Size.y = height;
     }
-
+    
+    graphics::Viewport RHC_OpenGL::GetViewport() const
+    {
+        return m_Viewport;
+    }
 }

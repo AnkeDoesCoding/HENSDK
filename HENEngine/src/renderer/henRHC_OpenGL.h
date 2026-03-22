@@ -43,13 +43,16 @@ namespace hen
         void SetCulledFace(graphics::CULL_MODES face) override;
 
         SDL_Window* GetWindow() const override;
-        void ResizeWindow() override;
+
+        void ResizeViewport(int posX, int posY, int width, int height) override;
+        graphics::Viewport GetViewport() const override;
         
     public:
         bool Initialised =  false;
 
     private:
         SDL_Window* m_Window;
+        graphics::Viewport m_Viewport;
     };
 
     
