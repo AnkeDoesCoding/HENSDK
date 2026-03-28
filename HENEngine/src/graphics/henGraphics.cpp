@@ -551,7 +551,7 @@ namespace hen::graphics
         {
             case renderer::BACKENDS::OPENGL:
                 m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
-                HEN_LOG("[hen::Shader] Successfully loaded shader from paths: " + std::string(vsPath) + " / " + std::string(fsPath));
+                HEN_LOG("[hen::Shader] Successfully loaded shader from paths: " + std::string(vsPath) + " | " + std::string(fsPath));
                 break;
             default:
                 m_BackendImpl = nullptr;

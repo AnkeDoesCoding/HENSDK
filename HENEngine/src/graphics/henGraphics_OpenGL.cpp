@@ -64,7 +64,7 @@ namespace hen::graphics
         }
         else if (components == 3)
         {
-            internalFormat = GL_SRGB8_ALPHA8;
+            internalFormat = GL_SRGB8;
             dataFormat = GL_RGB;
         }
         else if (components == 4)  
@@ -72,7 +72,6 @@ namespace hen::graphics
             internalFormat = GL_SRGB8_ALPHA8;
             dataFormat = GL_RGBA;
         }
-
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
 
@@ -100,7 +99,7 @@ namespace hen::graphics
         }
         else if (components == 3)
         {
-            internalFormat = GL_SRGB8_ALPHA8;
+            internalFormat = GL_SRGB8;
             dataFormat = GL_RGB;
         }
         else if (components == 4)  
@@ -329,7 +328,7 @@ namespace hen::graphics
         }
         catch (std::ifstream::failure& e)
         {
-            HEN_ERROR("[hen::Shader] Shader source file not successfully read: " + std::string(infoLog));
+            HEN_ERROR("[hen::Shader] Shader source file failed to read: " + std::string(infoLog));
         }
 
         const char* vsCode = vsSource.c_str();

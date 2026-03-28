@@ -56,6 +56,7 @@ namespace hen::renderer
 
         graphics::Texture* Get(const TextureHandle& handle);
         void Remove(const TextureHandle& handle); 
+        void CreateRenderData();
 
     private:
         struct m_TextureSlot

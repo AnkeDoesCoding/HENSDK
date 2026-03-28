@@ -322,31 +322,6 @@ namespace hen::renderer
                 {
                     meshComp.CreateRenderData();
                 }
-
-                for (level::MeshComponent::SubMesh& submesh : meshComp.SubMeshes)
-                {
-                    if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
-                    {
-                        if (graphics::Texture* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
-                        {
-                            if (diffuse->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
-                            {
-                                diffuse->CreateRenderData();
-                            }
-                        }
-                    }
-
-                    if (submesh.SpecularIndex < materialComp.SpecularTextures.size())
-                    {
-                        if (graphics::Texture* specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
-                        {
-                            if (specular->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
-                            {
-                                specular->CreateRenderData();
-                            }
-                        }
-                    }
-                }
             }
 
             if (level->Skybox.Mesh.State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
@@ -354,13 +329,7 @@ namespace hen::renderer
                 level->Skybox.Mesh.CreateRenderData();
             }
 
-            if (graphics::Texture* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
-            {
-                if (skyboxCubemap->State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
-                {
-                    skyboxCubemap->CreateRenderData();
-                }
-            }
+            CurrentTextureManager->CreateRenderData();
         }
     }
 

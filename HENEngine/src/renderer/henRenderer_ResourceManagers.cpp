@@ -80,7 +80,7 @@ namespace hen::renderer
 
         m_PathToIndex[key] = index;
 
-        HEN_LOG("[hen::renderer::ShaderManager] Successfully cached shader");
+        HEN_LOG("[hen::ShaderManager] Successfully cached shader");
 
         return ShaderHandle{ index, m_Shaders[index].Generation };
     }
@@ -156,7 +156,7 @@ namespace hen::renderer
 
         m_PathToIndex[key] = index;
 
-        HEN_LOG("[hen::renderer::TextureManager] Successfully cached texture");
+        HEN_LOG("[hen::TextureManager] Successfully cached texture");
 
         return TextureHandle{ index, m_Textures[index].Generation };
     }
@@ -193,7 +193,7 @@ namespace hen::renderer
 
         m_PathToIndex[key] = index;
 
-        HEN_LOG("[hen::renderer::TextureManager] Successfully cached texture");
+        HEN_LOG("[hen::TextureManager] Successfully cached texture");
 
         return TextureHandle{ index, m_Textures[index].Generation };
     }
@@ -230,7 +230,7 @@ namespace hen::renderer
 
         m_PathToIndex[key] = index;
 
-        HEN_LOG("[hen::renderer::TextureManager] Successfully cached texture");
+        HEN_LOG("[hen::TextureManager] Successfully cached texture");
 
         return TextureHandle{ index, m_Textures[index].Generation };
     }
@@ -269,6 +269,19 @@ namespace hen::renderer
             {
                 m_PathToIndex.erase(it);
                 break;
+            }
+        }
+    }
+
+    void TextureManager::CreateRenderData()
+    {
+        for (int i = 0; i < m_Textures.size(); i++)
+        {
+            graphics::Texture& texture = m_Textures[i].Texture;
+
+            if (texture.State == graphics::RESOURCE_STATES::READY_TO_UPLOAD)
+            {
+                texture.CreateRenderData();
             }
         }
     }

@@ -10,7 +10,11 @@
 
 namespace hen::ui
 {
-    using UIDrawCallback = std::function<void()>;
+    struct DrawCallback
+    {
+        std::function<void()> Callback;
+        bool Important = false;
+    };
 
     class IMGUIManager
     {
@@ -22,7 +26,7 @@ namespace hen::ui
 
         void ProcessEvent(const SDL_Event& event);
 
-        void RegisterDrawCallback(UIDrawCallback callback);
+        void RegisterDrawCallback(std::function<void()> callback, bool isImportant = false);
 
         uint32_t GetDockSpaceID();
     
@@ -30,7 +34,7 @@ namespace hen::ui
         bool Initialised = false;
 
     private:
-        static inline std::vector<UIDrawCallback> m_Callbacks;
+        static inline std::vector<DrawCallback> m_Callbacks;
     };
 
     inline IMGUIManager*& GetIMGUIManager()

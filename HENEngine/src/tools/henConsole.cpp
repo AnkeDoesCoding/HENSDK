@@ -229,7 +229,7 @@ namespace hen::console
                 }
             }
             
-            ImGui::Begin("Console", &Visible, ImGuiWindowFlags_NoDocking);
+            ImGui::Begin("Console", &Visible, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse);
         
             float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         
@@ -379,7 +379,7 @@ namespace hen::console
                     ImVec2 size = ImVec2(maxWidth + 12.0f, overlayHeight);
                 
                     ImU32 bgColour = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
-                    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour, 0.0f);
+                    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), bgColour);
                 
                     for (size_t i = 0; i < AutocompleteDisplay.size(); i++)
                     {
@@ -401,7 +401,7 @@ namespace hen::console
             }
         
             ImGui::End();
-        });
+        }, true);
 
         Initialised = true;
     }
