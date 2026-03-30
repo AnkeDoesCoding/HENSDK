@@ -182,6 +182,8 @@ namespace hen::renderer
         CurrentRHC->Initialise();
 
         CurrentRHC->EnableDepth();
+        CurrentRHC->EnableFaceCulling();
+        CurrentRHC->SetCulledFace(graphics::CULL_MODES::BACK_FACE);
 
         CurrentShaderManager = std::make_unique<ShaderManager>();
         GetShaderManager() = CurrentShaderManager.get();

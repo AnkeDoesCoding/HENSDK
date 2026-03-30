@@ -21,15 +21,19 @@ namespace hen
         void DrawElements(uint32_t count, uint32_t offset) override;
         void DrawArrays(uint32_t count, uint32_t offset) override;
 
+        void EnableVSync() override;
+        void DisableVSync() override;
+
+        void EnableFaceCulling() override;
+        void DisableFaceCulling() override;
+        void SetCulledFace(graphics::CULL_MODES face) override;
+
         void EnableDepth() override;
         void DisableDepth() override;
         void ClearDepth() override;
         void EnableDepthMask() override;
         void DisableDepthMask() override;
         void SetDepthMask(graphics::DEPTH_FUNCTIONS function) override;
-
-        void EnableVSync() override;
-        void DisableVSync() override;
 
         void EnableStencil() override;
         void DisableStencil() override;
@@ -38,9 +42,9 @@ namespace hen
         void SetStencilMask(graphics::DEPTH_FUNCTIONS function, int reference, uint32_t mask) override;
         void SetStencilOperation(graphics::STENCIL_FUNCTIONS stencilFail, graphics::STENCIL_FUNCTIONS depthFail, graphics::STENCIL_FUNCTIONS pass) override;
 
-        void EnableFaceCulling() override;
-        void DisableFaceCulling() override;
-        void SetCulledFace(graphics::CULL_MODES face) override;
+        void EnableBlending() override;
+        void DisableBlending() override;
+        void SetBlendOperation(graphics::BLEND_FUNCTIONS source, graphics::BLEND_FUNCTIONS destination) override;
 
         SDL_Window* GetWindow() const override;
 

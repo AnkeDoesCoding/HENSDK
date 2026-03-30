@@ -101,17 +101,6 @@ namespace hen
     void RHC_OpenGL::Initialise() 
     {
         Timer timer;
-
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     
         if (arguments::HasArgument("debugcontext"))
         {
@@ -162,6 +151,45 @@ namespace hen
     void RHC_OpenGL::DrawArrays(uint32_t count, uint32_t offset)
     {
         glDrawArrays(GL_TRIANGLES, static_cast<GLint>(offset), static_cast<GLsizei>(count));
+    }
+
+    void RHC_OpenGL::EnableVSync()
+    {
+        SDL_GL_SetSwapInterval(1);
+    }
+
+    void RHC_OpenGL::DisableVSync()
+    {
+        SDL_GL_SetSwapInterval(0);
+    }
+
+    void RHC_OpenGL::EnableFaceCulling()
+    {
+        glEnable(GL_CULL_FACE);
+    }
+
+    void RHC_OpenGL::DisableFaceCulling()
+    {
+        glDisable(GL_CULL_FACE);
+    }
+
+    void RHC_OpenGL::SetCulledFace(graphics::CULL_MODES face)
+    {
+        switch(face)
+        {
+            case graphics::CULL_MODES::FRONT_FACE:
+                glCullFace(GL_FRONT);
+                break;
+            case graphics::CULL_MODES::BACK_FACE:
+                glCullFace(GL_BACK);
+                break;
+            case graphics::CULL_MODES::FRONT_AND_BACK_FACE:
+                glCullFace(GL_FRONT_AND_BACK);
+                break;
+            default:
+                glCullFace(GL_NONE);
+                break;
+        }
     }
 
     void RHC_OpenGL::EnableDepth()
@@ -225,16 +253,6 @@ namespace hen
         }
 
         glDepthFunc(glFunc);
-    }
-
-    void RHC_OpenGL::EnableVSync()
-    {
-        SDL_GL_SetSwapInterval(1);
-    }
-
-    void RHC_OpenGL::DisableVSync()
-    {
-        SDL_GL_SetSwapInterval(0);
     }
 
     void RHC_OpenGL::EnableStencil()
@@ -397,35 +415,121 @@ namespace hen
         glStencilOp(glStencilFail, glDepthFail, glPass);
     }
 
-    void RHC_OpenGL::EnableFaceCulling()
+    void RHC_OpenGL::EnableBlending()
     {
-        glEnable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
     }
 
-    void RHC_OpenGL::DisableFaceCulling()
+    void RHC_OpenGL::DisableBlending()
     {
-        glDisable(GL_CULL_FACE);
+        glDisable(GL_BLEND);
     }
 
-    void RHC_OpenGL::SetCulledFace(graphics::CULL_MODES face)
+    void RHC_OpenGL::SetBlendOperation(graphics::BLEND_FUNCTIONS source, graphics::BLEND_FUNCTIONS destination)
     {
-        switch(face)
+        GLenum sfactor;
+        GLenum dfactor;
+
+        switch (source)
         {
-            case graphics::CULL_MODES::FRONT_FACE:
-                glCullFace(GL_FRONT);
+            case graphics::BLEND_FUNCTIONS::ZERO:
+                sfactor = GL_ZERO;
                 break;
-            case graphics::CULL_MODES::BACK_FACE:
-                glCullFace(GL_BACK);
+            case graphics::BLEND_FUNCTIONS::ONE:
+                sfactor = GL_ONE;
                 break;
-            case graphics::CULL_MODES::FRONT_AND_BACK_FACE:
-                glCullFace(GL_FRONT_AND_BACK);
+            case graphics::BLEND_FUNCTIONS::SOURCE:
+                sfactor = GL_SRC_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_SOURCE:
+                sfactor = GL_ONE_MINUS_SRC_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::DESTINATION:
+                sfactor = GL_DST_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_DESTINATION:
+                sfactor = GL_ONE_MINUS_DST_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::SOURCE_ALPHA:
+                sfactor = GL_SRC_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_SOURCE_ALPHA:
+                sfactor = GL_ONE_MINUS_SRC_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::DESTINATION_ALPHA:
+                sfactor = GL_DST_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_DESTINATION_ALPHA:
+                sfactor = GL_ONE_MINUS_DST_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::CONSTANT:
+                sfactor = GL_CONSTANT_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_CONSTANT:
+                sfactor = GL_ONE_MINUS_CONSTANT_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::CONSTANT_ALPHA:
+                sfactor = GL_CONSTANT_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_CONSTANT_ALPHA:
+                sfactor = GL_ONE_MINUS_CONSTANT_ALPHA;
                 break;
             default:
-                glCullFace(GL_FRONT);
+                sfactor = GL_ZERO;
                 break;
         }
-    }
 
+        switch (destination)
+        {
+            case graphics::BLEND_FUNCTIONS::ZERO:
+                dfactor = GL_ZERO;
+                break;
+            case graphics::BLEND_FUNCTIONS::ONE:
+                dfactor = GL_ONE;
+                break;
+            case graphics::BLEND_FUNCTIONS::SOURCE:
+                dfactor = GL_SRC_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_SOURCE:
+                dfactor = GL_ONE_MINUS_SRC_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::DESTINATION:
+                dfactor = GL_DST_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_DESTINATION:
+                dfactor = GL_ONE_MINUS_DST_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::SOURCE_ALPHA:
+                dfactor = GL_SRC_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_SOURCE_ALPHA:
+                dfactor = GL_ONE_MINUS_SRC_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::DESTINATION_ALPHA:
+                dfactor = GL_DST_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_DESTINATION_ALPHA:
+                dfactor = GL_ONE_MINUS_DST_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::CONSTANT:
+                dfactor = GL_CONSTANT_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_CONSTANT:
+                dfactor = GL_ONE_MINUS_CONSTANT_COLOR;
+                break;
+            case graphics::BLEND_FUNCTIONS::CONSTANT_ALPHA:
+                dfactor = GL_CONSTANT_ALPHA;
+                break;
+            case graphics::BLEND_FUNCTIONS::MINUS_CONSTANT_ALPHA:
+                dfactor = GL_ONE_MINUS_CONSTANT_ALPHA;
+                break;
+            default:
+                dfactor = GL_ZERO;
+                break;
+        }
+
+        glBlendFunc(sfactor, dfactor);
+    }
 
     SDL_Window* RHC_OpenGL::GetWindow() const
     {

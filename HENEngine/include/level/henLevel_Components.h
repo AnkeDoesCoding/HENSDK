@@ -134,7 +134,7 @@ namespace hen::level
     {
         float FOV = 90.0f;
         float NearPlane = 3.0f;
-        float FarPlane = 1500.0f;
+        float FarPlane = 3000.0f;
 
         math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
         math::Vec3 Rotation = math::Vec3(0.0f, 0.0f, 0.0f);

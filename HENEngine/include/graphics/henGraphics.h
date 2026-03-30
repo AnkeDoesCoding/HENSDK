@@ -63,6 +63,24 @@ namespace hen::graphics
         INVERT
     };
 
+    enum class BLEND_FUNCTIONS
+    {
+        ZERO,
+        ONE,
+        SOURCE,
+        MINUS_SOURCE,
+        DESTINATION,
+        MINUS_DESTINATION,
+        SOURCE_ALPHA,
+        MINUS_SOURCE_ALPHA,
+        DESTINATION_ALPHA,
+        MINUS_DESTINATION_ALPHA,
+        CONSTANT,
+        MINUS_CONSTANT,
+        CONSTANT_ALPHA,
+        MINUS_CONSTANT_ALPHA
+    };
+
     enum class CULL_MODES
     {
         FRONT_FACE,
