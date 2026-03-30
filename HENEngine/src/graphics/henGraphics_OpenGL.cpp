@@ -64,7 +64,7 @@ namespace hen::graphics
         }
         else if (components == 3)
         {
-            internalFormat = GL_SRGB8_ALPHA8;
+            internalFormat = GL_SRGB8;
             dataFormat = GL_RGB;
         }
         else if (components == 4)  
@@ -100,7 +100,7 @@ namespace hen::graphics
         }
         else if (components == 3)
         {
-            internalFormat = GL_SRGB8_ALPHA8;
+            internalFormat = GL_SRGB8;
             dataFormat = GL_RGB;
         }
         else if (components == 4)  

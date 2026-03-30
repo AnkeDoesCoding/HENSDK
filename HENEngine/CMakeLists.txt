@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 4.0.2)
 
 project ("HENEngine")
 
+set(INTERPROCEDURAL_OPTIMIZATION OFF CACHE BOOL "" FORCE)
 add_subdirectory(vendor/JoltPhysics/Build)
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")

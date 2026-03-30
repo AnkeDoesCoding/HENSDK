@@ -182,7 +182,11 @@ void main()
     vec3 normal = normalize(Normal);
     vec3 viewDir = normalize(uViewPos - FragPos);
 
-    vec3 result;
+    // lighting was fucked on linux and i couldn't figure out why for the longest time
+    // turns out, the mesa driver is a sucker for rules so it wasnt doing any impilicit initialisation
+    // so lighting was getting added to some bullshit colour that the driver had and producing results akin to an acid trip
+    // i dont know who to curse, windows or linux
+    vec3 result = vec3(0.0); // JUST INITIALISE EXPLICITLY FOR FUCK SAKEs
 
     if (texture(uMaterial.Diffuse, TexCoord).a < 0.5)
     {

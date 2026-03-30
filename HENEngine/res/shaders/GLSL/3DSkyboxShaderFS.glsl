@@ -187,7 +187,7 @@ void main()
     vec3 normal = normalize(Normal);
     vec3 viewDir = normalize(uViewPos - FragPos);
     
-    vec3 result;
+    vec3 result = vec3(0.0);
     
     if (uHasDirectionalLight == 1)
     {
