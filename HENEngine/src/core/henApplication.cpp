@@ -4,6 +4,7 @@
 #include "core/henCVar.h"
 #include "core/henJobSystem.h"
 #include "core/henTimer.h"
+#include "core/henArguments.h"
 #include "input/henInput.h"
 #include "physics/henPhysics.h"
 #include "renderer/henRenderer.h"
@@ -141,6 +142,49 @@ namespace hen
         #endif // !PLATFORM_LINUX
 
         HEN_LOG("[hen::Application] Detected hardware: \n\n------------------------------------\nCPU \n------------------------------------ \n " + CPUName + "\n " + std::to_string(std::thread::hardware_concurrency()) + " Threads \n\n------------------------------------\nGPU \n------------------------------------ \n " + renderer::GetRHC()->GetGPUName() + "\n " + renderer::GetRHC()->GetGPUVendor() + "\n " + renderer::GetRHC()->GetAPIVersion());
+
+        #if DEBUG
+
+            CurrentImGuiManager->RegisterDrawCallback([]() 
+            {
+                int windowWidth, windowHeight;
+                SDL_GetWindowSize(renderer::GetRHC()->GetWindow(), &windowWidth, &windowHeight);
+                graphics::Viewport viewport = renderer::GetRHC()->GetViewport();
+
+                ImGui::SetNextWindowPos(ImVec2(viewport.Position.x + 10, (windowHeight - viewport.Position.y - viewport.Size.y) + 10)); 
+                ImGui::SetNextWindowBgAlpha(0.0f);
+
+                ImGui::Begin("##infodisplay", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground);
+
+                ImGui::SetWindowFontScale(1.2f);
+
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "THIS IS A DEBUG BUILD OF HEN ENGINE %s, PERFORMANCE WILL BE SLOW", version::Version);
+                
+                switch (renderer::CurrentBackend)
+                {
+                    case renderer::BACKENDS::OPENGL:
+                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "RENDER HARDWARE CONTEXT: OPENGL");
+                        break;
+                    case renderer::BACKENDS::VULKAN:
+                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "HAHA MOTHERFUCKERRRR, YOU CAN'T HAVE VULKAN, YOU WILL USE OPENGL");
+                        break;
+                }
+
+                if (arguments::HasArgument("debugcontext"))
+                {
+                    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "DEBUG RENDER HARDWARE CONTEXT: ENABLED");
+                }
+                else 
+                {
+                   ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "DEBUG RENDER HARDWARE CONTEXT: DISABLED");
+                }
+                
+                ImGui::SetWindowFontScale(1.0f);
+
+                ImGui::End();
+            }, true);
+
+        #endif // !DEBUG
     }
 
     void Application::Shutdown()
@@ -178,7 +222,6 @@ namespace hen
             FixedUpdate();
             Accumulator -= (1.0 / cvar_HZ.GetInt());
         }
-
     }
 
     void Application::FixedUpdate()

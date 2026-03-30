@@ -5,6 +5,8 @@
 
 #include "UI/LevelWindow.h"
 #include "UI/ComponentWindow.h"
+#include "UI/ToolWindow.h"
+#include "UI/EditorWindow.h"
 
 class Editor : public hen::Application
 {
@@ -18,6 +20,10 @@ public:
 private:
     ComponentWindow m_ComponentWindow;
     LevelWindow m_LevelWindow;
+    ToolWindow m_ToolWindow;
+    EditorWindow m_EditorWindow;
+
+    bool m_EditingName;
 };
 
 #endif // !_EGGEDITOR_H_

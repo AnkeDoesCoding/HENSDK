@@ -23,6 +23,11 @@ void LevelWindow::Initialise(ComponentWindow* compWindow)
 
                 bool isSelected = (m_CompWindow->SelectedEntity == entity);
 
+                auto* texture = hen::renderer::GetTextureManager()->Get(hen::renderer::GetTextureManager()->Load("res/ui/bricks.png"));
+
+                ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->GetID())), ImVec2(16, 16));
+                ImGui::SameLine();
+
                 if (ImGui::Selectable(entity.GetComponent<hen::level::NameComponent>().Name.c_str(), isSelected))
                 {
                     m_CompWindow->SelectedEntity = entity;
@@ -32,7 +37,7 @@ void LevelWindow::Initialise(ComponentWindow* compWindow)
 
         ImGui::End();
 
-        ImGui::Begin("Level");
+        ImGui::Begin("Level", nullptr, ImGuiWindowFlags_NoCollapse);
 
         if (auto level = hen::level::GetActiveLevel())
         {

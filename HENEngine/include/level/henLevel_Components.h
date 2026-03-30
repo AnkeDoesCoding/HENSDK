@@ -160,6 +160,13 @@ namespace hen::level
             return math::Perspective(math::Radians(FOV), x / y, NearPlane, FarPlane);
         }
 
+        void LookAt(const math::Vec3& target)
+        {
+            math::Vec3 dir = math::Normalise(target - Position);
+            Rotation.x = math::Degrees(math::Asin(dir.y));
+            Rotation.y = math::Degrees(math::Atan(dir.z, dir.x));
+        }
+
         void SetDirty()
         {
             math::Vec3 front;

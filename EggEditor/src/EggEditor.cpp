@@ -15,6 +15,49 @@ void Editor::Initialise(SDL_Window* window)
 
     m_ComponentWindow.Initialise();
     m_LevelWindow.Initialise(&m_ComponentWindow);
+    m_ToolWindow.Initialise(&m_ComponentWindow);
+    m_EditorWindow.Intialise();
+
+    hen::ui::GetIMGUIManager()->RegisterDrawCallback([&]() 
+    {
+        if (m_EditingName)
+        {
+            if (!m_ComponentWindow.SelectedEntity.IsValid())
+            {
+                return;
+            }
+
+            auto &name = m_ComponentWindow.SelectedEntity.GetComponent<hen::level::NameComponent>();
+
+            char nameBuffer[256];
+            strncpy(nameBuffer, name.Name.c_str(), sizeof(nameBuffer));
+            nameBuffer[sizeof(nameBuffer) - 1] = '\0';
+
+            int windowWidth, windowHeight;
+
+            SDL_GetWindowSize(hen::renderer::GetRHC()->GetWindow(), &windowWidth, &windowHeight);
+
+            ImGui::SetNextWindowSize(ImVec2(130.0f, 65.0f));
+            ImGui::SetNextWindowPos(ImVec2(windowWidth / 2 - 130.0f, windowHeight / 2 - 65.0f));
+
+            ImGui::Begin("Edit name", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize);
+
+            ImGui::SetKeyboardFocusHere();
+
+            ImGui::SetNextItemWidth(-1.0f);
+            if (ImGui::InputText("##name", nameBuffer, sizeof(nameBuffer)))
+            {
+                name.Name = nameBuffer;
+            }
+
+            if (hen::input::Press(hen::input::KEYBOARD_BUTTON_ESCAPE) || hen::input::Press(hen::input::KEYBOARD_BUTTON_ENTER))
+            {
+                m_EditingName = false;
+            }
+
+            ImGui::End();
+        }
+    });
 }
 
 void Editor::Shutdown()
@@ -83,7 +126,10 @@ void Editor::Update(float deltaTime)
 
             if (result.HitEntity)
             {
-                hen::physics::AddImpulseAt(result.HitEntity->GetComponent<hen::level::RigidBodyComponent>(), hen::renderer::Camera.Front * 100.0f, result.HitPosition);
+                hen::math::Vec3 dir(result.HitPosition - hen::renderer::Camera.Position);
+                dir = hen::math::Normalise(dir);
+
+                hen::physics::AddImpulseAt(result.HitEntity->GetComponent<hen::level::RigidBodyComponent>(), dir * 100.0f, result.HitPosition);
             }
         }
         
@@ -98,10 +144,24 @@ void Editor::Update(float deltaTime)
         }
     }
 
-    if (!hasLoadedLevel)
+    if (hen::input::Press(hen::input::KEYBOARD_BUTTON_F2))
     {
-        testlevel::Load();
-        hasLoadedLevel = true;
+        m_EditingName = true;
+    }
+
+    if (hen::input::Press(hen::input::BUTTON('F')))
+    {
+        if (m_ComponentWindow.SelectedEntity.IsValid())
+        {
+            if (m_ComponentWindow.SelectedEntity.HasComponent<hen::level::TransformComponent>())
+            {
+                auto& transform = m_ComponentWindow.SelectedEntity.GetComponent<hen::level::TransformComponent>();
+
+                hen::renderer::Camera.Position = (transform.LocalPosition + hen::math::Vec3(10.0f, 5.0f, 10.0f));
+
+                hen::renderer::Camera.LookAt(transform.LocalPosition);
+            }
+        }
     }
 
     int windowWidth, windowHeight;
@@ -116,4 +176,11 @@ void Editor::Update(float deltaTime)
     }
 
     hen::renderer::GetRHC()->ResizeViewport(node->Pos.x, windowHeight - node->Pos.y - node->Size.y, node->Size.x, node->Size.y);
+
+    
+    if (!hasLoadedLevel)
+    {
+        testlevel::Load();
+        hasLoadedLevel = true;
+    }
 }

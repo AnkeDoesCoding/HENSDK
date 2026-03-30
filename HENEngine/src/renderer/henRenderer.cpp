@@ -168,7 +168,8 @@ namespace hen::renderer
                 GetRHC() = CurrentRHC.get();    
                 break;
             case BACKENDS::VULKAN: 
-                CurrentRHC = nullptr; // hehe, set that mf to nullptr as a fuck you
+                CurrentRHC = std::make_unique<RHC_OpenGL>(window); // hehe, set that mf to opengl as a fuck you
+                GetRHC() = CurrentRHC.get();     
                 HEN_ERROR("[hen::renderer] BACKENDS::VULKAN isn't supported, yet"); // PLANNED VULKAN SUPPORT !!!?!?!?!?!?!
             default:
                 CurrentRHC = nullptr;
@@ -260,8 +261,6 @@ namespace hen::renderer
                         data.PointLights[pointLightIndex].Attenuation.y = linear;
                         data.PointLights[pointLightIndex].Attenuation.z = quadratic;
                         data.PointLights[pointLightIndex].Colour.w = lightComp.Intensity;
-                        
-                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.LocalPosition, math::Vec3(0.0f), transformComp.LocalScale, lightComp.Colour);
                     
                         pointLightIndex++;
                         data.NumberOfPointLights++;
@@ -285,8 +284,6 @@ namespace hen::renderer
                         data.SpotLights[spotLightIndex].Colour.w = lightComp.Intensity;
                         data.SpotLights[spotLightIndex].Angles.x = math::Cos(math::Radians(lightComp.InnerCutOff));
                         data.SpotLights[spotLightIndex].Angles.y = math::Cos(math::Radians(lightComp.OuterCutOff));
-                    
-                        RenderPrimitive(level::PRIMITIVE_TYPES::SPHERE, transformComp.LocalPosition, math::Vec3(0.0f), transformComp.LocalScale, lightComp.Colour);
                     
                         spotLightIndex++;
                         data.NumberOfSpotLights++;
@@ -461,13 +458,18 @@ namespace hen::renderer
                 level::MaterialComponent& materialComp = entity.GetComponent<level::MaterialComponent>();
 
                 graphics::Shader* shader = CurrentShaderManager->Get(materialComp.Shader);
-                shader->Bind();
-            
+
+                if (!shader)
+                {
+                    continue;
+                }
+
                 if (meshComp.State != graphics::RESOURCE_STATES::READY_TO_RENDER)
                 {
                     continue;
                 }
 
+                shader->Bind();
                 meshComp.VertexArray.Bind();
 
                 for (level::MeshComponent::SubMesh& submesh : meshComp.SubMeshes)

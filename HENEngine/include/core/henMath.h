@@ -41,6 +41,16 @@ namespace hen::math
         return glm::radians(degrees);
     }
 
+    inline float Asin(float angle)
+    {
+        return glm::asin(angle);
+    }
+
+    inline float Atan(float angle, float angle2)
+    {
+        return glm::atan(angle, angle2);
+    }
+
     // VEC3
 
     inline Vec3 Cross(Vec3 vectorX, Vec3 vectorY)
