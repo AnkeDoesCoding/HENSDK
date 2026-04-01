@@ -2,9 +2,16 @@
 
 void EditorWindow::Intialise()
 {
-    m_SaveIcon = hen::renderer::GetTextureManager()->Load("res/ui/disk.png");
-    m_UndoIcon = hen::renderer::GetTextureManager()->Load("res/ui/arrow_undo.png");
-    m_RedoIcon = hen::renderer::GetTextureManager()->Load("res/ui/arrow_redo.png");
+    hen::graphics::TextureDesc iconDesc;
+
+    iconDesc.Path = "res/ui/disk.png";
+    m_SaveIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/arrow_undo.png";
+    m_UndoIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/arrow_redo.png";
+    m_RedoIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([&]() 
     {

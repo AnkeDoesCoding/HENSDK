@@ -50,9 +50,7 @@ namespace hen::renderer
     class TextureManager
     {
     public:
-        TextureHandle Load(const char* texPath);
-        TextureHandle Load(const unsigned char* data, int size, int width, int height, int components);
-        TextureHandle Load(std::vector<std::string> faces);
+        TextureHandle Load(graphics::TextureDesc textureDesc, const unsigned char* source = nullptr, size_t sourceSize = 0);
 
         graphics::Texture* Get(const TextureHandle& handle);
         void Remove(const TextureHandle& handle); 

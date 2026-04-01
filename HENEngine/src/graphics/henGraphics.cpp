@@ -87,20 +87,77 @@ namespace hen::graphics
         return 0;
     }
 
-    void Texture::Load(const char* path)
+    void Texture::Load(const TextureDesc& textureDesc, const unsigned char* source, size_t sourceSize)
     {
         State = RESOURCE_STATES::NOT_READY;
 
-        unsigned char* stbiData = stbi_load(path, &Width, &Height, &Components, 0);
+        m_Description = std::move(textureDesc);
+
+        if (m_Description.Copy)
+        {
+            if (!source)
+            {
+                HEN_ERROR("[hen::Texture] Failed to load texture from address");
+                return;
+            }
+
+            delete [] Data;
+            Data = new unsigned char[sourceSize];
+
+            memcpy(Data, source, sourceSize);
+
+            State = RESOURCE_STATES::READY_TO_UPLOAD;
+
+            HEN_LOG("[hen::Texture] Successfully loaded texture from address: 0x" + std::to_string(reinterpret_cast<uintptr_t>(source)));
+
+            return;
+        }
+
+        if (m_Description.Cubemap)
+        {
+            CubemapData.resize(6);
+
+            for (uint32_t i = 0; i < m_Description.PathToFaces.size(); i++)
+            {
+                unsigned char* stbiData = stbi_load(m_Description.PathToFaces[i].c_str(), &m_Description.Width, &m_Description.Height, &m_Description.Components, 0);
+                size_t dataSize = static_cast<size_t>(m_Description.Width * m_Description.Height * m_Description.Components);
+
+                if (!stbiData)
+                {
+                    HEN_ERROR("[hen::Texture] Failed to load cubemap texture from path: " + std::string(m_Description.PathToFaces[i].c_str()));
+                    stbi_image_free(stbiData);
+                    return;
+                }
+
+                if (CubemapData[i])
+                {
+                    delete[] CubemapData[i];
+                }
+
+                CubemapData[i] = new unsigned char[dataSize];
+
+                memcpy(CubemapData[i], stbiData, dataSize);
+
+                stbi_image_free(stbiData);
+            }
+
+            State = RESOURCE_STATES::READY_TO_UPLOAD;
+
+            HEN_LOG("[hen::Texture] Successfully loaded cubemap texture");
+
+            return;
+        }
+
+        unsigned char* stbiData = stbi_load(m_Description.Path, &m_Description.Width, &m_Description.Height, &m_Description.Components, 0);
 
         if (!stbiData)
         {
-            HEN_ERROR("[hen::Texture] Failed to load texture from path: " + std::string(path));
+            HEN_ERROR("[hen::Texture] Failed to load texture from path: " + std::string(m_Description.Path));
             stbi_image_free(stbiData);
             return;
         }
 
-        size_t dataSize = (size_t)(Width * Height * Components);
+        size_t dataSize = static_cast<size_t>(m_Description.Width * m_Description.Height * m_Description.Components);
 
         delete [] Data;
         Data = new unsigned char[dataSize];
@@ -111,66 +168,8 @@ namespace hen::graphics
 
         State = RESOURCE_STATES::READY_TO_UPLOAD;
 
-        HEN_LOG("[hen::Texture] Successfully loaded texture from path:" + std::string(path));
-    }
+        HEN_LOG("[hen::Texture] Successfully loaded texture from path:" + std::string(m_Description.Path));
 
-    void Texture::Load(std::vector<std::string> faces)
-    {
-        State = RESOURCE_STATES::NOT_READY;
-
-        CubemapData.resize(6);
-
-        for (uint32_t i = 0; i < faces.size(); i++)
-        {
-            unsigned char* stbiData = stbi_load(faces[i].c_str(), &Width, &Height, &Components, 0);
-            size_t dataSize = (size_t)(Width * Height * Components);
-
-            if (!stbiData)
-            {
-                HEN_ERROR("[hen::Texture] Failed to load cubemap texture from path: " + std::string(faces[i].c_str()));
-                stbi_image_free(stbiData);
-                return;
-            }
-
-            if (CubemapData[i])
-            {
-                delete [] CubemapData[i];
-            }
-            
-            CubemapData[i] = new unsigned char[dataSize];
-
-            memcpy(CubemapData[i], stbiData, dataSize);
-
-            stbi_image_free(stbiData);
-        }
-
-        State = RESOURCE_STATES::READY_TO_UPLOAD;
-
-        HEN_LOG("[hen::Texture] Successfully loaded cubemap texture");
-    }
-
-    void Texture::Load(const unsigned char* data, int size, int width, int height, int components)
-    {
-        State = RESOURCE_STATES::NOT_READY;
-
-        if (!data)
-        {
-            HEN_ERROR("[hen::Texture] Failed to load text from address: 0x" + std::to_string(reinterpret_cast<uintptr_t>(data)));
-            return;
-        }
-
-        delete [] Data;
-        Data = new unsigned char[size];
-
-        memcpy(Data, data, size);
-
-        Width = width;
-        Height = height;
-        Components = components;
-
-        State = RESOURCE_STATES::READY_TO_UPLOAD;
-
-        HEN_LOG("[hen::Texture] Successfully loaded texture from address: 0x" + std::to_string(reinterpret_cast<uintptr_t>(data)));
     }
 
     void Texture::CreateRenderData()
@@ -190,11 +189,11 @@ namespace hen::graphics
 
         if (CubemapData.empty())
         {
-            m_BackendImpl->CreateRenderData(Width, Height, Components, Data);
+            m_BackendImpl->CreateRenderData(m_Description, Data);
         }
         else
         {
-            m_BackendImpl->CreateRenderData(Width, Height, Components, CubemapData);
+            m_BackendImpl->CreateRenderData(m_Description, CubemapData);
         }
 
         State = RESOURCE_STATES::READY_TO_RENDER;

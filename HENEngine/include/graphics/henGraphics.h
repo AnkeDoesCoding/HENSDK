@@ -107,6 +107,20 @@ namespace hen::graphics
         uint32_t GetComponentCount() const;
     };
 
+    struct TextureDesc
+    {
+        int Width = 0;
+        int Height = 0;
+        int Components = 0;
+
+        std::vector<std::string> PathToFaces;
+        const char* Path = nullptr;
+
+        bool SRGB = true;
+        bool Cubemap = false;
+        bool Copy = false;
+    };
+
     class Texture
     {
     public:
@@ -118,9 +132,7 @@ namespace hen::graphics
 
         uint32_t GetID() const;
 
-        void Load(const char* path);
-        void Load(const unsigned char* data, int size, int width, int height, int components);
-        void Load(std::vector<std::string> faces);
+        void Load(const TextureDesc& textureDesc, const unsigned char* source = nullptr, size_t sourceSize = 0);
 
         void CreateRenderData();
 
@@ -128,10 +140,8 @@ namespace hen::graphics
         {
             using std::swap;
 
-            swap(Width, other.Width);
-            swap(Height, other.Height);
-            swap(Components, other.Components);
-            // swap(CubemapData, other.Data);
+            swap(m_Description, other.m_Description);
+            swap(CubemapData, other.CubemapData);
             swap(Data, other.Data);
             swap(m_BackendImpl, other.m_BackendImpl);
             swap(State, other.State);
@@ -146,19 +156,17 @@ namespace hen::graphics
 
             virtual uint32_t GetID() const = 0;
 
-            virtual void CreateRenderData(int width, int height, int components, unsigned char* data) = 0;
-            virtual void CreateRenderData(int width, int height, int components, std::vector<unsigned char*> data) = 0;
+            virtual void CreateRenderData(const TextureDesc& textureDesc, const unsigned char* data) = 0;
+            virtual void CreateRenderData(const TextureDesc& textureDesc, std::vector<unsigned char*> cubemapData) = 0;
         };
 
-        int Width;
-        int Height;
-        int Components;
         unsigned char* Data = nullptr;
         std::vector<unsigned char*> CubemapData;
         RESOURCE_STATES State;
 
     private:
         std::unique_ptr<Backend> m_BackendImpl;
+        TextureDesc m_Description;
     };
 
     class BufferLayout

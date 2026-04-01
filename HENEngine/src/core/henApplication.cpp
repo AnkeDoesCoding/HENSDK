@@ -158,7 +158,7 @@ namespace hen
 
                 ImGui::SetWindowFontScale(1.2f);
 
-                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "THIS IS A DEBUG BUILD OF HEN ENGINE %s, PERFORMANCE WILL BE SLOW", version::Version);
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "THIS IS A DEBUG BUILD OF HEN ENGINE %s, PERFORMANCE WILL BE SLOW", version::Version.c_str());
                 
                 switch (renderer::CurrentBackend)
                 {

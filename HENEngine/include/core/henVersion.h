@@ -1,15 +1,15 @@
 #ifndef _HENVERSION_H_
 #define _HENVERSION_H_
 
-#include <string>
+#include <format>
 
 namespace hen::version
 {
     constexpr int Major = 0;
     constexpr int Minor = 11;
-    constexpr int Revision = 76;
+    constexpr int Revision = 77;
 
-    const std::string Version = std::to_string(Major) + "." + std::to_string(Minor) + "." + std::to_string(Revision);
+    inline std::string Version = std::format("{}.{}.{}", Major, Minor, Revision);
 }
 
 #endif // !_HENVERSION_H_

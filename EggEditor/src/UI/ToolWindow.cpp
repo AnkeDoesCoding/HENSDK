@@ -4,11 +4,22 @@ void ToolWindow::Initialise(ComponentWindow* compWindow)
 {
     m_ComponentWindow = compWindow;
 
-    m_TranslateIcon = hen::renderer::GetTextureManager()->Load("res/ui/arrow_branch.png");
-    m_RotateIcon = hen::renderer::GetTextureManager()->Load("res/ui/arrow_refresh.png");
-    m_ScaleIcon = hen::renderer::GetTextureManager()->Load("res/ui/arrow_out.png");
-    m_AddIcon = hen::renderer::GetTextureManager()->Load("res/ui/add.png");
-    m_RemoveIcon = hen::renderer::GetTextureManager()->Load("res/ui/cancel.png");
+    hen::graphics::TextureDesc iconDesc;
+
+    iconDesc.Path = "res/ui/arrow_branch.png";
+    m_TranslateIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/arrow_refresh.png";
+    m_RotateIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/arrow_out.png";
+    m_ScaleIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/add.png";
+    m_AddIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/cancel.png";
+    m_RemoveIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([&]()
     {

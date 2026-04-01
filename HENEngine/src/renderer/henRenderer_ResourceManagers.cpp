@@ -124,9 +124,55 @@ namespace hen::renderer
         }
     }
 
-    TextureHandle TextureManager::Load(const char* texPath)
+    TextureHandle TextureManager::Load(graphics::TextureDesc textureDesc, const unsigned char* source, size_t sourceSize)
     {
-        size_t key = HashString(texPath);
+        size_t key;
+
+        if (textureDesc.Copy)
+        {
+            key = HashTexture(source, sourceSize, textureDesc.Width, textureDesc.Height, textureDesc.Components);
+
+            auto it = m_PathToIndex.find(key);
+            if (it != m_PathToIndex.end())
+            {
+                uint32_t index = it->second;
+                return TextureHandle{ index, m_Textures[index].Generation };
+            }
+
+            uint32_t index;
+            if (!m_FreeList.empty())
+            {
+                index = m_FreeList.back();
+                m_FreeList.pop_back();
+            
+                m_Textures[index].Texture.Load(textureDesc, source, sourceSize); 
+                m_Textures[index].Alive = true;
+                m_Textures[index].Generation++;
+            }
+            else
+            {
+                index = static_cast<uint32_t>(m_Textures.size());
+                m_Textures.emplace_back();                         
+                m_Textures[index].Texture.Load(textureDesc, source, sourceSize);  
+                m_Textures[index].Alive = true;
+                m_Textures[index].Generation = 1;
+            }
+
+            m_PathToIndex[key] = index;
+
+            HEN_LOG("[hen::TextureManager] Successfully cached texture");
+
+            return TextureHandle{ index, m_Textures[index].Generation };
+        }
+
+        if (textureDesc.Cubemap)
+        {
+            key = HashString(textureDesc.PathToFaces[0]);
+        }
+        else
+        {
+            key = HashString(textureDesc.Path);
+        }
 
         auto it = m_PathToIndex.find(key);
         if (it != m_PathToIndex.end())
@@ -141,7 +187,7 @@ namespace hen::renderer
             index = m_FreeList.back();
             m_FreeList.pop_back();
             
-            m_Textures[index].Texture.Load(texPath); 
+            m_Textures[index].Texture.Load(textureDesc); 
             m_Textures[index].Alive = true;
             m_Textures[index].Generation++;
         }
@@ -149,81 +195,7 @@ namespace hen::renderer
         {
             index = static_cast<uint32_t>(m_Textures.size());
             m_Textures.emplace_back();                         
-            m_Textures[index].Texture.Load(texPath);  
-            m_Textures[index].Alive = true;
-            m_Textures[index].Generation = 1;
-        }
-
-        m_PathToIndex[key] = index;
-
-        HEN_LOG("[hen::TextureManager] Successfully cached texture");
-
-        return TextureHandle{ index, m_Textures[index].Generation };
-    }
-
-    TextureHandle TextureManager::Load(const unsigned char* data, int size, int width, int height, int components)
-    {
-        size_t key = HashTexture(data, size, width, height, components);
-
-        auto it = m_PathToIndex.find(key);
-        if (it != m_PathToIndex.end())
-        {
-            uint32_t index = it->second;
-            return TextureHandle{ index, m_Textures[index].Generation };
-        }
-
-        uint32_t index;
-        if (!m_FreeList.empty())
-        {
-            index = m_FreeList.back();
-            m_FreeList.pop_back();
-         
-            m_Textures[index].Texture.Load(data, size, width, height, components); 
-            m_Textures[index].Alive = true;
-            m_Textures[index].Generation++;
-        }
-        else
-        {
-            index = static_cast<uint32_t>(m_Textures.size());
-            m_Textures.emplace_back();                         
-            m_Textures[index].Texture.Load(data, size, width, height, components);  
-            m_Textures[index].Alive = true;
-            m_Textures[index].Generation = 1;
-        }
-
-        m_PathToIndex[key] = index;
-
-        HEN_LOG("[hen::TextureManager] Successfully cached texture");
-
-        return TextureHandle{ index, m_Textures[index].Generation };
-    }
-
-    TextureHandle TextureManager::Load(std::vector<std::string> faces)
-    {
-        size_t key = HashString(faces[0]);
-
-        auto it = m_PathToIndex.find(key);
-        if (it != m_PathToIndex.end())
-        {
-            uint32_t index = it->second;
-            return TextureHandle{ index, m_Textures[index].Generation };
-        }
-
-        uint32_t index;
-        if (!m_FreeList.empty())
-        {
-            index = m_FreeList.back();
-            m_FreeList.pop_back();
-            
-            m_Textures[index].Texture.Load(faces); 
-            m_Textures[index].Alive = true;
-            m_Textures[index].Generation++;
-        }
-        else
-        {
-            index = static_cast<uint32_t>(m_Textures.size());
-            m_Textures.emplace_back();                         
-            m_Textures[index].Texture.Load(faces);  
+            m_Textures[index].Texture.Load(textureDesc);  
             m_Textures[index].Alive = true;
             m_Textures[index].Generation = 1;
         }

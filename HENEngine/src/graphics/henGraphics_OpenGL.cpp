@@ -52,22 +52,22 @@ namespace hen::graphics
         return m_ID;
     }
 
-    void Texture_OpenGL::CreateRenderData(int width, int height, int components, unsigned char* data)
+    void Texture_OpenGL::CreateRenderData(const TextureDesc& textureDesc, const unsigned char* data)
     {
         GLenum internalFormat = 0;
         GLenum dataFormat = 0;
 
-        if (components == 1)
+        if (textureDesc.Components == 1)
         {
             internalFormat = GL_R8;
             dataFormat = GL_RED;
         }
-        else if (components == 3)
+        else if (textureDesc.Components == 3)
         {
             internalFormat = GL_SRGB8;
             dataFormat = GL_RGB;
         }
-        else if (components == 4)  
+        else if (textureDesc.Components == 4)  
         {
             internalFormat = GL_SRGB8_ALPHA8;
             dataFormat = GL_RGBA;
@@ -80,29 +80,29 @@ namespace hen::graphics
         glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        int levels = 1 + static_cast<int>(std::floor(std::log2(std::max(width, height))));
+        int levels = 1 + static_cast<int>(std::floor(std::log2(std::max(textureDesc.Width, textureDesc.Height))));
 
-        glTextureStorage2D(m_ID, levels, internalFormat, width, height);
-        glTextureSubImage2D(m_ID, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
+        glTextureStorage2D(m_ID, levels, internalFormat, textureDesc.Width, textureDesc.Height);
+        glTextureSubImage2D(m_ID, 0, 0, 0, textureDesc.Width, textureDesc.Height, dataFormat, GL_UNSIGNED_BYTE, data);
         glGenerateTextureMipmap(m_ID);
     }
 
-    void Texture_OpenGL::CreateRenderData(int width, int height, int components, std::vector<unsigned char*> data)
+    void Texture_OpenGL::CreateRenderData(const TextureDesc& textureDesc, std::vector<unsigned char*> data)
     {
         GLenum internalFormat = 0;
         GLenum dataFormat = 0;
 
-        if (components == 1)
+        if (textureDesc.Components == 1)
         {
             internalFormat = GL_R8;
             dataFormat = GL_RED;
         }
-        else if (components == 3)
+        else if (textureDesc.Components == 3)
         {
             internalFormat = GL_SRGB8;
             dataFormat = GL_RGB;
         }
-        else if (components == 4)  
+        else if (textureDesc.Components == 4)  
         {
             internalFormat = GL_SRGB8_ALPHA8;
             dataFormat = GL_RGBA;
@@ -114,11 +114,11 @@ namespace hen::graphics
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTextureParameteri(m_ID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-        glTextureStorage2D(m_ID, 1, internalFormat, width, height);
+        glTextureStorage2D(m_ID, 1, internalFormat, textureDesc.Width, textureDesc.Height);
 
         for (int i = 0; i < 6; i++)
         {
-            glTextureSubImage3D(m_ID, 0, 0, 0, i, width, height, 1, dataFormat, GL_UNSIGNED_BYTE, data[i]);
+            glTextureSubImage3D(m_ID, 0, 0, 0, i, textureDesc.Width, textureDesc.Height, 1, dataFormat, GL_UNSIGNED_BYTE, data[i]);
         }
     }
 

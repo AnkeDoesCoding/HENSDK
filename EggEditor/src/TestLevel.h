@@ -61,7 +61,10 @@ namespace testlevel
 
         importer::ImportModel("res/models/skybox/skybox.glb", TestLevel.Skybox.Mesh, TestLevel.Skybox.Material);
 
-        std::vector<std::string> faces
+        hen::graphics::TextureDesc skyboxTexDesc;
+
+        skyboxTexDesc.Cubemap = true;
+        skyboxTexDesc.PathToFaces = 
         {
             "res/engine/textures/cityskybox/right.jpg",
             "res/engine/textures/cityskybox/left.jpg",
@@ -71,7 +74,7 @@ namespace testlevel
             "res/engine/textures/cityskybox/back.jpg"
         };
 
-        TestLevel.Skybox.Cubemap = hen::renderer::GetTextureManager()->Load(faces);
+        TestLevel.Skybox.Cubemap = hen::renderer::GetTextureManager()->Load(skyboxTexDesc);
     }
 }
 

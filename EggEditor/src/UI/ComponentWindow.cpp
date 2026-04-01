@@ -2,15 +2,34 @@
 
 void ComponentWindow::Initialise()
 {
-    m_ResetIcon = hen::renderer::GetTextureManager()->Load("res/ui/arrow_undo.png");
-    m_RemoveIcon = hen::renderer::GetTextureManager()->Load("res/ui/brick_delete.png");
-    m_AddIcon = hen::renderer::GetTextureManager()->Load("res/ui/brick_add.png");
-    m_TransformIcon = hen::renderer::GetTextureManager()->Load("res/ui/arrow_switch.png");
-    m_MaterialIcon = hen::renderer::GetTextureManager()->Load("res/ui/images.png");
-    m_RigidBodyIcon = hen::renderer::GetTextureManager()->Load("res/ui/sport_soccer.png");
-    m_MeshIcon = hen::renderer::GetTextureManager()->Load("res/ui/package.png");
-    m_LightIcon = hen::renderer::GetTextureManager()->Load("res/ui/lightning.png");
-    m_NameIcon = hen::renderer::GetTextureManager()->Load("res/ui/tag_orange.png");
+    hen::graphics::TextureDesc iconDesc;
+
+    iconDesc.Path = "res/ui/arrow_undo.png";
+    m_ResetIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/brick_delete.png";
+    m_RemoveIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/brick_add.png";
+    m_AddIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/arrow_switch.png";
+    m_TransformIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/images.png";
+    m_MaterialIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/sport_soccer.png";
+    m_RigidBodyIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/package.png";
+    m_MeshIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/lightning.png";
+    m_LightIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
+    iconDesc.Path = "res/ui/tag_orange.png";
+    m_NameIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
 
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([&]() 
     {

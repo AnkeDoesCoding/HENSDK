@@ -164,13 +164,23 @@ namespace importer
         if (!img.uri.empty())
         {
             auto full = modelDir / img.uri;
-            handle = hen::renderer::GetTextureManager()->Load(full.string().c_str());
+
+            hen::graphics::TextureDesc description;
+            description.Path = full.string().c_str();
+            handle = hen::renderer::GetTextureManager()->Load(description);
             return;
         }
         // embedded textures
         if (!img.image.empty())
         {
-            handle = hen::renderer::GetTextureManager()->Load(img.image.data(), img.image.size(), img.width, img.height, img.component);
+            hen::graphics::TextureDesc description;
+
+            description.Copy = true;
+            description.Width = img.width;
+            description.Height = img.height;
+            description.Components = img.component;
+
+            handle = hen::renderer::GetTextureManager()->Load(description, img.image.data(), img.image.size());
             return;
         }
     }

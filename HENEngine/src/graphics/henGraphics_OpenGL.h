@@ -12,8 +12,8 @@ namespace hen::graphics
 
         uint32_t GetID() const override;
 
-        void CreateRenderData(int width, int height, int components, unsigned char* data) override;
-        void CreateRenderData(int width, int height, int components, std::vector<unsigned char*> data) override;
+        void CreateRenderData(const TextureDesc& textureDesc, const unsigned char* data) override;
+        void CreateRenderData(const TextureDesc& textureDesc, std::vector<unsigned char*> cubemapData) override;
 
     private:
         uint32_t m_ID;

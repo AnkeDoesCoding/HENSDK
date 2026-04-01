@@ -4,6 +4,10 @@ void LevelWindow::Initialise(ComponentWindow* compWindow)
 {
     m_CompWindow = compWindow;
 
+    hen::graphics::TextureDesc iconDesc;
+    iconDesc.Path = "res/ui/bricks.png";
+    m_EntityIcon = hen::renderer::GetTextureManager()->Load(iconDesc);
+
     hen::ui::GetIMGUIManager()->RegisterDrawCallback([&]() 
     {
         ImGui::Begin("Entities");
@@ -23,7 +27,7 @@ void LevelWindow::Initialise(ComponentWindow* compWindow)
 
                 bool isSelected = (m_CompWindow->SelectedEntity == entity);
 
-                auto* texture = hen::renderer::GetTextureManager()->Get(hen::renderer::GetTextureManager()->Load("res/ui/bricks.png"));
+                auto* texture = hen::renderer::GetTextureManager()->Get(m_EntityIcon);
 
                 ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(texture->GetID())), ImVec2(16, 16));
                 ImGui::SameLine();

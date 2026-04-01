@@ -13,6 +13,8 @@ public:
 private:
     ComponentWindow* m_CompWindow;
     
+    hen::renderer::TextureHandle m_EntityIcon;
+
 };
 
 #endif // !_LEVELWINDOW_H_
