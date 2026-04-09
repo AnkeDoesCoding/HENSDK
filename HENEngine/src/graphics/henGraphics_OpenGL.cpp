@@ -122,6 +122,107 @@ namespace hen::graphics
         }
     }
 
+    void Buffer_OpenGL::Create(size_t size, float* vertices)
+    {
+        HEN_ASSERT(m_Type == BUFFER_TYPES::NONE, "graphics::Buffer type cannot be changed");
+
+        m_Type = BUFFER_TYPES::VERTEX;
+        m_Size = size;
+
+        glCreateBuffers(1, &m_ID);
+        glNamedBufferData(m_ID, size, vertices, GL_STATIC_DRAW);
+    }   
+
+    void Buffer_OpenGL::Create(uint32_t count, uint32_t* indices)
+    {
+        HEN_ASSERT(m_Type == BUFFER_TYPES::NONE, "graphics::Buffer type cannot be changed");
+
+        m_Type = BUFFER_TYPES::INDEX;
+        m_Count = count;
+
+        glCreateBuffers(1, &m_ID);
+        glNamedBufferData(m_ID, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+    }
+
+    void Buffer_OpenGL::Create(size_t size, uint32_t binding)
+    {
+        HEN_ASSERT(m_Type == BUFFER_TYPES::NONE, "graphics::Buffer type cannot be changed");
+
+        m_Type = BUFFER_TYPES::UNIFORM;
+        m_Size = size;
+        m_Binding = binding;
+
+        glCreateBuffers(1, &m_ID);
+        glNamedBufferData(m_ID, size, nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_ID);
+    }
+
+    void Buffer_OpenGL::Bind() const
+    {
+        switch (m_Type)
+        {
+        case BUFFER_TYPES::VERTEX:
+            glBindBuffer(GL_ARRAY_BUFFER, m_ID);
+            break;
+        case BUFFER_TYPES::INDEX:
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void Buffer_OpenGL::UnBind() const
+    {
+        switch (m_Type)
+        {
+        case BUFFER_TYPES::VERTEX:
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            break;
+        case BUFFER_TYPES::INDEX:
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            break;
+        default:
+            break;
+        }      
+    }
+
+    const uint32_t Buffer_OpenGL::GetID() const
+    {
+        return m_ID;
+    }
+    
+    const uint32_t Buffer_OpenGL::GetCount() const
+    {   
+        return m_Count;
+    }
+
+    const uint32_t Buffer_OpenGL::GetBinding() const
+    {
+        return m_Binding;
+    }
+
+    const size_t Buffer_OpenGL::GetSize() const
+    {
+        return m_Size;
+    }
+
+    const BufferLayout& Buffer_OpenGL::GetLayout() const
+    {
+        return m_Layout;
+    }
+
+    void Buffer_OpenGL::SetLayout(const BufferLayout& layout)
+    {
+        m_Layout = layout;
+    }
+
+    void Buffer_OpenGL::SetData(const void* data, size_t size, size_t offset)
+    {
+        m_Size = size;
+        glNamedBufferSubData(m_ID, offset, size, data);
+    }
+
     VertexBuffer_OpenGL::VertexBuffer_OpenGL(uint32_t size, float* vertices)
     {
         glCreateBuffers(1, &m_ID);

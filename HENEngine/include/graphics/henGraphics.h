@@ -7,6 +7,7 @@
 
 #include <string>
 #include <memory>
+#include <cstdint>
 
 namespace hen::graphics
 {
@@ -30,6 +31,14 @@ namespace hen::graphics
         PROGRAM,
         VERTEX,
         FRAGMENT
+    };
+
+    enum class BUFFER_TYPES
+    {
+        NONE,
+        VERTEX,
+        INDEX,
+        UNIFORM
     };
 
     enum class RESOURCE_STATES
@@ -121,6 +130,32 @@ namespace hen::graphics
         bool Copy = false;
     };
 
+    class BufferLayout
+    {
+    public:
+        BufferLayout() = default;
+        BufferLayout(const std::initializer_list<BufferElement>& elements);
+
+        inline const std::vector<BufferElement>& GetElements() const
+        {
+            return m_Elements;
+        }
+
+        uint32_t GetStride() const
+        {
+            return m_Stride;
+        }
+
+        std::vector<BufferElement>::iterator begin();
+        std::vector<BufferElement>::iterator end();
+        std::vector<BufferElement>::const_iterator begin() const;
+        std::vector<BufferElement>::const_iterator end() const;
+
+    private:
+        std::vector<BufferElement> m_Elements;
+        uint32_t m_Stride;
+    };
+
     class Texture
     {
     public:
@@ -152,8 +187,6 @@ namespace hen::graphics
     public:
         struct Backend
         {
-            virtual ~Backend() = default;
-
             virtual uint32_t GetID() const = 0;
 
             virtual void CreateRenderData(const TextureDesc& textureDesc, const unsigned char* data) = 0;
@@ -169,30 +202,51 @@ namespace hen::graphics
         TextureDesc m_Description;
     };
 
-    class BufferLayout
+    class Buffer
     {
     public:
-        BufferLayout() = default;
-        BufferLayout(const std::initializer_list<BufferElement>& elements);
+        void CreateAsVertex(size_t size, float* vertices);
+        void CreateAsIndex(uint32_t count, uint32_t* indices);
+        void CreateAsUniform(size_t size, uint32_t binding);
 
-        inline const std::vector<BufferElement>& GetElements() const
+        void Bind() const;
+        void UnBind() const;
+
+        bool IsBackendValid() const;
+        
+        const BUFFER_TYPES GetType() const;
+        const uint32_t GetID() const;
+        const uint32_t GetCount() const;
+        const uint32_t GetBinding() const;
+        const size_t GetSize() const;
+        const BufferLayout& GetLayout() const;
+
+        void SetLayout(const BufferLayout& layout);
+        void SetData(const void* data, size_t size, size_t offset = 0);
+
+    public:
+        struct Backend
         {
-            return m_Elements;
-        }
+            virtual void Create(size_t size, float* vertices) = 0;
+            virtual void Create(uint32_t count, uint32_t* indices) = 0;
+            virtual void Create(size_t size, uint32_t binding) = 0;
 
-        uint32_t GetStride() const
-        {
-            return m_Stride;
-        }
+            virtual void Bind() const = 0;
+            virtual void UnBind() const = 0;
 
-        std::vector<BufferElement>::iterator begin();
-        std::vector<BufferElement>::iterator end();
-        std::vector<BufferElement>::const_iterator begin() const;
-        std::vector<BufferElement>::const_iterator end() const;
+            virtual const uint32_t GetID() const = 0;
+            virtual const uint32_t GetCount() const = 0;
+            virtual const uint32_t GetBinding() const = 0;
+            virtual const size_t GetSize() const = 0;
+            virtual const BufferLayout& GetLayout() const = 0;
+
+            virtual void SetLayout(const BufferLayout& layout) = 0;
+            virtual void SetData(const void* data, size_t size, size_t offset) = 0;
+        };
 
     private:
-        std::vector<BufferElement> m_Elements;
-        uint32_t m_Stride;
+        std::unique_ptr<Backend> m_Backend;
+        BUFFER_TYPES m_Type = BUFFER_TYPES::NONE;
     };
 
     class VertexBuffer

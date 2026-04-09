@@ -8,7 +8,7 @@ namespace hen::graphics
     class Texture_OpenGL : public Texture::Backend
     {
     public:
-        ~Texture_OpenGL() override;
+        ~Texture_OpenGL();
 
         uint32_t GetID() const override;
 
@@ -17,6 +17,35 @@ namespace hen::graphics
 
     private:
         uint32_t m_ID;
+    };
+
+    class Buffer_OpenGL : public Buffer::Backend
+    {
+    public:
+        void Create(size_t size, float* vertices) override;
+        void Create(uint32_t count, uint32_t* indices) override;
+        void Create(size_t size, uint32_t binding) override;
+
+        void Bind() const override;
+        void UnBind() const override;
+
+        const uint32_t GetID() const override;
+        const uint32_t GetCount() const override;
+        const uint32_t GetBinding() const override;
+        const size_t GetSize() const override;
+        const BufferLayout& GetLayout() const override;
+
+        void SetLayout(const BufferLayout& layout) override;
+        void SetData(const void* data, size_t size, size_t offset) override;
+    
+    private:
+        BUFFER_TYPES m_Type = BUFFER_TYPES::NONE;
+        uint32_t m_ID;
+
+        BufferLayout m_Layout;
+        uint32_t m_Count;
+        size_t m_Size;
+        uint32_t m_Binding;
     };
 
     class VertexBuffer_OpenGL : public VertexBuffer

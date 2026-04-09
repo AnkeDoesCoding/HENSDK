@@ -52,6 +52,89 @@ namespace hen::graphics
         }
     }
 
+    BufferElement::BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised)
+        : Name(name), Size(PrimitiveSize(primitive)), Offset(0), Type(primitive), Normalised(normalised)
+    {
+        
+    }
+
+    uint32_t BufferElement::GetComponentCount() const
+    {
+        switch (Type)
+        {
+            case SHADER_PRIMITIVES::FLOAT:
+                return 1;
+                break;
+            case SHADER_PRIMITIVES::FLOAT2:
+                return 2;
+                break;
+            case SHADER_PRIMITIVES::FLOAT3:
+                return 3;
+                break;
+            case SHADER_PRIMITIVES::FLOAT4:
+                return 4;
+                break;
+            case SHADER_PRIMITIVES::INT:
+                return 1;
+                break;
+            case SHADER_PRIMITIVES::INT2:
+                return 2;
+                break;
+            case SHADER_PRIMITIVES::INT3:
+                return 3;
+                break;
+            case SHADER_PRIMITIVES::INT4:
+                return 4;
+                break;
+            case SHADER_PRIMITIVES::MAT3:
+                return 3;
+                break;
+            case SHADER_PRIMITIVES::MAT4:
+                return 4;
+                break;
+            case SHADER_PRIMITIVES::BOOL:
+                return 1;
+                break;
+            default:
+                HEN_ASSERT(false, "Couldn't get component count");
+                return 0;
+                break;
+        }
+    }
+
+    BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements) 
+        : m_Elements(elements), m_Stride(0)
+    {
+        size_t offset = 0;
+        m_Stride = 0;
+        for (graphics::BufferElement& element : m_Elements)
+        {
+            element.Offset = offset;
+            offset += element.Size;
+            m_Stride += element.Size;
+        }
+    }
+
+    std::vector<BufferElement>::iterator BufferLayout::begin() 
+    {
+        return m_Elements.begin();
+    }
+
+    std::vector<BufferElement>::iterator BufferLayout::end() 
+    {
+        return m_Elements.end();
+    }
+
+    std::vector<BufferElement>::const_iterator BufferLayout::begin() const 
+    {
+        return m_Elements.begin();
+    }
+
+    std::vector<BufferElement>::const_iterator BufferLayout::end() const 
+    {
+        return m_Elements.end();
+    }
+
     Texture::Texture()
     {
 
@@ -199,87 +282,151 @@ namespace hen::graphics
         State = RESOURCE_STATES::READY_TO_RENDER;
     }
 
-    BufferElement::BufferElement(SHADER_PRIMITIVES primitive, const std::string& name, bool normalised)
-        : Name(name), Size(PrimitiveSize(primitive)), Offset(0), Type(primitive), Normalised(normalised)
+    
+    void Buffer::CreateAsVertex(size_t size, float* vertices)
     {
+        switch (renderer::CurrentBackend)
+        {
+            case renderer::BACKENDS::OPENGL:
+                m_Backend = std::make_unique<Buffer_OpenGL>(size, vertices);
+                break;
+            default:
+                break;
+        }
+
+        m_Backend->Create(size, vertices);
         
     }
 
-    uint32_t BufferElement::GetComponentCount() const
+    void Buffer::CreateAsIndex(uint32_t count, uint32_t* indices)
     {
-        switch (Type)
+        switch (renderer::CurrentBackend)
         {
-            case SHADER_PRIMITIVES::FLOAT:
-                return 1;
-                break;
-            case SHADER_PRIMITIVES::FLOAT2:
-                return 2;
-                break;
-            case SHADER_PRIMITIVES::FLOAT3:
-                return 3;
-                break;
-            case SHADER_PRIMITIVES::FLOAT4:
-                return 4;
-                break;
-            case SHADER_PRIMITIVES::INT:
-                return 1;
-                break;
-            case SHADER_PRIMITIVES::INT2:
-                return 2;
-                break;
-            case SHADER_PRIMITIVES::INT3:
-                return 3;
-                break;
-            case SHADER_PRIMITIVES::INT4:
-                return 4;
-                break;
-            case SHADER_PRIMITIVES::MAT3:
-                return 3;
-                break;
-            case SHADER_PRIMITIVES::MAT4:
-                return 4;
-                break;
-            case SHADER_PRIMITIVES::BOOL:
-                return 1;
+            case renderer::BACKENDS::OPENGL:
+                m_Backend = std::make_unique<Buffer_OpenGL>(count, indices);
                 break;
             default:
-                HEN_ASSERT(false, "Couldn't get component count");
-                return 0;
                 break;
         }
+
+        m_Backend->Create(count, indices);
     }
 
-    BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements) 
-        : m_Elements(elements), m_Stride(0)
+    void Buffer::CreateAsUniform(size_t size, uint32_t binding)
     {
-        size_t offset = 0;
-        m_Stride = 0;
-        for (graphics::BufferElement& element : m_Elements)
+        switch (renderer::CurrentBackend)
         {
-            element.Offset = offset;
-            offset += element.Size;
-            m_Stride += element.Size;
+            case renderer::BACKENDS::OPENGL:
+                m_Backend = std::make_unique<Buffer_OpenGL>(size, binding);
+                break;
+            default:
+                break;
+        }
+
+        m_Backend->Create(size, binding);
+    }
+
+    void Buffer::Bind() const
+    {
+        if (IsBackendValid())
+        {
+            m_Backend->Bind();
         }
     }
 
-    std::vector<BufferElement>::iterator BufferLayout::begin() 
+    void Buffer::UnBind() const
     {
-        return m_Elements.begin();
+        if (IsBackendValid())
+        {
+            m_Backend->UnBind();
+        }
     }
 
-    std::vector<BufferElement>::iterator BufferLayout::end() 
+    bool Buffer::IsBackendValid() const
     {
-        return m_Elements.end();
+        return m_Backend != nullptr;
     }
 
-    std::vector<BufferElement>::const_iterator BufferLayout::begin() const 
+    
+    const BUFFER_TYPES Buffer::GetType() const
     {
-        return m_Elements.begin();
+        return m_Type;
     }
 
-    std::vector<BufferElement>::const_iterator BufferLayout::end() const 
+    const uint32_t Buffer::GetID() const
     {
-        return m_Elements.end();
+        uint32_t id;
+
+        if (IsBackendValid())
+        {
+            id = m_Backend->GetID();
+        }
+
+        return id;
+    }
+
+    const uint32_t Buffer::GetCount() const
+    {
+        uint32_t count;
+
+        if (IsBackendValid())
+        {
+            count = m_Backend->GetCount();
+        }
+
+        return count;
+    }
+
+    const uint32_t Buffer::GetBinding() const
+    {
+        uint32_t binding;
+
+        if (IsBackendValid())
+        {
+            binding = m_Backend->GetBinding();
+        }
+
+        return binding;
+    }
+
+    const size_t Buffer::GetSize() const
+    {
+        size_t size;
+
+        if (IsBackendValid())
+        {
+            size = m_Backend->GetSize();
+        }
+
+        return size;
+    }
+
+    const BufferLayout& Buffer::GetLayout() const
+    {
+        BufferLayout layout;
+
+        if (IsBackendValid())
+        {
+            layout = m_Backend->GetLayout();
+        }
+
+        return layout;
+    }
+
+    void Buffer::SetLayout(const BufferLayout& layout)
+    {
+        if (IsBackendValid())
+        {
+            m_Backend->SetLayout(layout);
+        }
+    }
+
+    void Buffer::SetData(const void* data, size_t size, size_t offset)
+    {
+        if (IsBackendValid())
+        {
+            m_Backend->SetData(data, size, offset);
+        }
     }
 
     std::unique_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size, float* vertices)
