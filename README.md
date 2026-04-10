@@ -1,10 +1,13 @@
-<img align = "left" src = "res/HENSDKLogo.svg" width = "125px">
-
 # HEN SDK
 
-[![Windows Build](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml) 
+<img align = "left" src = "res/HENSDKLogo.svg" width = "125px">
+<br>
+
+[![Windows Build](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-windows.yml)
 <br>
 [![Linux Build](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/AnkeDoesCoding/HENSDK/actions/workflows/cmake-linux.yml)
+<br>
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/AnkeDoesCoding/HENSDK)
 
 <br>
 
@@ -20,17 +23,17 @@ HEN SDK is a small WIP SDK for 3D real time applications. It is currently a lear
 * [Job System](HENEngine\include\core\henJobSystem.h)
 * [Console System](HENEngine\include\tools\henConsole.h)
   * [Console Variable System](HENEngine\include\core\henCVar.h)
-* [Renderer](HENEngine\include\renderer\henRenderer.h)
-  * [Template Backend](HENEngine\include\graphics\henGraphics.h) 
-  * [OpenGL Backend](HENEngine\src\graphics\henGraphics_OpenGL.h) 
+* [Forward Renderer](HENEngine\include\renderer\henRenderer.h)
+  * [Graphics Objects](HENEngine\include\graphics\henGraphics.h) 
+    * [OpenGL Backend](HENEngine\src\graphics\henGraphics_OpenGL.h)
+  * [Render Hardware Context](HENEngine\include\renderer\henRHC.h)
+    * [OpenGL Backend](HENEngine\src\renderer\henRHC_OpenGL.h)
 
 ### Graphics
-* 3D skybox <i> inspired by Source </i>
+* 3D skybox <i> inspired by Source Engine</i>
 * 2D skybox 
-<br>
-<br>
 * Blinn-phong lighting
-* Diffuse and specular lighting
+* Diffuse and specular lighting workflow
 
 ## Showcase
 
