@@ -202,8 +202,8 @@ namespace hen::level
         std::vector<math::Vec2> TextureCoordinates;
 
         graphics::VertexArray VertexArray;
-        std::shared_ptr<graphics::VertexBuffer> VertexBuffer;
-        std::shared_ptr<graphics::IndexBuffer> IndexBuffer;
+        graphics::Buffer VertexBuffer;
+        graphics::Buffer IndexBuffer;
 
         graphics::BufferLayout BufferLayout
         {
@@ -262,14 +262,14 @@ namespace hen::level
 
             }
             
-            VertexBuffer = graphics::VertexBuffer::Create(interleavedBuffer.size() * sizeof(float), interleavedBuffer.data());
-            VertexBuffer->SetLayout(BufferLayout);
+            VertexBuffer.CreateAsVertex(interleavedBuffer.size() * sizeof(float), interleavedBuffer.data());
+            VertexBuffer.SetLayout(BufferLayout);
 
-            IndexBuffer = graphics::IndexBuffer::Create(Indices.size(), Indices.data());
+            IndexBuffer.CreateAsIndex(Indices.size(), Indices.data());
 
             VertexArray.Create();
-            VertexArray.AddVertexBuffer(VertexBuffer);
-            VertexArray.SetIndexBuffer(IndexBuffer);
+            VertexArray.AddVertexBuffer(&VertexBuffer);
+            VertexArray.SetIndexBuffer(&IndexBuffer);
 
             State = graphics::RESOURCE_STATES::READY_TO_RENDER;
         }
@@ -278,16 +278,10 @@ namespace hen::level
         {
             VertexArray.UnBind();
         
-            if (VertexBuffer)
-            {
-                VertexBuffer.reset();
-            }
+            VertexBuffer.UnBind();
         
-            if (IndexBuffer)
-            {
-                IndexBuffer.reset();
-            }
-            
+            IndexBuffer.UnBind();
+
             State = graphics::RESOURCE_STATES::NOT_READY;
         }
 

@@ -49,48 +49,11 @@ namespace hen::graphics
         uint32_t m_Binding;
     };
 
-    class VertexBuffer_OpenGL : public VertexBuffer
+    class VertexArray_OpenGL : public VertexArray::Backend
     {
     public:
-        VertexBuffer_OpenGL(uint32_t size, float* vertices);
-        ~VertexBuffer_OpenGL() override;
-
-        uint32_t GetID() const override;
-
-        void Bind() const override;
-        void UnBind() const override;
-
-        const BufferLayout& GetLayout() const override;
-        void SetLayout(const BufferLayout& layout) override;
-
-    private:
-        uint32_t m_ID;
-
-        BufferLayout m_Layout;
-    };
-
-    class IndexBuffer_OpenGL : public IndexBuffer
-    {
-    public:
-        IndexBuffer_OpenGL(uint32_t count, uint32_t* indices);
-        ~IndexBuffer_OpenGL() override;
-
-        uint32_t GetCount() const override;
-        uint32_t GetID() const override;
-
-        void Bind() const override;
-        void UnBind() const override;
-
-    private:
-        uint32_t m_ID;
-        uint32_t m_Count;
-    };
-
-    class NewVertexArray_OpenGL : public NewVertexArray::Backend
-    {
-    public:
-        NewVertexArray_OpenGL();
-        ~NewVertexArray_OpenGL();
+        VertexArray_OpenGL();
+        ~VertexArray_OpenGL();
 
 		void Bind() const override;
 		void UnBind() const override;
@@ -106,44 +69,6 @@ namespace hen::graphics
         Buffer* m_IndexBuffer;
         uint32_t m_ID;
         uint32_t m_VertexBufferIndex = 0;
-    };
-
-
-    class VertexArray_OpenGL : public VertexArray::Backend
-    {
-    public:
-        VertexArray_OpenGL();
-        ~VertexArray_OpenGL();
-
-		void Bind() const override;
-		void UnBind() const override;
-
-        void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) override;
-		void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) override;
-
-        const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const override;
-		const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const override;
-
-    private:
-        std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
-        std::shared_ptr<IndexBuffer> m_IndexBuffer;
-        uint32_t m_ID;
-        uint32_t m_VertexBufferIndex = 0;
-    };
-
-    class UniformBuffer_OpenGL : public UniformBuffer::Backend
-    {
-    public: 
-        UniformBuffer_OpenGL(size_t size, unsigned binding);
-
-        void SetData(const void* data, size_t size, size_t offset) override;
-        size_t GetSize() const override;
-        unsigned GetBinding() override;
-
-    private:
-        uint32_t m_ID;
-        size_t m_Size;
-        unsigned m_Binding;
     };
 
     class Shader_OpenGL : public Shader::Backend

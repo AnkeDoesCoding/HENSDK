@@ -167,7 +167,7 @@ namespace hen::graphics
             return m_BackendImpl->GetID();
         }
 
-        return 0;
+        return -1;
     }
 
     void Texture::Load(const TextureDesc& textureDesc, const unsigned char* source, size_t sourceSize)
@@ -359,7 +359,7 @@ namespace hen::graphics
 
     const uint32_t Buffer::GetID() const
     {
-        uint32_t id;
+        uint32_t id = -1;
 
         if (IsBackendValid())
         {
@@ -371,7 +371,7 @@ namespace hen::graphics
 
     const uint32_t Buffer::GetCount() const
     {
-        uint32_t count;
+        uint32_t count = 0;
 
         if (IsBackendValid())
         {
@@ -383,7 +383,7 @@ namespace hen::graphics
 
     const uint32_t Buffer::GetBinding() const
     {
-        uint32_t binding;
+        uint32_t binding = -1;
 
         if (IsBackendValid())
         {
@@ -395,7 +395,7 @@ namespace hen::graphics
 
     const size_t Buffer::GetSize() const
     {
-        size_t size;
+        size_t size = 0;
 
         if (IsBackendValid())
         {
@@ -433,109 +433,17 @@ namespace hen::graphics
         }
     }
 
-    std::unique_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size, float* vertices)
+    void VertexArray::Create()
     {
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKENDS::OPENGL:
-                return std::make_unique<VertexBuffer_OpenGL>(size, vertices);
-                break;
-            default:
-                return nullptr;
-                break;
-        }
-    }
-
-    std::unique_ptr<IndexBuffer> IndexBuffer::Create(uint32_t size, uint32_t* count)
-    {
-        switch (renderer::CurrentBackend)
-        {
-            case renderer::BACKENDS::OPENGL:
-                return std::make_unique<IndexBuffer_OpenGL>(size, count);
-                break;
-            default:
-                return nullptr;
-                break;
-        }
-    }
-
-    void NewVertexArray::Create()
-    {
-        switch (renderer::CurrentBackend)
-        {
-            case renderer::BACKENDS::OPENGL:
-                m_BackendImpl = std::make_unique<NewVertexArray_OpenGL>();
+                m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
                 break;
             default:
                 m_BackendImpl = nullptr;
                 break;
         }
-    }
-
-    void NewVertexArray::Bind() const
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl->Bind();
-        }
-    }
-
-    void NewVertexArray::UnBind() const
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl->UnBind();
-        }
-    }
-
-    bool NewVertexArray::IsBackendValid() const
-    {
-        return m_BackendImpl != nullptr;
-    }
-
-    void NewVertexArray::AddVertexBuffer(Buffer* vertexBuffer)
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl->AddVertexBuffer(vertexBuffer);
-        }
-    }
-
-    void NewVertexArray::SetIndexBuffer(Buffer* indexBuffer)
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl->SetIndexBuffer(indexBuffer);
-        }
-    }
-
-    const std::vector<Buffer*>& NewVertexArray::GetVertexBuffers() const
-    {
-        static const std::vector<Buffer*> empty;
-
-        if (IsBackendValid())
-        {
-            return m_BackendImpl->GetVertexBuffers();
-        }
-
-        return empty;
-    }
-
-    const Buffer* NewVertexArray::GetIndexBuffer() const
-    {
-        static const Buffer* empty;
-
-        if (IsBackendValid())
-        {
-            return m_BackendImpl->GetIndexBuffer();
-        }
-
-        return empty;
-    }
-
-    bool VertexArray::IsBackendValid() const
-    {
-        return m_BackendImpl != nullptr;
     }
 
     void VertexArray::Bind() const
@@ -554,7 +462,12 @@ namespace hen::graphics
         }
     }
 
-    void VertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+    bool VertexArray::IsBackendValid() const
+    {
+        return m_BackendImpl != nullptr;
+    }
+
+    void VertexArray::AddVertexBuffer(Buffer* vertexBuffer)
     {
         if (IsBackendValid())
         {
@@ -562,7 +475,7 @@ namespace hen::graphics
         }
     }
 
-    void VertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+    void VertexArray::SetIndexBuffer(Buffer* indexBuffer)
     {
         if (IsBackendValid())
         {
@@ -570,9 +483,9 @@ namespace hen::graphics
         }
     }
 
-    const std::vector<std::shared_ptr<VertexBuffer>>& VertexArray::GetVertexBuffers() const
+    const std::vector<Buffer*>& VertexArray::GetVertexBuffers() const
     {
-        static const std::vector<std::shared_ptr<VertexBuffer>> empty;
+        static const std::vector<Buffer*> empty;
 
         if (IsBackendValid())
         {
@@ -582,9 +495,9 @@ namespace hen::graphics
         return empty;
     }
 
-    const std::shared_ptr<IndexBuffer>& VertexArray::GetIndexBuffer() const
+    const Buffer* VertexArray::GetIndexBuffer() const
     {
-        static const std::shared_ptr<IndexBuffer> empty;
+        static const Buffer* empty;
 
         if (IsBackendValid())
         {
@@ -592,65 +505,6 @@ namespace hen::graphics
         }
 
         return empty;
-    }
-
-    void VertexArray::Create()
-    {
-        switch (renderer::CurrentBackend)
-        {
-            case renderer::BACKENDS::OPENGL:
-                m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
-                break;
-            default:
-                m_BackendImpl = nullptr;
-                break;
-        }
-    }
-
-    bool UniformBuffer::IsBackendValid() const
-    {
-        return m_BackendImpl != nullptr;
-    }
-
-    void UniformBuffer::Create(size_t size, unsigned binding)
-    {
-        switch (renderer::CurrentBackend)
-        {
-            case renderer::BACKENDS::OPENGL:
-                m_BackendImpl = std::make_unique<UniformBuffer_OpenGL>(size, binding);
-                break;
-            default:
-                m_BackendImpl = nullptr;
-                break;
-        }
-    }
-
-    void UniformBuffer::SetData(const void* data, size_t size, size_t offset)
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl->SetData(data, size, offset);
-        }
-    }
-
-    size_t UniformBuffer::GetSize() const
-    {
-        if (IsBackendValid())
-        {
-            return m_BackendImpl->GetSize();
-        }
-        
-        return 0;
-    }
-
-    unsigned UniformBuffer::GetBinding()
-    {
-        if (IsBackendValid())
-        {
-            return m_BackendImpl->GetBinding();
-        }
-
-        return -1;
     }
 
     Shader::Shader(const char* vsPath, const char* fsPath)
@@ -694,7 +548,7 @@ namespace hen::graphics
             return m_BackendImpl->GetID();
         }
 
-        return 0;
+        return -1;
     }
 
     void Shader::SetVal(const std::string& name, bool val) const

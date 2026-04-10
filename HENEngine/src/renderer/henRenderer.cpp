@@ -19,13 +19,13 @@ namespace hen::renderer
     static std::unique_ptr<ShaderManager> CurrentShaderManager;
     static std::unique_ptr<TextureManager> CurrentTextureManager;
 
-    static graphics::UniformBuffer LevelLightsUB;
+    static graphics::Buffer LevelLightsUB;
 
-    static std::shared_ptr<graphics::VertexBuffer> PrimitiveCubeVB;
-    static std::shared_ptr<graphics::IndexBuffer> PrimitiveCubeIB;  
-    static std::shared_ptr<graphics::VertexBuffer> PrimitiveSphereVB;
-    static std::shared_ptr<graphics::IndexBuffer> PrimitiveSphereIB;
-    static std::shared_ptr<graphics::VertexBuffer> SkyboxVB;
+    static graphics::Buffer PrimitiveCubeVB;
+    static graphics::Buffer PrimitiveCubeIB;  
+    static graphics::Buffer PrimitiveSphereVB;
+    static graphics::Buffer PrimitiveSphereIB;
+    static graphics::Buffer SkyboxVB;
 
     static ShaderHandle PrimitiveShader;
     static ShaderHandle SkyboxShader;
@@ -195,13 +195,13 @@ namespace hen::renderer
         SkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/3DSkyboxShaderVS.glsl", "res/engine/shaders/GLSL/3DSkyboxShaderFS.glsl");
         TwoDimensionalSkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/SkyboxShaderVS.glsl", "res/engine/shaders/GLSL/SkyboxShaderFS.glsl");
 
-        LevelLightsUB.Create(sizeof(ShaderLights), 1);
+        LevelLightsUB.CreateAsUniform(sizeof(ShaderLights), 1);
 
-        PrimitiveCubeVB = graphics::VertexBuffer::Create(sizeof(level::cube::Vertices), level::cube::Vertices);
-        PrimitiveCubeIB = graphics::IndexBuffer::Create(sizeof(level::cube::Indices), level::cube::Indices);
-        PrimitiveSphereVB = graphics::VertexBuffer::Create(sizeof(level::sphere::Vertices), level::sphere::Vertices);
-        PrimitiveSphereIB = graphics::IndexBuffer::Create(sizeof(level::sphere::Indices), level::sphere::Indices);
-        SkyboxVB = graphics::VertexBuffer::Create(sizeof(SkyboxVertices), SkyboxVertices);
+        PrimitiveCubeVB.CreateAsVertex(sizeof(level::cube::Vertices), level::cube::Vertices);
+        PrimitiveCubeIB.CreateAsIndex(sizeof(level::cube::Indices), level::cube::Indices);
+        PrimitiveSphereVB.CreateAsVertex(sizeof(level::sphere::Vertices), level::sphere::Vertices);
+        PrimitiveSphereIB.CreateAsIndex(sizeof(level::sphere::Indices), level::sphere::Indices);
+        SkyboxVB.CreateAsVertex(sizeof(SkyboxVertices), SkyboxVertices);
 
         Initialised = true;
 
@@ -426,8 +426,8 @@ namespace hen::renderer
                 if (!initalised)
                 {
                     skyboxVA.Create();
-                    SkyboxVB->SetLayout(layout);
-                    skyboxVA.AddVertexBuffer(SkyboxVB);
+                    SkyboxVB.SetLayout(layout);
+                    skyboxVA.AddVertexBuffer(&SkyboxVB);
 
                     initalised = true;
                 }
@@ -545,14 +545,14 @@ namespace hen::renderer
         if (!initialised)
         {
             cubeVA.Create();
-            PrimitiveCubeVB->SetLayout(layout);
-            cubeVA.AddVertexBuffer(PrimitiveCubeVB);
-            cubeVA.SetIndexBuffer(PrimitiveCubeIB);
+            PrimitiveCubeVB.SetLayout(layout);
+            cubeVA.AddVertexBuffer(&PrimitiveCubeVB);
+            cubeVA.SetIndexBuffer(&PrimitiveCubeIB);
 
             sphereVA.Create();
-            PrimitiveSphereVB->SetLayout(layout);
-            sphereVA.AddVertexBuffer(PrimitiveSphereVB);
-            sphereVA.SetIndexBuffer(PrimitiveSphereIB);
+            PrimitiveSphereVB.SetLayout(layout);
+            sphereVA.AddVertexBuffer(&PrimitiveSphereVB);
+            sphereVA.SetIndexBuffer(&PrimitiveSphereIB);
 
             initialised = true;
         }

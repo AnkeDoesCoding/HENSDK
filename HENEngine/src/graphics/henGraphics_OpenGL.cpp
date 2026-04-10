@@ -228,151 +228,6 @@ namespace hen::graphics
         glNamedBufferSubData(m_ID, offset, size, data);
     }
 
-    VertexBuffer_OpenGL::VertexBuffer_OpenGL(uint32_t size, float* vertices)
-    {
-        glCreateBuffers(1, &m_ID);
-        glNamedBufferData(m_ID, size, vertices, GL_STATIC_DRAW);
-    }
-
-    VertexBuffer_OpenGL::~VertexBuffer_OpenGL()
-    {
-        glDeleteBuffers(1, &m_ID);
-    }
-
-    uint32_t VertexBuffer_OpenGL::GetID() const
-    {
-        return m_ID;
-    }
-
-    void VertexBuffer_OpenGL::Bind() const
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, m_ID);
-    }
-
-    void VertexBuffer_OpenGL::UnBind() const
-    {  
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }   
-
-    const BufferLayout& VertexBuffer_OpenGL::GetLayout() const
-    {
-        return m_Layout;
-    }
-
-    void VertexBuffer_OpenGL::SetLayout(const BufferLayout& layout)
-    {
-        m_Layout = layout;
-    }
-
-    IndexBuffer_OpenGL::IndexBuffer_OpenGL(uint32_t count, uint32_t* indices)
-    {
-        m_Count = count;
-        glCreateBuffers(1, &m_ID);
-        glNamedBufferData(m_ID, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
-    }
-
-    IndexBuffer_OpenGL::~IndexBuffer_OpenGL()
-    {
-        glDeleteBuffers(1, &m_ID);
-    }
-
-    uint32_t IndexBuffer_OpenGL::GetCount() const
-    {
-        return m_Count;
-    }
-
-    uint32_t IndexBuffer_OpenGL::GetID() const
-    {
-        return m_ID;
-    }
-
-    void IndexBuffer_OpenGL::Bind() const
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID);
-    }
-
-    void IndexBuffer_OpenGL::UnBind() const
-    {  
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }   
-
-    NewVertexArray_OpenGL::NewVertexArray_OpenGL()
-    {
-        glCreateVertexArrays(1, &m_ID);
-    }
-
-    NewVertexArray_OpenGL::~NewVertexArray_OpenGL()
-    {   
-        glDeleteVertexArrays(1, &m_ID);
-    }
-
-    void NewVertexArray_OpenGL::Bind() const
-    {
-        glBindVertexArray(m_ID);
-    }
-
-    void NewVertexArray_OpenGL::UnBind() const
-    {
-        glBindVertexArray(0);
-    }
-
-    void NewVertexArray_OpenGL::AddVertexBuffer(Buffer* vertexBuffer)
-    {
-        HEN_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex buffer has no layout");
-
-        const graphics::BufferLayout& layout = vertexBuffer->GetLayout();
-        
-        glVertexArrayVertexBuffer(m_ID, 0, vertexBuffer->GetID(), 0, layout.GetStride());
-
-        for (const graphics::BufferElement& element : layout)
-        {
-            glEnableVertexArrayAttrib(m_ID, m_VertexBufferIndex);
-            glVertexArrayAttribFormat(m_ID, m_VertexBufferIndex, element.GetComponentCount(), ShaderPrimitiveToOpenGLType(element.Type), element.Normalised ? GL_TRUE : GL_FALSE, static_cast<GLuint>(element.Offset));
-            glVertexArrayAttribBinding(m_ID, m_VertexBufferIndex, 0);
-
-            switch (element.Type)
-            {
-                case SHADER_PRIMITIVES::MAT3:
-                case SHADER_PRIMITIVES::MAT4:
-                {
-                    uint8_t count = element.GetComponentCount();
-                    for (uint8_t i = 1; i < count; i++)
-                    {
-                        m_VertexBufferIndex++;
-                        glEnableVertexArrayAttrib(m_ID, m_VertexBufferIndex);
-                        glVertexArrayAttribFormat(m_ID, m_VertexBufferIndex, 4, GL_FLOAT, GL_FALSE, static_cast<GLuint>(element.Offset + (i * sizeof(float) * 4)));
-                        glVertexArrayAttribBinding(m_ID, m_VertexBufferIndex, 0);
-                        glVertexArrayBindingDivisor(m_ID, 0, 1);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-
-            m_VertexBufferIndex++;
-        }
-
-        m_VertexBuffers.push_back(vertexBuffer);
-    }
-
-    void NewVertexArray_OpenGL::SetIndexBuffer(Buffer* indexBuffer)
-    {
-        HEN_ASSERT(indexBuffer != nullptr, "Index buffer is nullptr");
-        glVertexArrayElementBuffer(m_ID, indexBuffer->GetID());
-        m_IndexBuffer = indexBuffer;
-    }
-
-    const std::vector<Buffer*>& NewVertexArray_OpenGL::GetVertexBuffers() const
-    {
-        return m_VertexBuffers;
-    }
-
-    const Buffer* NewVertexArray_OpenGL::GetIndexBuffer() const
-    {
-        return m_IndexBuffer;
-    }
-
     VertexArray_OpenGL::VertexArray_OpenGL()
     {
         glCreateVertexArrays(1, &m_ID);
@@ -393,8 +248,9 @@ namespace hen::graphics
         glBindVertexArray(0);
     }
 
-    void VertexArray_OpenGL::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+    void VertexArray_OpenGL::AddVertexBuffer(Buffer* vertexBuffer)
     {
+        HEN_ASSERT(vertexBuffer->GetType() == BUFFER_TYPES::VERTEX, "Buffer isnt a vertex buffer");
         HEN_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex buffer has no layout");
 
         const graphics::BufferLayout& layout = vertexBuffer->GetLayout();
@@ -433,46 +289,23 @@ namespace hen::graphics
         m_VertexBuffers.push_back(vertexBuffer);
     }
 
-    void VertexArray_OpenGL::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+    void VertexArray_OpenGL::SetIndexBuffer(Buffer* indexBuffer)
     {
+        HEN_ASSERT(indexBuffer->GetType() == BUFFER_TYPES::INDEX, "Buffer isnt a index buffer");
         HEN_ASSERT(indexBuffer != nullptr, "Index buffer is nullptr");
+
         glVertexArrayElementBuffer(m_ID, indexBuffer->GetID());
         m_IndexBuffer = indexBuffer;
     }
 
-    const std::vector<std::shared_ptr<VertexBuffer>>& VertexArray_OpenGL::GetVertexBuffers() const
+    const std::vector<Buffer*>& VertexArray_OpenGL::GetVertexBuffers() const
     {
         return m_VertexBuffers;
     }
 
-    const std::shared_ptr<IndexBuffer>& VertexArray_OpenGL::GetIndexBuffer() const
+    const Buffer* VertexArray_OpenGL::GetIndexBuffer() const
     {
         return m_IndexBuffer;
-    }
-
-    UniformBuffer_OpenGL::UniformBuffer_OpenGL(size_t size, unsigned binding)
-    {
-        m_Size = size;
-        m_Binding = binding;
-        glCreateBuffers(1, &m_ID);
-        glNamedBufferData(m_ID, size, nullptr, GL_DYNAMIC_DRAW);
-        glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_ID);
-    }
-
-    void UniformBuffer_OpenGL::SetData(const void* data, size_t size, size_t offset)
-    {
-        m_Size = size;
-        glNamedBufferSubData(m_ID, offset, size, data);
-    }
-
-    size_t UniformBuffer_OpenGL::GetSize() const
-    {
-        return m_Size;
-    }
-
-    unsigned UniformBuffer_OpenGL::GetBinding()
-    {
-        return m_Binding;
     }
 
     Shader_OpenGL::Shader_OpenGL(const char* vsPath, const char* fsPath)

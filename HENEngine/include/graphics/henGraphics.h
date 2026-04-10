@@ -249,37 +249,7 @@ namespace hen::graphics
         std::unique_ptr<Backend> m_Backend;
     };
 
-    class VertexBuffer
-    {
-    public:
-        virtual ~VertexBuffer() = default;
-
-        virtual uint32_t GetID() const = 0;
-
-        virtual void Bind() const = 0;
-        virtual void UnBind() const = 0;
-
-        virtual const BufferLayout& GetLayout() const = 0;
-        virtual void SetLayout(const BufferLayout& layout) = 0;
-
-        static std::unique_ptr<VertexBuffer> Create(uint32_t size, float* vertices);
-    };
-
-    class IndexBuffer
-    {
-    public:
-        virtual ~IndexBuffer() = default;
-
-        virtual void Bind() const = 0;
-        virtual void UnBind() const = 0;
-        virtual uint32_t GetID() const = 0;
-
-        virtual uint32_t GetCount() const = 0;
-
-        static std::unique_ptr<IndexBuffer> Create(uint32_t size, uint32_t* indices);
-    };
-
-    class NewVertexArray
+    class VertexArray
 	{
 	public:
 		void Create();
@@ -311,65 +281,6 @@ namespace hen::graphics
     private:
         std::unique_ptr<Backend> m_BackendImpl;
 	};
-
-    class VertexArray
-	{
-	public:
-        bool IsBackendValid() const;
-
-		void Bind() const;
-		void UnBind() const;
-
-		void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer);
-		void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer);
-
-		const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const;
-		const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const;
-
-		void Create();
-
-    public:
-        struct Backend
-        {
-            virtual ~Backend() = default;
-
-            virtual void Bind() const = 0;
-		    virtual void UnBind() const = 0;
-
-		    virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) = 0;
-		    virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) = 0;
-
-		    virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffers() const = 0;
-		    virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const = 0;
-        };
-
-    private:
-        std::unique_ptr<Backend> m_BackendImpl;
-	};
-
-    class UniformBuffer
-    {
-    public:
-        bool IsBackendValid() const;
-
-        void Create(size_t size, unsigned binding);
-        void SetData(const void* data, size_t size, size_t offset = 0);
-        size_t GetSize() const;
-        unsigned GetBinding();
-
-    public:    
-        struct Backend
-        {
-            virtual ~Backend() = default;
-
-            virtual void SetData(const void* data, size_t size, size_t offset = 0) = 0;
-            virtual size_t GetSize() const = 0;
-            virtual unsigned GetBinding() = 0;
-        };
-        
-    private:
-        std::unique_ptr<Backend> m_BackendImpl;
-    };
 
     class Shader
     {
