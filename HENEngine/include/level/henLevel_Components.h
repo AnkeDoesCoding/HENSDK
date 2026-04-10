@@ -133,8 +133,8 @@ namespace hen::level
     struct CameraComponent
     {
         float FOV = 90.0f;
-        float NearPlane = 3.0f;
-        float FarPlane = 3000.0f;
+        float NearPlane = 1.0f;
+        float FarPlane = 6000.0f;
 
         math::Vec3 Position = math::Vec3(0.0f, 0.0f, 0.0f);
         math::Vec3 Rotation = math::Vec3(0.0f, 0.0f, 0.0f);
@@ -276,10 +276,7 @@ namespace hen::level
 
         void DeleteRenderData()
         {
-            if (VertexArray.IsBackendValid())
-            {
-                VertexArray.UnBind();
-            }
+            VertexArray.UnBind();
         
             if (VertexBuffer)
             {

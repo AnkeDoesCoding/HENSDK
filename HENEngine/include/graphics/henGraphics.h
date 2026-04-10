@@ -219,7 +219,7 @@ namespace hen::graphics
         const uint32_t GetCount() const;
         const uint32_t GetBinding() const;
         const size_t GetSize() const;
-        const BufferLayout& GetLayout() const;
+        const BufferLayout GetLayout() const;
 
         void SetLayout(const BufferLayout& layout);
         void SetData(const void* data, size_t size, size_t offset = 0);
@@ -234,11 +234,12 @@ namespace hen::graphics
             virtual void Bind() const = 0;
             virtual void UnBind() const = 0;
 
+            virtual const BUFFER_TYPES GetType() const = 0;
             virtual const uint32_t GetID() const = 0;
             virtual const uint32_t GetCount() const = 0;
             virtual const uint32_t GetBinding() const = 0;
             virtual const size_t GetSize() const = 0;
-            virtual const BufferLayout& GetLayout() const = 0;
+            virtual const BufferLayout GetLayout() const = 0;
 
             virtual void SetLayout(const BufferLayout& layout) = 0;
             virtual void SetData(const void* data, size_t size, size_t offset) = 0;
@@ -246,7 +247,6 @@ namespace hen::graphics
 
     private:
         std::unique_ptr<Backend> m_Backend;
-        BUFFER_TYPES m_Type = BUFFER_TYPES::NONE;
     };
 
     class VertexBuffer
@@ -278,6 +278,39 @@ namespace hen::graphics
 
         static std::unique_ptr<IndexBuffer> Create(uint32_t size, uint32_t* indices);
     };
+
+    class NewVertexArray
+	{
+	public:
+		void Create();
+
+		void Bind() const;
+		void UnBind() const;
+
+        bool IsBackendValid() const;
+
+		void AddVertexBuffer(Buffer* vertexBuffer);
+		void SetIndexBuffer(Buffer* indexBuffer);
+
+		const std::vector<Buffer*>& GetVertexBuffers() const;
+		const Buffer* GetIndexBuffer() const;
+        
+    public:
+        struct Backend
+        {
+            virtual void Bind() const = 0;
+		    virtual void UnBind() const = 0;
+
+		    virtual void AddVertexBuffer(Buffer* vertexBuffer) = 0;
+		    virtual void SetIndexBuffer(Buffer* indexBuffer) = 0;
+
+		    virtual const std::vector<Buffer*>& GetVertexBuffers() const = 0;
+		    virtual const Buffer* GetIndexBuffer() const = 0;
+        };
+
+    private:
+        std::unique_ptr<Backend> m_BackendImpl;
+	};
 
     class VertexArray
 	{

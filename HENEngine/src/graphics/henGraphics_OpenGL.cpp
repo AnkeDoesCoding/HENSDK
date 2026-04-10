@@ -187,6 +187,11 @@ namespace hen::graphics
         }      
     }
 
+    const BUFFER_TYPES Buffer_OpenGL::GetType() const
+    {
+        return m_Type;
+    }
+
     const uint32_t Buffer_OpenGL::GetID() const
     {
         return m_ID;
@@ -207,7 +212,7 @@ namespace hen::graphics
         return m_Size;
     }
 
-    const BufferLayout& Buffer_OpenGL::GetLayout() const
+    const BufferLayout Buffer_OpenGL::GetLayout() const
     {
         return m_Layout;
     }
@@ -290,6 +295,83 @@ namespace hen::graphics
     {  
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }   
+
+    NewVertexArray_OpenGL::NewVertexArray_OpenGL()
+    {
+        glCreateVertexArrays(1, &m_ID);
+    }
+
+    NewVertexArray_OpenGL::~NewVertexArray_OpenGL()
+    {   
+        glDeleteVertexArrays(1, &m_ID);
+    }
+
+    void NewVertexArray_OpenGL::Bind() const
+    {
+        glBindVertexArray(m_ID);
+    }
+
+    void NewVertexArray_OpenGL::UnBind() const
+    {
+        glBindVertexArray(0);
+    }
+
+    void NewVertexArray_OpenGL::AddVertexBuffer(Buffer* vertexBuffer)
+    {
+        HEN_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex buffer has no layout");
+
+        const graphics::BufferLayout& layout = vertexBuffer->GetLayout();
+        
+        glVertexArrayVertexBuffer(m_ID, 0, vertexBuffer->GetID(), 0, layout.GetStride());
+
+        for (const graphics::BufferElement& element : layout)
+        {
+            glEnableVertexArrayAttrib(m_ID, m_VertexBufferIndex);
+            glVertexArrayAttribFormat(m_ID, m_VertexBufferIndex, element.GetComponentCount(), ShaderPrimitiveToOpenGLType(element.Type), element.Normalised ? GL_TRUE : GL_FALSE, static_cast<GLuint>(element.Offset));
+            glVertexArrayAttribBinding(m_ID, m_VertexBufferIndex, 0);
+
+            switch (element.Type)
+            {
+                case SHADER_PRIMITIVES::MAT3:
+                case SHADER_PRIMITIVES::MAT4:
+                {
+                    uint8_t count = element.GetComponentCount();
+                    for (uint8_t i = 1; i < count; i++)
+                    {
+                        m_VertexBufferIndex++;
+                        glEnableVertexArrayAttrib(m_ID, m_VertexBufferIndex);
+                        glVertexArrayAttribFormat(m_ID, m_VertexBufferIndex, 4, GL_FLOAT, GL_FALSE, static_cast<GLuint>(element.Offset + (i * sizeof(float) * 4)));
+                        glVertexArrayAttribBinding(m_ID, m_VertexBufferIndex, 0);
+                        glVertexArrayBindingDivisor(m_ID, 0, 1);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            m_VertexBufferIndex++;
+        }
+
+        m_VertexBuffers.push_back(vertexBuffer);
+    }
+
+    void NewVertexArray_OpenGL::SetIndexBuffer(Buffer* indexBuffer)
+    {
+        HEN_ASSERT(indexBuffer != nullptr, "Index buffer is nullptr");
+        glVertexArrayElementBuffer(m_ID, indexBuffer->GetID());
+        m_IndexBuffer = indexBuffer;
+    }
+
+    const std::vector<Buffer*>& NewVertexArray_OpenGL::GetVertexBuffers() const
+    {
+        return m_VertexBuffers;
+    }
+
+    const Buffer* NewVertexArray_OpenGL::GetIndexBuffer() const
+    {
+        return m_IndexBuffer;
+    }
 
     VertexArray_OpenGL::VertexArray_OpenGL()
     {

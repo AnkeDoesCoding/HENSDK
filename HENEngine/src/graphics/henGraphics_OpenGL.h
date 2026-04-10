@@ -29,11 +29,12 @@ namespace hen::graphics
         void Bind() const override;
         void UnBind() const override;
 
+        const BUFFER_TYPES GetType() const override;
         const uint32_t GetID() const override;
         const uint32_t GetCount() const override;
         const uint32_t GetBinding() const override;
         const size_t GetSize() const override;
-        const BufferLayout& GetLayout() const override;
+        const BufferLayout GetLayout() const override;
 
         void SetLayout(const BufferLayout& layout) override;
         void SetData(const void* data, size_t size, size_t offset) override;
@@ -84,6 +85,29 @@ namespace hen::graphics
         uint32_t m_ID;
         uint32_t m_Count;
     };
+
+    class NewVertexArray_OpenGL : public NewVertexArray::Backend
+    {
+    public:
+        NewVertexArray_OpenGL();
+        ~NewVertexArray_OpenGL();
+
+		void Bind() const override;
+		void UnBind() const override;
+
+        void AddVertexBuffer(Buffer* vertexBuffer) override;
+		void SetIndexBuffer(Buffer* indexBuffer) override;
+
+        const std::vector<Buffer*>& GetVertexBuffers() const override;
+		const Buffer* GetIndexBuffer() const override;
+
+    private:
+        std::vector<Buffer*> m_VertexBuffers;
+        Buffer* m_IndexBuffer;
+        uint32_t m_ID;
+        uint32_t m_VertexBufferIndex = 0;
+    };
+
 
     class VertexArray_OpenGL : public VertexArray::Backend
     {

@@ -281,21 +281,19 @@ namespace hen::graphics
 
         State = RESOURCE_STATES::READY_TO_RENDER;
     }
-
     
     void Buffer::CreateAsVertex(size_t size, float* vertices)
     {
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKENDS::OPENGL:
-                m_Backend = std::make_unique<Buffer_OpenGL>(size, vertices);
+                m_Backend = std::make_unique<Buffer_OpenGL>();
                 break;
             default:
                 break;
         }
 
         m_Backend->Create(size, vertices);
-        
     }
 
     void Buffer::CreateAsIndex(uint32_t count, uint32_t* indices)
@@ -303,7 +301,7 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKENDS::OPENGL:
-                m_Backend = std::make_unique<Buffer_OpenGL>(count, indices);
+                m_Backend = std::make_unique<Buffer_OpenGL>();
                 break;
             default:
                 break;
@@ -317,7 +315,7 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKENDS::OPENGL:
-                m_Backend = std::make_unique<Buffer_OpenGL>(size, binding);
+                m_Backend = std::make_unique<Buffer_OpenGL>();
                 break;
             default:
                 break;
@@ -346,11 +344,17 @@ namespace hen::graphics
     {
         return m_Backend != nullptr;
     }
-
     
     const BUFFER_TYPES Buffer::GetType() const
     {
-        return m_Type;
+        BUFFER_TYPES type = BUFFER_TYPES::NONE;
+
+        if (IsBackendValid())
+        {
+            type = m_Backend->GetType();
+        }
+
+        return type;
     }
 
     const uint32_t Buffer::GetID() const
@@ -401,13 +405,13 @@ namespace hen::graphics
         return size;
     }
 
-    const BufferLayout& Buffer::GetLayout() const
+    const BufferLayout Buffer::GetLayout() const
     {
         BufferLayout layout;
 
         if (IsBackendValid())
         {
-            layout = m_Backend->GetLayout();
+            return m_Backend->GetLayout();
         }
 
         return layout;
@@ -453,6 +457,80 @@ namespace hen::graphics
                 return nullptr;
                 break;
         }
+    }
+
+    void NewVertexArray::Create()
+    {
+        switch (renderer::CurrentBackend)
+        {
+            case renderer::BACKENDS::OPENGL:
+                m_BackendImpl = std::make_unique<NewVertexArray_OpenGL>();
+                break;
+            default:
+                m_BackendImpl = nullptr;
+                break;
+        }
+    }
+
+    void NewVertexArray::Bind() const
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->Bind();
+        }
+    }
+
+    void NewVertexArray::UnBind() const
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->UnBind();
+        }
+    }
+
+    bool NewVertexArray::IsBackendValid() const
+    {
+        return m_BackendImpl != nullptr;
+    }
+
+    void NewVertexArray::AddVertexBuffer(Buffer* vertexBuffer)
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->AddVertexBuffer(vertexBuffer);
+        }
+    }
+
+    void NewVertexArray::SetIndexBuffer(Buffer* indexBuffer)
+    {
+        if (IsBackendValid())
+        {
+            m_BackendImpl->SetIndexBuffer(indexBuffer);
+        }
+    }
+
+    const std::vector<Buffer*>& NewVertexArray::GetVertexBuffers() const
+    {
+        static const std::vector<Buffer*> empty;
+
+        if (IsBackendValid())
+        {
+            return m_BackendImpl->GetVertexBuffers();
+        }
+
+        return empty;
+    }
+
+    const Buffer* NewVertexArray::GetIndexBuffer() const
+    {
+        static const Buffer* empty;
+
+        if (IsBackendValid())
+        {
+            return m_BackendImpl->GetIndexBuffer();
+        }
+
+        return empty;
     }
 
     bool VertexArray::IsBackendValid() const
