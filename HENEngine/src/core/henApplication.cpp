@@ -74,7 +74,7 @@
 
     float GetHeapUsage()
     {
-        struct mallinfo info = mallinfo();
+        struct mallinfo2 info = mallinfo2();
         return info.uordblks / (1024.0f * 1024.0f);
     }
 #endif // !PLATFORM_WINDOWS
