@@ -7,7 +7,7 @@ namespace hen::version
 {
     constexpr int Major = 0;
     constexpr int Minor = 11;
-    constexpr int Revision = 80;
+    constexpr int Revision = 81;
 
     inline std::string Version = std::format("{}.{}.{}", Major, Minor, Revision);
 }

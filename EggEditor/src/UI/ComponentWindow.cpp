@@ -219,13 +219,13 @@ void ComponentWindow::Initialise()
 
                 if (ImGui::Combo("Collision Shape", &currentType, collisionTypes, IM_ARRAYSIZE(collisionTypes)))
                 {
-                    rigidBody.Shape = static_cast<hen::level::COLLISIONSHAPES>(currentType);
+                    rigidBody.Shape = static_cast<hen::level::COLLISION_SHAPES>(currentType);
                     rigidBody.SetDirty();
                 }
 
                 switch (rigidBody.Shape)
                 {
-                    case hen::level::COLLISIONSHAPES::BOX:
+                    case hen::level::COLLISION_SHAPES::BOX:
                         ImGui::Spacing();
                         ImGui::Spacing();
 
@@ -237,7 +237,7 @@ void ComponentWindow::Initialise()
                         ImGui::Spacing();
                         ImGui::Spacing();
                         break;
-                    case hen::level::COLLISIONSHAPES::SPHERE:
+                    case hen::level::COLLISION_SHAPES::SPHERE:
                         ImGui::Spacing();
                         ImGui::Spacing();
 
@@ -249,7 +249,7 @@ void ComponentWindow::Initialise()
                         ImGui::Spacing();
                         ImGui::Spacing();
                         break;
-                    case hen::level::COLLISIONSHAPES::CAPSULE:
+                    case hen::level::COLLISION_SHAPES::CAPSULE:
                         ImGui::Spacing();
                         ImGui::Spacing();
 
@@ -266,7 +266,7 @@ void ComponentWindow::Initialise()
                         ImGui::Spacing();
                         ImGui::Spacing();
                         break;
-                    case hen::level::COLLISIONSHAPES::CYLINDER:
+                    case hen::level::COLLISION_SHAPES::CYLINDER:
                         ImGui::Spacing();
                         ImGui::Spacing();
 
@@ -418,6 +418,7 @@ void ComponentWindow::Initialise()
                                 std::string buttonLabel = "Remove##difftexture_" + std::to_string(i);
                                 if (ImGui::Button(buttonLabel.c_str()))
                                 {
+                                    hen::renderer::GetTextureManager()->Release(material.DiffuseTextures[i]);
                                     material.DiffuseTextures.erase(material.DiffuseTextures.begin() + i);
 
                                     if (SelectedEntity.HasComponent<hen::level::MeshComponent>())
@@ -437,6 +438,7 @@ void ComponentWindow::Initialise()
                                         }
                                     }
 
+                                    ImGui::EndGroup();
                                     break;
                                 }
                             }
@@ -462,6 +464,7 @@ void ComponentWindow::Initialise()
                                 std::string buttonLabel = "Remove##spectexture_" + std::to_string(i);
                                 if (ImGui::Button(buttonLabel.c_str()))
                                 {
+                                    hen::renderer::GetTextureManager()->Release(material.SpecularTextures[i]);
                                     material.SpecularTextures.erase(material.SpecularTextures.begin() + i);
 
                                     if (SelectedEntity.HasComponent<hen::level::MeshComponent>())
@@ -480,7 +483,8 @@ void ComponentWindow::Initialise()
                                             }
                                         }
                                     }
-
+                                    
+                                    ImGui::EndGroup();
                                     break;
                                 }
                             }

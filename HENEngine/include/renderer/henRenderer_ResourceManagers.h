@@ -35,6 +35,10 @@ namespace hen::renderer
         void Remove(const ShaderHandle& handle);
     
     private:
+        uint32_t AllocateSlot();
+        void InitialiseSlot(uint32_t index);
+
+    private:
         struct m_ShaderSlot
         {
             graphics::Shader Shader;
@@ -53,8 +57,12 @@ namespace hen::renderer
         TextureHandle Load(graphics::TextureDesc textureDesc, const unsigned char* source = nullptr, size_t sourceSize = 0);
 
         graphics::Texture* Get(const TextureHandle& handle);
-        void Remove(const TextureHandle& handle); 
+        void Release(const TextureHandle& handle); 
         void CreateRenderData();
+
+    private:
+        uint32_t AllocateSlot();
+        void InitialiseSlot(uint32_t index);
 
     private:
         struct m_TextureSlot
@@ -62,6 +70,7 @@ namespace hen::renderer
             graphics::Texture Texture;
             bool Alive = false;
             uint32_t Generation = 1;
+            uint32_t References = 0;
         };
 
         std::vector<m_TextureSlot> m_Textures;

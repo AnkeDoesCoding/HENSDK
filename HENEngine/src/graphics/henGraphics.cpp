@@ -144,10 +144,15 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl.reset();
+            m_Backend.reset();
         }
 
         delete [] Data;
+
+        for (unsigned char* face : CubemapData)
+        {
+            delete[] face;
+        }
     }
 
     Texture::Texture(Texture&& other) noexcept
@@ -157,14 +162,14 @@ namespace hen::graphics
 
     bool Texture::IsBackendValid() const
     {
-        return m_BackendImpl != nullptr;
+        return m_Backend != nullptr;
     }
 
     uint32_t Texture::GetID() const
     {
         if (IsBackendValid())
         {
-            return m_BackendImpl->GetID();
+            return m_Backend->GetID();
         }
 
         return -1;
@@ -262,24 +267,32 @@ namespace hen::graphics
             switch (renderer::CurrentBackend)
             {
                 case renderer::BACKENDS::OPENGL:
-                    m_BackendImpl = std::make_unique<Texture_OpenGL>();
+                    m_Backend = std::make_unique<Texture_OpenGL>();
                     break;
                 default:
-                    m_BackendImpl = nullptr;
+                    m_Backend = nullptr;
                     return;
             }
         }
 
         if (CubemapData.empty())
         {
-            m_BackendImpl->CreateRenderData(m_Description, Data);
+            m_Backend->CreateRenderData(m_Description, Data);
         }
         else
         {
-            m_BackendImpl->CreateRenderData(m_Description, CubemapData);
+            m_Backend->CreateRenderData(m_Description, CubemapData);
         }
 
         State = RESOURCE_STATES::READY_TO_RENDER;
+    }
+
+    Buffer::~Buffer()
+    {
+        if (IsBackendValid())
+        {
+            m_Backend.reset();
+        }
     }
     
     void Buffer::CreateAsVertex(size_t size, float* vertices)
@@ -433,15 +446,23 @@ namespace hen::graphics
         }
     }
 
+    VertexArray::~VertexArray()
+    {
+        if (IsBackendValid())
+        {
+            m_Backend.reset();
+        }
+    }
+
     void VertexArray::Create()
     {
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKENDS::OPENGL:
-                m_BackendImpl = std::make_unique<VertexArray_OpenGL>();
+                m_Backend = std::make_unique<VertexArray_OpenGL>();
                 break;
             default:
-                m_BackendImpl = nullptr;
+                m_Backend = nullptr;
                 break;
         }
     }
@@ -450,7 +471,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->Bind();
+            m_Backend->Bind();
         }
     }
 
@@ -458,20 +479,20 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->UnBind();
+            m_Backend->UnBind();
         }
     }
 
     bool VertexArray::IsBackendValid() const
     {
-        return m_BackendImpl != nullptr;
+        return m_Backend != nullptr;
     }
 
     void VertexArray::AddVertexBuffer(Buffer* vertexBuffer)
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->AddVertexBuffer(vertexBuffer);
+            m_Backend->AddVertexBuffer(vertexBuffer);
         }
     }
 
@@ -479,7 +500,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetIndexBuffer(indexBuffer);
+            m_Backend->SetIndexBuffer(indexBuffer);
         }
     }
 
@@ -489,7 +510,7 @@ namespace hen::graphics
 
         if (IsBackendValid())
         {
-            return m_BackendImpl->GetVertexBuffers();
+            return m_Backend->GetVertexBuffers();
         }
 
         return empty;
@@ -501,10 +522,20 @@ namespace hen::graphics
 
         if (IsBackendValid())
         {
-            return m_BackendImpl->GetIndexBuffer();
+            return m_Backend->GetIndexBuffer();
         }
 
         return empty;
+    }
+
+    Shader::Shader()
+    {
+
+    }
+    
+    Shader::Shader(Shader&& other) noexcept
+    {
+        *this = std::move(other);
     }
 
     Shader::Shader(const char* vsPath, const char* fsPath)
@@ -512,16 +543,24 @@ namespace hen::graphics
         Create(vsPath, fsPath);
     }
 
+    Shader::~Shader()
+    {
+        if (IsBackendValid())
+        {
+            m_Backend.reset();
+        }
+    }
+
     bool Shader::IsBackendValid() const
     {
-        return m_BackendImpl != nullptr;
+        return m_Backend != nullptr;
     }
 
     void Shader::Compile()
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->Compile();
+            m_Backend->Compile();
         }
     }
 
@@ -529,7 +568,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->Bind();
+            m_Backend->Bind();
         }
     }
 
@@ -537,7 +576,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->UnBind();
+            m_Backend->UnBind();
         }
     }
 
@@ -545,7 +584,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            return m_BackendImpl->GetID();
+            return m_Backend->GetID();
         }
 
         return -1;
@@ -555,7 +594,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetVal(name, val);
+            m_Backend->SetVal(name, val);
         }
     }
 
@@ -563,7 +602,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetVal(name, val);
+            m_Backend->SetVal(name, val);
         }
     }
 
@@ -571,7 +610,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetVal(name, val);
+            m_Backend->SetVal(name, val);
         }
     }
 
@@ -579,7 +618,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetVec2(name, value);
+            m_Backend->SetVec2(name, value);
         }
     }
 
@@ -587,7 +626,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetVec3(name, value);
+            m_Backend->SetVec3(name, value);
         }
     }
 
@@ -595,7 +634,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetVec4(name, value);
+            m_Backend->SetVec4(name, value);
         }
     }
 
@@ -603,7 +642,7 @@ namespace hen::graphics
     {   
         if (IsBackendValid())
         {
-            m_BackendImpl->SetMat2(name, mat);
+            m_Backend->SetMat2(name, mat);
         }
     }
 
@@ -611,7 +650,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetMat3(name, mat);
+            m_Backend->SetMat3(name, mat);
         }
     }
 
@@ -619,7 +658,7 @@ namespace hen::graphics
     {
         if (IsBackendValid())
         {
-            m_BackendImpl->SetMat4(name, mat);
+            m_Backend->SetMat4(name, mat);
         }
     }   
 
@@ -628,21 +667,12 @@ namespace hen::graphics
         switch (renderer::CurrentBackend)
         {
             case renderer::BACKENDS::OPENGL:
-                m_BackendImpl = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
+                m_Backend = std::make_unique<Shader_OpenGL>(vsPath, fsPath);
                 HEN_LOG("[hen::Shader] Successfully loaded shader from paths: " + std::string(vsPath) + " | " + std::string(fsPath));
                 break;
             default:
-                m_BackendImpl = nullptr;
+                m_Backend = nullptr;
                 break;
         }
     }
-
-    void Shader::Destroy()
-    {
-        if (IsBackendValid())
-        {
-            m_BackendImpl.reset();
-        }
-    }
-
 }

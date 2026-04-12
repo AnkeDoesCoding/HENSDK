@@ -39,7 +39,7 @@ namespace testlevel
         modelMat.Shader = hen::renderer::GetShaderManager()->Load("res/engine/shaders/GLSL/BaseShaderVS.glsl", "res/engine/shaders/GLSL/BaseShaderFS.glsl");
 
         modelRB.Kinematic = true;
-        modelRB.Shape = hen::level::COLLISIONSHAPES::TRIANGLE_MESH;
+        modelRB.Shape = hen::level::COLLISION_SHAPES::TRIANGLE_MESH;
 
         // Cube
 

@@ -178,7 +178,7 @@ namespace hen::graphics
             swap(m_Description, other.m_Description);
             swap(CubemapData, other.CubemapData);
             swap(Data, other.Data);
-            swap(m_BackendImpl, other.m_BackendImpl);
+            swap(m_Backend, other.m_Backend);
             swap(State, other.State);
             
             return *this;
@@ -198,13 +198,15 @@ namespace hen::graphics
         RESOURCE_STATES State;
 
     private:
-        std::unique_ptr<Backend> m_BackendImpl;
+        std::unique_ptr<Backend> m_Backend;
         TextureDesc m_Description;
     };
 
     class Buffer
     {
     public:
+        ~Buffer();
+
         void CreateAsVertex(size_t size, float* vertices);
         void CreateAsIndex(uint32_t count, uint32_t* indices);
         void CreateAsUniform(size_t size, uint32_t binding);
@@ -252,6 +254,8 @@ namespace hen::graphics
     class VertexArray
 	{
 	public:
+        ~VertexArray();
+
 		void Create();
 
 		void Bind() const;
@@ -279,14 +283,16 @@ namespace hen::graphics
         };
 
     private:
-        std::unique_ptr<Backend> m_BackendImpl;
+        std::unique_ptr<Backend> m_Backend;
 	};
 
     class Shader
     {
     public:
-        Shader() = default;
+        Shader();
+        Shader(Shader&& other) noexcept;
         Shader(const char* vsPath, const char* fsPath);
+        ~Shader();
 
         bool IsBackendValid() const;    
 
@@ -309,13 +315,19 @@ namespace hen::graphics
         void SetMat4(const std::string &name, const math::Matrix4 &mat) const;
 
         void Create(const char* vsPath, const char* fsPath);
-        void Destroy();
+
+        Shader& operator=(Shader&& other) noexcept
+        {
+            using std::swap;
+
+            swap(m_Backend, other.m_Backend);
+
+            return *this;
+        }
 
     public:
         struct Backend
         {
-            virtual ~Backend() = default;
-
             virtual void Compile() = 0;
             virtual void Bind() = 0;
             virtual void UnBind() = 0;
@@ -336,11 +348,8 @@ namespace hen::graphics
         };   
 
     private:
-        std::unique_ptr<Backend> m_BackendImpl;
+        std::unique_ptr<Backend> m_Backend;
     };
-
-    uint32_t PrimitiveSize(SHADER_PRIMITIVES primitive);
-
 }
 
 #endif // !_HENGRAPHICS_H_

@@ -16,8 +16,9 @@
 namespace hen::renderer
 {   
     static std::unique_ptr<RHC> CurrentRHC;
-    static std::unique_ptr<ShaderManager> CurrentShaderManager;
-    static std::unique_ptr<TextureManager> CurrentTextureManager;
+    static ShaderManager CurrentShaderManager;
+    static TextureManager CurrentTextureManager;
+
 
     static graphics::Buffer LevelLightsUB;
 
@@ -185,15 +186,13 @@ namespace hen::renderer
         CurrentRHC->EnableFaceCulling();
         CurrentRHC->SetCulledFace(graphics::CULL_MODES::BACK_FACE);
 
-        CurrentShaderManager = std::make_unique<ShaderManager>();
-        GetShaderManager() = CurrentShaderManager.get();
+        GetShaderManager() = &CurrentShaderManager;
 
-        CurrentTextureManager = std::make_unique<TextureManager>();
-        GetTextureManager() = CurrentTextureManager.get();
+        GetTextureManager() = &CurrentTextureManager;
 
-        PrimitiveShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/PrimitiveShaderVS.glsl", "res/engine/shaders/GLSL/PrimitiveShaderFS.glsl");
-        SkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/3DSkyboxShaderVS.glsl", "res/engine/shaders/GLSL/3DSkyboxShaderFS.glsl");
-        TwoDimensionalSkyboxShader = CurrentShaderManager->Load("res/engine/shaders/GLSL/SkyboxShaderVS.glsl", "res/engine/shaders/GLSL/SkyboxShaderFS.glsl");
+        PrimitiveShader = CurrentShaderManager.Load("res/engine/shaders/GLSL/PrimitiveShaderVS.glsl", "res/engine/shaders/GLSL/PrimitiveShaderFS.glsl");
+        SkyboxShader = CurrentShaderManager.Load("res/engine/shaders/GLSL/3DSkyboxShaderVS.glsl", "res/engine/shaders/GLSL/3DSkyboxShaderFS.glsl");
+        TwoDimensionalSkyboxShader = CurrentShaderManager.Load("res/engine/shaders/GLSL/SkyboxShaderVS.glsl", "res/engine/shaders/GLSL/SkyboxShaderFS.glsl");
 
         LevelLightsUB.CreateAsUniform(sizeof(ShaderLights), 1);
 
@@ -328,7 +327,7 @@ namespace hen::renderer
                 level->Skybox.Mesh.CreateRenderData();
             }
 
-            CurrentTextureManager->CreateRenderData();
+            CurrentTextureManager.CreateRenderData();
         }
     }
 
@@ -340,7 +339,7 @@ namespace hen::renderer
 
             if (level->Skybox.Mesh.State == graphics::RESOURCE_STATES::READY_TO_RENDER)
             {
-                graphics::Shader* shader = CurrentShaderManager->Get(SkyboxShader);
+                graphics::Shader* shader = CurrentShaderManager.Get(SkyboxShader);
                 shader->Bind();
 
                 level->Skybox.Mesh.VertexArray.Bind();
@@ -349,7 +348,7 @@ namespace hen::renderer
                 {
                     if (submesh.DiffuseIndex < level->Skybox.Material.DiffuseTextures.size())
                     {
-                        if (graphics::Texture* diffuse = CurrentTextureManager->Get(level->Skybox.Material.DiffuseTextures[submesh.DiffuseIndex]))
+                        if (graphics::Texture* diffuse = CurrentTextureManager.Get(level->Skybox.Material.DiffuseTextures[submesh.DiffuseIndex]))
                         {
                             shader->SetVal("uMaterial.HasDiffuse", 1);
 
@@ -366,7 +365,7 @@ namespace hen::renderer
 
                     if (submesh.SpecularIndex < level->Skybox.Material.SpecularTextures.size())
                     {
-                        if (graphics::Texture* specular = CurrentTextureManager->Get(level->Skybox.Material.SpecularTextures[submesh.SpecularIndex]))
+                        if (graphics::Texture* specular = CurrentTextureManager.Get(level->Skybox.Material.SpecularTextures[submesh.SpecularIndex]))
                         {
                             shader->SetVal("uMaterial.HasSpecular", 1);
 
@@ -404,7 +403,7 @@ namespace hen::renderer
                 shader->UnBind();
             }
 
-            if (graphics::Texture* skyboxCubemap = CurrentTextureManager->Get(level->Skybox.Cubemap))
+            if (graphics::Texture* skyboxCubemap = CurrentTextureManager.Get(level->Skybox.Cubemap))
             {
                 if (skyboxCubemap->State != graphics::RESOURCE_STATES::READY_TO_RENDER)
                 {
@@ -413,7 +412,7 @@ namespace hen::renderer
 
                 CurrentRHC->SetDepthMask(graphics::DEPTH_FUNCTIONS::LESS_EQUAL);
 
-                graphics::Shader* shader = CurrentShaderManager->Get(TwoDimensionalSkyboxShader);
+                graphics::Shader* shader = CurrentShaderManager.Get(TwoDimensionalSkyboxShader);
                 shader->Bind();
 
                 static graphics::VertexArray skyboxVA;
@@ -459,7 +458,7 @@ namespace hen::renderer
                 level::MeshComponent& meshComp = entity.GetComponent<level::MeshComponent>();
                 level::MaterialComponent& materialComp = entity.GetComponent<level::MaterialComponent>();
 
-                graphics::Shader* shader = CurrentShaderManager->Get(materialComp.Shader);
+                graphics::Shader* shader = CurrentShaderManager.Get(materialComp.Shader);
 
                 if (!shader)
                 {
@@ -478,7 +477,7 @@ namespace hen::renderer
                 {
                     if (submesh.DiffuseIndex < materialComp.DiffuseTextures.size())
                     {
-                        if (graphics::Texture* diffuse = CurrentTextureManager->Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
+                        if (graphics::Texture* diffuse = CurrentTextureManager.Get(materialComp.DiffuseTextures[submesh.DiffuseIndex]))
                         {
                             shader->SetVal("uMaterial.HasDiffuse", 1);
 
@@ -495,7 +494,7 @@ namespace hen::renderer
 
                     if (submesh.SpecularIndex < materialComp.SpecularTextures.size())
                     {
-                        if (graphics::Texture* specular = CurrentTextureManager->Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
+                        if (graphics::Texture* specular = CurrentTextureManager.Get(materialComp.SpecularTextures[submesh.SpecularIndex]))
                         {
                             shader->SetVal("uMaterial.HasSpecular", 1);
 
@@ -561,7 +560,7 @@ namespace hen::renderer
         math::Matrix4 model = math::Translate(math::Matrix4(1.0f), position) * rotationMatrix;
         model = math::Scale(model, scale);
 
-        graphics::Shader* shader = CurrentShaderManager->Get(PrimitiveShader);
+        graphics::Shader* shader = CurrentShaderManager.Get(PrimitiveShader);
 
         shader->Bind();
 

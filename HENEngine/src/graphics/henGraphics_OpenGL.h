@@ -75,6 +75,7 @@ namespace hen::graphics
     {
     public:
         Shader_OpenGL(const char* vsPath, const char* fsPath);
+        ~Shader_OpenGL();
 
         void Compile() override;
         void Bind() override;

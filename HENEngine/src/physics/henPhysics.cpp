@@ -237,28 +237,7 @@ namespace hen::physics
 				{
 					while (true)
 					{
-						std::vector<Job*> jobsSnapshot;
-
-						{
-							std::lock_guard<std::mutex> lock(m_Mutex);
-
-							jobsSnapshot = m_Jobs;
-						}
-
-						bool allDone = true;
-						for (Job* job : jobsSnapshot)
-						{
-							if (!job->IsDone())
-							{
-								allDone = false;
-								break;
-							}
-						}
-
-						if (allDone && jobsSnapshot.empty())
-						{
-							break;
-						}
+						HEN_LOG("Barrier has " + std::to_string(m_Jobs.size()) + " jobs");
 
 						{
 							std::lock_guard<std::mutex> lock(m_Mutex);
@@ -277,6 +256,14 @@ namespace hen::physics
 							}
 						}
 
+						{
+							std::lock_guard<std::mutex> lock(m_Mutex);
+							if (m_Jobs.empty())
+							{
+								break;
+							}
+						}
+						
 						std::this_thread::yield();
 					}
 				}
@@ -436,35 +423,35 @@ namespace hen::physics
 
 			switch (rigidBodyComp.Shape)
 			{
-				case level::COLLISIONSHAPES::BOX:
+				case level::COLLISION_SHAPES::BOX:
 				{
 					BoxShapeSettings settings(Vec3(rigidBodyComp.Box.HalfExtents.x * transformComp.LocalScale.x, rigidBodyComp.Box.HalfExtents.y * transformComp.LocalScale.y, rigidBodyComp.Box.HalfExtents.z * transformComp.LocalScale.z), convexRadius);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}
-				case level::COLLISIONSHAPES::SPHERE:
+				case level::COLLISION_SHAPES::SPHERE:
 				{
 					SphereShapeSettings settings(rigidBodyComp.Sphere.Radius * transformComp.LocalScale.x);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}	
-				case level::COLLISIONSHAPES::CAPSULE:
+				case level::COLLISION_SHAPES::CAPSULE:
 				{
 					CapsuleShapeSettings settings(rigidBodyComp.Capsule.Height * transformComp.LocalScale.y, rigidBodyComp.Capsule.Radius * transformComp.LocalScale.x);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}
-				case level::COLLISIONSHAPES::CYLINDER:
+				case level::COLLISION_SHAPES::CYLINDER:
 				{
 					CylinderShapeSettings settings(rigidBodyComp.Cylinder.Height * transformComp.LocalScale.y, rigidBodyComp.Cylinder.Radius * transformComp.LocalScale.x, convexRadius);
 					settings.SetEmbedded();
 					shapeResult = settings.Create();
 					break;
 				}
-				case level::COLLISIONSHAPES::CONVEX_HULL:
+				case level::COLLISION_SHAPES::CONVEX_HULL:
 				{
 					if (!entity.HasComponent<level::MeshComponent>())
 					{
@@ -498,7 +485,7 @@ namespace hen::physics
 
 					break;
 				}
-				case level::COLLISIONSHAPES::TRIANGLE_MESH:
+				case level::COLLISION_SHAPES::TRIANGLE_MESH:
 				{
 					if (!entity.HasComponent<level::MeshComponent>())
 					{

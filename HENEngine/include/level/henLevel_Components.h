@@ -19,7 +19,7 @@ namespace hen::level
         DIRECTIONAL
     };
     
-    enum class COLLISIONSHAPES
+    enum class COLLISION_SHAPES
     {
         BOX,
         SPHERE,
@@ -192,6 +192,22 @@ namespace hen::level
         renderer::ShaderHandle Shader;
         
         math::Vec3 Colour = math::Vec3(1.0f); // multiplied by textures if there any and acts as fallback if no textures found
+
+        ~MaterialComponent()
+        {
+            if (renderer::TextureManager* textureManager = renderer::GetTextureManager())
+            {
+                for (int i = 0; i < DiffuseTextures.size(); i++)
+                {
+                    textureManager->Release(DiffuseTextures[i]);
+                }
+
+                for (int i = 0; i < SpecularTextures.size(); i++)
+                {
+                    textureManager->Release(SpecularTextures[i]);
+                }
+            }
+        }
     };
 
     struct MeshComponent
@@ -228,6 +244,10 @@ namespace hen::level
         ~MeshComponent()
         {
             DeleteRenderData();
+
+            VertexArray.~VertexArray();
+            VertexBuffer.~Buffer();
+            IndexBuffer.~Buffer();
         }
 
         void CreateRenderData()
@@ -277,9 +297,7 @@ namespace hen::level
         void DeleteRenderData()
         {
             VertexArray.UnBind();
-        
             VertexBuffer.UnBind();
-        
             IndexBuffer.UnBind();
 
             State = graphics::RESOURCE_STATES::NOT_READY;
@@ -324,7 +342,7 @@ namespace hen::level
             float Height = 2.0f;
         } Cylinder;
 
-        COLLISIONSHAPES Shape = COLLISIONSHAPES::BOX;
+        COLLISION_SHAPES Shape = COLLISION_SHAPES::BOX;
         std::shared_ptr<void> PhysicsObject = nullptr;
         math::Vec3 Offset = math::Vec3(0.0f);
 

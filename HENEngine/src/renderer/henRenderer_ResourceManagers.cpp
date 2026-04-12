@@ -58,25 +58,9 @@ namespace hen::renderer
             return ShaderHandle{ index, m_Shaders[index].Generation };
         }
 
-        uint32_t index;
-        if (!m_FreeList.empty())
-        {
-            index = m_FreeList.back();
-            m_FreeList.pop_back();
-
-            m_Shaders[index].Shader.Destroy();                
-            m_Shaders[index].Shader.Create(vsPath, fsPath);
-            m_Shaders[index].Alive = true;
-            m_Shaders[index].Generation++;
-        }
-        else
-        {
-            index = static_cast<uint32_t>(m_Shaders.size());
-            m_Shaders.emplace_back();                         
-            m_Shaders[index].Shader.Create(vsPath, fsPath);  
-            m_Shaders[index].Alive = true;
-            m_Shaders[index].Generation = 1;
-        }
+        uint32_t index = AllocateSlot();
+        m_Shaders[index].Shader.Create(vsPath, fsPath);
+        InitialiseSlot(index);
 
         m_PathToIndex[key] = index;
 
@@ -109,7 +93,7 @@ namespace hen::renderer
             return;
         }
 
-        slot.Shader.Destroy();
+        slot.Shader = {};
         slot.Alive = false;
         slot.Generation++;
         m_FreeList.push_back(handle.Index);
@@ -124,6 +108,27 @@ namespace hen::renderer
         }
     }
 
+    uint32_t ShaderManager::AllocateSlot()
+    {
+        if (!m_FreeList.empty())
+        {
+            uint32_t index = m_FreeList.back();
+            m_FreeList.pop_back();
+            return index;
+        }
+
+        uint32_t index = (uint32_t)m_Shaders.size();
+        m_Shaders.emplace_back();
+        return index;
+    }
+
+    void ShaderManager::InitialiseSlot(uint32_t index)
+    {
+        m_ShaderSlot& slot = m_Shaders[index];
+        slot.Alive = true;
+        slot.Generation = (slot.Generation == 0) ? 1 : slot.Generation + 1;
+    }   
+
     TextureHandle TextureManager::Load(graphics::TextureDesc textureDesc, const unsigned char* source, size_t sourceSize)
     {
         size_t key;
@@ -136,27 +141,13 @@ namespace hen::renderer
             if (it != m_PathToIndex.end())
             {
                 uint32_t index = it->second;
+                m_Textures[index].References++;
                 return TextureHandle{ index, m_Textures[index].Generation };
             }
 
-            uint32_t index;
-            if (!m_FreeList.empty())
-            {
-                index = m_FreeList.back();
-                m_FreeList.pop_back();
-            
-                m_Textures[index].Texture.Load(textureDesc, source, sourceSize); 
-                m_Textures[index].Alive = true;
-                m_Textures[index].Generation++;
-            }
-            else
-            {
-                index = static_cast<uint32_t>(m_Textures.size());
-                m_Textures.emplace_back();                         
-                m_Textures[index].Texture.Load(textureDesc, source, sourceSize);  
-                m_Textures[index].Alive = true;
-                m_Textures[index].Generation = 1;
-            }
+            uint32_t index = AllocateSlot();
+            m_Textures[index].Texture.Load(textureDesc, source, sourceSize); 
+            InitialiseSlot(index);
 
             m_PathToIndex[key] = index;
 
@@ -178,32 +169,17 @@ namespace hen::renderer
         if (it != m_PathToIndex.end())
         {
             uint32_t index = it->second;
+            m_Textures[index].References++;
             return TextureHandle{ index, m_Textures[index].Generation };
         }
 
-        uint32_t index;
-        if (!m_FreeList.empty())
-        {
-            index = m_FreeList.back();
-            m_FreeList.pop_back();
-            
-            m_Textures[index].Texture.Load(textureDesc); 
-            m_Textures[index].Alive = true;
-            m_Textures[index].Generation++;
-        }
-        else
-        {
-            index = static_cast<uint32_t>(m_Textures.size());
-            m_Textures.emplace_back();                         
-            m_Textures[index].Texture.Load(textureDesc);  
-            m_Textures[index].Alive = true;
-            m_Textures[index].Generation = 1;
-        }
+        uint32_t index = AllocateSlot();
+        m_Textures[index].Texture.Load(textureDesc); 
+        InitialiseSlot(index);
 
         m_PathToIndex[key] = index;
 
         HEN_LOG("[hen::TextureManager] Successfully cached texture");
-
         return TextureHandle{ index, m_Textures[index].Generation };
     }
 
@@ -217,7 +193,7 @@ namespace hen::renderer
         return &m_Textures[handle.Index].Texture;
     }
 
-    void TextureManager::Remove(const TextureHandle& handle)
+    void TextureManager::Release(const TextureHandle& handle)
     {
         if (!handle.IsValid() || handle.Index >= m_Textures.size() || !m_Textures[handle.Index].Alive)
         {
@@ -231,6 +207,17 @@ namespace hen::renderer
             return;
         }
 
+        if (slot.References > 0)
+        {
+            slot.References--;
+        }
+
+        if (slot.References != 0)
+        {
+            return;
+        }
+
+        slot.Texture = {};
         slot.Alive = false;
         slot.Generation++;
         m_FreeList.push_back(handle.Index);
@@ -257,5 +244,27 @@ namespace hen::renderer
             }
         }
     }
+
+    uint32_t TextureManager::AllocateSlot()
+    {
+        if (!m_FreeList.empty())
+        {
+            uint32_t index = m_FreeList.back();
+            m_FreeList.pop_back();
+            return index;
+        }
+
+        uint32_t index = (uint32_t)m_Textures.size();
+        m_Textures.emplace_back();
+        return index;
+    }
+
+    void TextureManager::InitialiseSlot(uint32_t index)
+    {
+        m_TextureSlot& slot = m_Textures[index];
+        slot.Alive = true;
+        slot.References = 1;
+        slot.Generation = (slot.Generation == 0) ? 1 : slot.Generation + 1;
+    }   
 
 }

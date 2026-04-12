@@ -44,7 +44,7 @@ namespace hen::graphics
 
     Texture_OpenGL::~Texture_OpenGL()
     {
-        glDeleteBuffers(1, &m_ID);
+        glDeleteTextures(1, &m_ID);
     }
 
     uint32_t Texture_OpenGL::GetID() const
@@ -312,6 +312,11 @@ namespace hen::graphics
         : m_VSPath(vsPath), m_FSPath(fsPath)
     {
         Compile();
+    }
+
+    Shader_OpenGL::~Shader_OpenGL()
+    {
+        glDeleteProgram(m_ID);
     }
 
     void Shader_OpenGL::Compile()

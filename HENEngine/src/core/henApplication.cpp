@@ -18,8 +18,67 @@
 
 #if PLATFORM_WINDOWS
     #define NOMINMAX
+
     #include <windows.h>
+    #include <psapi.h>
+
+    float GetStackUsage() 
+    {
+        ULONG_PTR low, high;
+        GetCurrentThreadStackLimits(&low, &high);
+
+        char current;
+        uintptr_t currentPtr = reinterpret_cast<uintptr_t>(&current);
+
+        return (currentPtr - low) / 1024.0f;
+    }
+
+    float GetHeapUsage()
+    {
+        HANDLE hHeap = GetProcessHeap();
+        PROCESS_HEAP_ENTRY entry;
+        entry.lpData = NULL;
+        
+        size_t totalAllocated = 0;
+        
+        while (HeapWalk(hHeap, &entry))
+        {
+            if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+            {
+                totalAllocated += entry.cbData;
+            }
+        }
+    
+        return totalAllocated / (1024.0f * 1024.0f);
+    }
+#else
+    #include <malloc.h>
+
+    float GetStackUsage() 
+    {
+        pthread_attr_t attr;
+        pthread_getattr_np(pthread_self(), &attr);
+
+        void* stackBase;
+        size_t stackSize;
+        pthread_attr_getstack(&attr, &stackBase, &stackSize);
+
+        pthread_attr_destroy(&attr);
+
+        char current;
+        uintptr_t currentPtr = reinterpret_cast<uintptr_t>(&current);
+        uintptr_t stackTop = static_cast<uintptr_t>(stackBase) + stackSize;
+
+        return (stackTop - currentPtr) / 1024.0f;
+    }
+
+    float GetHeapUsage()
+    {
+        struct mallinfo info = mallinfo();
+        return info.uordblks / (1024.0f * 1024.0f);
+    }
 #endif // !PLATFORM_WINDOWS
+
 
 namespace hen
 {
@@ -29,8 +88,8 @@ namespace hen
     static std::string CPUName;
     static SDL_Window* Window;
 
-    static std::unique_ptr<cvar::System> CurrentCVarSystem;
-    static std::unique_ptr<ui::IMGUIManager> CurrentImGuiManager;
+    static cvar::System CurrentCVarSystem;
+    static ui::IMGUIManager CurrentImGuiManager;
     
     cvar::CVar cvar_Fullscreen("a_fullscreen", false, hen::cvar::FLAGS_ARCHIVE, []()
     {
@@ -69,12 +128,11 @@ namespace hen
         HEN_ASSERT(physics::Initialised, "hen::physics not initialised");
         
 
-        CurrentImGuiManager = std::make_unique<ui::IMGUIManager>();
-        ui::GetIMGUIManager() = CurrentImGuiManager.get(); 
+        ui::GetIMGUIManager() = &CurrentImGuiManager; 
 
-        CurrentImGuiManager->Initialise(window);
+        CurrentImGuiManager.Initialise(window);
 
-        HEN_ASSERT(CurrentImGuiManager->Initialised, "hen::ui::ImGuiManager not initialised");
+        HEN_ASSERT(CurrentImGuiManager.Initialised, "hen::ui::ImGuiManager not initialised");
 
 
         input::Initialise(window);
@@ -82,12 +140,11 @@ namespace hen
         HEN_ASSERT(input::Initialised, "hen::input not initialised");
 
 
-        CurrentCVarSystem = std::make_unique<cvar::System>(); // this motherfucker is important as fuck
-        cvar::GetSystem() = CurrentCVarSystem.get(); 
+        cvar::GetSystem() = &CurrentCVarSystem; 
 
-        CurrentCVarSystem->Initialise();
+        CurrentCVarSystem.Initialise();
 
-        HEN_ASSERT(CurrentCVarSystem->Initialised, "hen::cvar::System not initialised");
+        HEN_ASSERT(CurrentCVarSystem.Initialised, "hen::cvar::System not initialised");
         
 
         Initialised = true;
@@ -145,7 +202,7 @@ namespace hen
 
         #if DEBUG
 
-            CurrentImGuiManager->RegisterDrawCallback([]() 
+            CurrentImGuiManager.RegisterDrawCallback([]() 
             {
                 int windowWidth, windowHeight;
                 SDL_GetWindowSize(renderer::GetRHC()->GetWindow(), &windowWidth, &windowHeight);
@@ -178,7 +235,10 @@ namespace hen
                 {
                    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "DEBUG RENDER HARDWARE CONTEXT: DISABLED");
                 }
-                
+
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "STACK USAGE: %.2f KB", GetStackUsage());
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "HEAP USAGE: %.2f MB", GetHeapUsage());
+
                 ImGui::SetWindowFontScale(1.0f);
 
                 ImGui::End();
@@ -243,6 +303,6 @@ namespace hen
     void Application::ProcessEvent(const SDL_Event& event)
     {
         input::ProcessEvent(event);
-        CurrentImGuiManager->ProcessEvent(event);
+        CurrentImGuiManager.ProcessEvent(event);
     }
 } 
