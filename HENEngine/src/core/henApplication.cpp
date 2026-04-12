@@ -67,7 +67,7 @@
 
         char current;
         uintptr_t currentPtr = reinterpret_cast<uintptr_t>(&current);
-        uintptr_t stackTop = static_cast<uintptr_t>(stackBase) + stackSize;
+        uintptr_t stackTop = reinterpret_cast<uintptr_t>(stackBase) + stackSize;
 
         return (stackTop - currentPtr) / 1024.0f;
     }
