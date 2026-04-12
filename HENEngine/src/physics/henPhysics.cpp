@@ -147,146 +147,6 @@ namespace hen::physics
 			BroadPhaseLayer m_ObjectToBroadPhase[LAYERS::NUM_LAYERS];
 		};
 
-		class JobSystemImpl : public JPH::JobSystem
-		{
-		public:
-			int GetMaxConcurrency() const override
-			{
-				return std::thread::hardware_concurrency() - 1;
-			}
-
-			JobHandle CreateJob(const char* name, JPH::ColorArg colour, const JobFunction& jobFunction, uint32_t numDependencies = 0) override
-			{
-				Job* job = new Job(name, colour, this, jobFunction, numDependencies);
-				job->AddRef();
-
-				if (numDependencies == 0)
-				{
-					QueueJob(job);
-				}
-
-				return JobHandle(job);
-			}
-
-			Barrier* CreateBarrier() override
-			{
-				return new BarrierImpl();
-			}
-
-			void DestroyBarrier(Barrier* barrier) override
-			{
-				BarrierImpl* cast = static_cast<BarrierImpl*>(barrier);
-				delete cast;
-			}
-
-			void WaitForJobs(Barrier* barrier) override
-			{
-				BarrierImpl* cast = static_cast<BarrierImpl*>(barrier);
-				cast->Wait();
-			}
-
-		protected:
-			void QueueJob(Job* job) override
-			{
-				job->AddRef();
-
-				hen::jobsystem::Execute([job]()
-				{
-                	job->Execute();
-                	job->Release(); 
-				});
-			}
-
-			void QueueJobs(Job** jobs, uint numOfJobs) override
-			{
-				for (uint i = 0; i < numOfJobs; ++i)
-				{
-					QueueJob(jobs[i]);
-				}
-			}
-
-			void FreeJob(Job* job) override
-			{
-				delete job;
-			}
-
-		private:
-			class BarrierImpl : public JPH::JobSystem::Barrier
-			{
-			public:
-				void AddJob(const JobHandle& jobHandle) override
-				{
-					std::lock_guard<std::mutex> lock(m_Mutex);
-
-					jobHandle.GetPtr()->AddRef(); 
-					m_Jobs.push_back(jobHandle.GetPtr());
-				}
-
-				void AddJobs(const JobHandle* handles, uint numOfHandles) override
-				{
-					std::lock_guard<std::mutex> lock(m_Mutex);
-
-					for (uint i = 0; i < numOfHandles; ++i)
-					{
-						handles[i].GetPtr()->AddRef();
-						m_Jobs.push_back(handles[i].GetPtr());
-					}
-				}
-
-				void Wait()
-				{
-					while (true)
-					{
-						HEN_LOG("Barrier has " + std::to_string(m_Jobs.size()) + " jobs");
-
-						{
-							std::lock_guard<std::mutex> lock(m_Mutex);
-							
-							for (auto it = m_Jobs.begin(); it != m_Jobs.end();)
-							{
-								if ((*it)->IsDone())
-								{
-									(*it)->Release();
-									it = m_Jobs.erase(it);
-								}
-								else
-								{
-									++it;
-								}
-							}
-						}
-
-						{
-							std::lock_guard<std::mutex> lock(m_Mutex);
-							if (m_Jobs.empty())
-							{
-								break;
-							}
-						}
-						
-						std::this_thread::yield();
-					}
-				}
-
-			protected:
-				void OnJobFinished(Job* job) override
-				{
-					std::lock_guard<std::mutex> lock(m_Mutex);
-
-					auto it = std::find(m_Jobs.begin(), m_Jobs.end(), job);
-					if (it != m_Jobs.end())
-					{
-						job->Release();
-						m_Jobs.erase(it);
-					}
-				}
-
-			private:
-				std::mutex m_Mutex;
-				std::vector<Job*> m_Jobs;
-			};
-		};
-
 		struct PhysicsLevel
 		{
 			PhysicsSystem System;
@@ -609,9 +469,6 @@ namespace hen::physics
 
 	}
 
-	static jolt::JobSystemImpl JoltPhysicsJobSystem;
-	static jolt::TempAllocatorMalloc JoltPhysicsAllocator;
-
     void Initialise()
     {
         hen::Timer timer;
@@ -733,6 +590,9 @@ namespace hen::physics
 
 		if (cvar_SimulationEnabled.GetBool())
     	{
+			static jolt::JobSystemThreadPool jpJobSystem(jolt::cMaxPhysicsJobs, jolt::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+			static jolt::TempAllocatorMalloc jpAllocator;
+
     	    const float fixedStep = 1.0f / cvar_HZ.GetInt();
 
     	    physLevel.Accumulator += deltaTime;
@@ -764,7 +624,7 @@ namespace hen::physics
 					jobsystem::Wait();
     	        }
 
-    	        physLevel.System.Update(fixedStep, 1, &JoltPhysicsAllocator, &JoltPhysicsJobSystem);
+    	        physLevel.System.Update(fixedStep, 1, &jpAllocator, &jpJobSystem);
     	        physLevel.Accumulator -= fixedStep;
     	    }
 
